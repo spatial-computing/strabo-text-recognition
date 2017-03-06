@@ -1,0 +1,421 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{37DE14A5-B667-4327-ABF6-1B5325C7B012}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Strabo.Core</RootNamespace>
+    <AssemblyName>Strabo.Core</AssemblyName>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="ImageProcessing\Binarization.cs" />
+    <Compile Include="ImageProcessing\ColorHistogram.cs" />
+    <Compile Include="ImageProcessing\RemoveBoarderAndNoiseCC.cs" />
+    <Compile Include="ImageProcessing\RemoveNoiseCC.cs" />
+    <Compile Include="ImageProcessing\RotateImage.cs" />
+    <Compile Include="SymbolRecognition\Consolidate.cs" />
+    <Compile Include="SymbolRecognition\Descriptor.cs" />
+    <Compile Include="SymbolRecognition\DrawMatches.cs" />
+    <Compile Include="SymbolRecognition\MachineLearning.cs" />
+    <Compile Include="SymbolRecognition\ScanImage.cs" />
+    <Compile Include="SymbolRecognition\Visualization.cs" />
+    <Compile Include="TextDetection\DetectTextOrientation.cs" />
+    <Compile Include="TextRecognition\AddNeighborhood.cs" />
+    <Compile Include="TextRecognition\CheckDictionary.cs" />
+    <Compile Include="TextRecognition\CheckDictionaryElasticSearch.cs" />
+    <Compile Include="TextRecognition\CheckType.cs" />
+    <Compile Include="TextRecognition\CleanTesseractResult.cs" />
+    <Compile Include="TextRecognition\GeoDictionary.cs" />
+    <Compile Include="TextRecognition\CompleteNoiseRemoval.cs" />
+    <Compile Include="TextRecognition\ExploreNeighborhoods.cs" />
+    <Compile Include="TextRecognition\HorizontalTextExtraction.cs" />
+    <Compile Include="TextRecognition\JaccardDistance.cs" />
+    <Compile Include="TextRecognition\NeedlemanWunsch.cs" />
+    <Compile Include="TextRecognition\NGramDistance.cs" />
+    <Compile Include="TextRecognition\NonHorizontalTextExtraction.cs" />
+    <Compile Include="TextRecognition\PotentialTextAreaExtractation.cs" />
+    <Compile Include="TextRecognition\QGISJsonNeighbothood.cs" />
+    <Compile Include="TextRecognition\RemoveNoiseText.cs" />
+    <Compile Include="TextRecognition\SVM.cs" />
+    <Compile Include="TextRecognition\TessResult.cs" />
+    <Compile Include="Utility\ConnectToMapServer.cs" />
+    <Compile Include="Utility\GetMapFromWMTS.cs" />
+    <Compile Include="Utility\SymbolParameters.cs" />
+    <Compile Include="Worker\ColorSegmentationWorker.cs" />
+    <Compile Include="ColorSegmentation\MeanShiftMultiThreads.cs" />
+    <Compile Include="ColorSegmentation\MyKMeans.cs" />
+    <Compile Include="ImageProcessing\ConnectLinesWithOnePixelGap.cs" />
+    <Compile Include="ImageProcessing\DistanceTransformation.cs" />
+    <Compile Include="ImageProcessing\ImageSlicer.cs" />
+    <Compile Include="ImageProcessing\ImageStitcher.cs" />
+    <Compile Include="ImageProcessing\ImageUtils.cs" />
+    <Compile Include="ImageProcessing\MyConnectedComponentsAnalysisFast.cs" />
+    <Compile Include="ImageProcessing\RemoveBoarderCC.cs" />
+    <Compile Include="ImageProcessing\RGB.cs" />
+    <Compile Include="Utility\StraboParameters.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextDetection\ConditionalDilationAutomatic.cs" />
+    <Compile Include="TextDetection\DetectTextStrings.cs" />
+    <Compile Include="TextDetection\GeometryUtils.cs" />
+    <Compile Include="TextDetection\MergeTextStrings.cs" />
+    <Compile Include="TextDetection\MultiThreadsSkewnessDetection.cs" />
+    <Compile Include="TextRecognition\CheckDictionary_.cs" />
+    <Compile Include="TextRecognition\JaroWinklerDistance.cs" />
+    <Compile Include="TextRecognition\QGISJson.cs" />
+    <Compile Include="Utility\MapServerParameters.cs" />
+    <Compile Include="Worker\GetMapFromServiceWorker.cs" />
+    <Compile Include="Worker\SymbolRecognitionWorker.cs" />
+    <Compile Include="Worker\TextDetectionWorker.cs" />
+    <Compile Include="TextDetection\TextString.cs" />
+    <Compile Include="TextRecognition\FeatureInJSON.cs" />
+    <Compile Include="TextRecognition\WrapperTesseract.cs" />
+    <Compile Include="Worker\TextRecognitionWorker.cs" />
+    <Compile Include="Utility\ReadConfigFile.cs" />
+    <Compile Include="Utility\GetMapFromWMS.cs" />
+    <Compile Include="Utility\Log.cs" />
+    <Compile Include="Worker\CommandLineWorker.cs" />
+    <Compile Include="Worker\ExtractTextLayerFromMapWorker.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
+    <None Include="tessdata\eng.cube.bigrams" />
+    <None Include="tessdata\eng.cube.fold" />
+    <None Include="tessdata\eng.cube.lm" />
+    <None Include="tessdata\eng.cube.nn" />
+    <None Include="tessdata\eng.cube.params" />
+    <None Include="tessdata\eng.cube.size" />
+    <None Include="tessdata\eng.cube.word-freq" />
+    <None Include="tessdata\eng.tesseract_cube.nn" />
+    <None Include="tessdata\eng.traineddata" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DataType\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\cudart32_65.dll">
+      <Link>x86\cudart32_65.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\cufft32_65.dll">
+      <Link>x86\cufft32_65.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\cvextern.dll">
+      <Link>x86\cvextern.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\nppc32_65.dll">
+      <Link>x86\nppc32_65.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\nppi32_65.dll">
+      <Link>x86\nppi32_65.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\npps32_65.dll">
+      <Link>x86\npps32_65.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\OpenCL.dll">
+      <Link>x86\OpenCL.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_calib3d2410.dll">
+      <Link>x86\opencv_calib3d2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_contrib2410.dll">
+      <Link>x86\opencv_contrib2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_core2410.dll">
+      <Link>x86\opencv_core2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_features2d2410.dll">
+      <Link>x86\opencv_features2d2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_flann2410.dll">
+      <Link>x86\opencv_flann2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_gpu2410.dll">
+      <Link>x86\opencv_gpu2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_highgui2410.dll">
+      <Link>x86\opencv_highgui2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_imgproc2410.dll">
+      <Link>x86\opencv_imgproc2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_legacy2410.dll">
+      <Link>x86\opencv_legacy2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_ml2410.dll">
+      <Link>x86\opencv_ml2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_nonfree2410.dll">
+      <Link>x86\opencv_nonfree2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_objdetect2410.dll">
+      <Link>x86\opencv_objdetect2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_photo2410.dll">
+      <Link>x86\opencv_photo2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_stitching2410.dll">
+      <Link>x86\opencv_stitching2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_superres2410.dll">
+      <Link>x86\opencv_superres2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_video2410.dll">
+      <Link>x86\opencv_video2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\x86\opencv_videostab2410.dll">
+      <Link>x86\opencv_videostab2410.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="cudart32_65.dll" />
+    <Content Include="cufft32_65.dll" />
+    <Content Include="x64\cudart64_65.dll" />
+    <Content Include="x64\cufft64_65.dll" />
+    <Content Include="x64\cvextern.dll" />
+    <Content Include="x64\liblept172.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x64\libtesseract304.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\liblept172.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\libtesseract304.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="cvextern.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="nppc32_65.dll" />
+    <Content Include="nppi32_65.dll" />
+    <Content Include="npps32_65.dll" />
+    <Content Include="OpenCL.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="opencv_calib3d2410.dll" />
+    <Content Include="opencv_contrib2410.dll" />
+    <Content Include="opencv_core2410.dll" />
+    <Content Include="opencv_features2d2410.dll" />
+    <Content Include="opencv_flann2410.dll" />
+    <Content Include="opencv_gpu2410.dll" />
+    <Content Include="opencv_highgui2410.dll" />
+    <Content Include="opencv_imgproc2410.dll" />
+    <Content Include="opencv_legacy2410.dll" />
+    <Content Include="opencv_ml2410.dll" />
+    <Content Include="opencv_nonfree2410.dll" />
+    <Content Include="opencv_objdetect2410.dll" />
+    <Content Include="opencv_photo2410.dll" />
+    <Content Include="opencv_stitching2410.dll" />
+    <Content Include="opencv_superres2410.dll" />
+    <Content Include="opencv_video2410.dll" />
+    <Content Include="opencv_videostab2410.dll" />
+    <!-- similar content with master-->
+    <Content Include="x64\nppc64_65.dll" />
+    <Content Include="x64\nppi64_65.dll" />
+    <Content Include="x64\npps64_65.dll" />
+    <Content Include="x64\OpenCL.dll" />
+    <Content Include="x64\opencv_calib3d2410.dll" />
+    <Content Include="x64\opencv_contrib2410.dll" />
+    <Content Include="x64\opencv_core2410.dll" />
+    <Content Include="x64\opencv_features2d2410.dll" />
+    <Content Include="x64\opencv_flann2410.dll" />
+    <Content Include="x64\opencv_gpu2410.dll" />
+    <Content Include="x64\opencv_highgui2410.dll" />
+    <Content Include="x64\opencv_imgproc2410.dll" />
+    <Content Include="x64\opencv_legacy2410.dll" />
+    <Content Include="x64\opencv_ml2410.dll" />
+    <Content Include="x64\opencv_nonfree2410.dll" />
+    <Content Include="x64\opencv_objdetect2410.dll" />
+    <Content Include="x64\opencv_photo2410.dll" />
+    <Content Include="x64\opencv_stitching2410.dll" />
+    <Content Include="x64\opencv_superres2410.dll" />
+    <Content Include="x64\opencv_video2410.dll" />
+    <Content Include="x64\opencv_videostab2410.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Accord, Version=3.4.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.3.4.0\lib\net40\Accord.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Controls">
+      <HintPath>..\packages\Accord.Controls.3.0.2\lib\net40\Accord.Controls.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.MachineLearning, Version=3.4.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.MachineLearning.3.4.0\lib\net40\Accord.MachineLearning.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Math, Version=3.4.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Math.3.4.0\lib\net40\Accord.Math.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Math.Core, Version=3.4.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Math.3.4.0\lib\net40\Accord.Math.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Statistics, Version=3.4.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Statistics.3.4.0\lib\net40\Accord.Statistics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AForge">
+      <HintPath>..\packages\AForge.2.2.5\lib\AForge.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AForge.Imaging, Version=2.2.5.0, Culture=neutral, PublicKeyToken=ba8ddea9676ca48b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AForge.Imaging.2.2.5\lib\AForge.Imaging.dll</HintPath>
+    </Reference>
+    <Reference Include="AForge.Math, Version=2.2.5.0, Culture=neutral, PublicKeyToken=abba2e25397ee8c9, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AForge.Math.2.2.5\lib\AForge.Math.dll</HintPath>
+    </Reference>
+    <Reference Include="Elasticsearch.Net">
+      <HintPath>..\packages\Elasticsearch.Net.1.7.1\lib\net40\Elasticsearch.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Elasticsearch.Net.Connection.Thrift">
+      <HintPath>..\packages\Elasticsearch.Net.Connection.Thrift.1.7.1\lib\net40\Elasticsearch.Net.Connection.Thrift.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.GPU">
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.GPU.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.ML">
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.ML.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.OCR, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.OCR.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.OpenCL">
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.OpenCL.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.Stitching">
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.Stitching.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.UI, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.VideoStab">
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.VideoStab.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.Util, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.Util.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Security">
+      <HintPath>..\packages\Npgsql.2.2.7\lib\net40\Mono.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Nest">
+      <HintPath>..\packages\NEST.1.7.1\lib\net40\Nest.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql">
+      <HintPath>..\packages\Npgsql.2.2.7\lib\net40\Npgsql.dll</HintPath>
+    </Reference>
+    <Reference Include="nQuant.Core, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\nQuant.1.0.3\Lib\net40\nQuant.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite">
+      <HintPath>..\packages\System.Data.SQLite.Core.1.0.98.1\lib\net40\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.EF6">
+      <HintPath>..\packages\System.Data.SQLite.EF6.1.0.98.1\lib\net40\System.Data.SQLite.EF6.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq">
+      <HintPath>..\packages\System.Data.SQLite.Linq.1.0.98.1\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Tesseract, Version=3.0.2.0, Culture=neutral, PublicKeyToken=ebeb3d86bef60cbe, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tesseract.3.0.2.0\lib\net40\Tesseract.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KMeans\KMeans.csproj">
+      <Project>{e5ac138a-4968-4486-82da-4d0d10f3337f}</Project>
+      <Name>KMeans</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Import Project="..\packages\System.Data.SQLite.Core.1.0.98.1\build\net40\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.98.1\build\net40\System.Data.SQLite.Core.targets')" />
+  <Import Project="..\packages\Accord.3.4.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.4.0\build\Accord.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Accord.3.4.0\build\Accord.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Accord.3.4.0\build\Accord.targets'))" />
+  </Target>
+</Project>
