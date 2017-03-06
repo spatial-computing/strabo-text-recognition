@@ -23,6 +23,7 @@
 using nQuant;
 using Strabo.Core.ColorSegmentation;
 using Strabo.Core.Utility;
+using Strabo.Core.ImageProcessing;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -67,7 +68,7 @@ namespace Strabo.Core.Worker
 
                 Bitmap msimg = new Bitmap(output_dir + fn_only + "_ms.png");
                 
-                msimg = convertImgTo32Bit(msimg);
+                msimg = ImageUtils.AnyToFormat32bppRgb(msimg);
 
                 using (msimg)
                 {
@@ -93,23 +94,6 @@ namespace Strabo.Core.Worker
                 Log.WriteLine(e.StackTrace);
                 throw;
             }
-        }
-
-        private Bitmap convertImgTo32Bit(Bitmap image)
-        {
-            if (image.PixelFormat != PixelFormat.Format32bppRgb)
-            {
-                Bitmap tmp = new Bitmap(image.Width, image.Height,
-                    PixelFormat.Format32bppRgb);
-                using (Graphics gr = Graphics.FromImage(tmp))
-                {
-                    gr.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height));
-                }
-                image = (Bitmap)(tmp.Clone());
-                tmp.Dispose();
-                tmp = null;
-            }
-            return image;
         }
     }
 }

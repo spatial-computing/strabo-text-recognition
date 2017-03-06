@@ -10,6 +10,10 @@
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/packages/repositories.config
 
+# No executable
+*.exe
+*.exe.config
+
 # User-specific files
 *.suo
 *.user

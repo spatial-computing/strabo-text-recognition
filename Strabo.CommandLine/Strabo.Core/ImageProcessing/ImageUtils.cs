@@ -100,6 +100,24 @@ namespace Strabo.Core.ImageProcessing
             }
             return srcimg;
         }
+
+        public static Bitmap AnyToFormat32bppRgb(Bitmap srcimg)
+        {
+            if (srcimg.PixelFormat != PixelFormat.Format32bppRgb)
+            {
+                Bitmap tmp = new Bitmap(srcimg.Width, srcimg.Height,
+                    PixelFormat.Format32bppRgb);
+                using (Graphics gr = Graphics.FromImage(tmp))
+                {
+                    gr.DrawImage(srcimg, new Rectangle(0, 0, srcimg.Width, srcimg.Height));
+                }
+                srcimg = (Bitmap)(tmp.Clone());
+                tmp.Dispose();
+                tmp = null;
+            }
+            return srcimg;
+        }
+
         public static int GetNumberOfUniqueColors(Bitmap srcimg)
         {
             srcimg = AnyToFormat24bppRgb(srcimg);
