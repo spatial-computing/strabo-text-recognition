@@ -303,6 +303,10 @@
       <HintPath>..\packages\Accord.MachineLearning.3.4.0\lib\net40\Accord.MachineLearning.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Accord.MachineLearning.GPL, Version=3.4.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.MachineLearning.GPL.3.4.0\lib\net40\Accord.MachineLearning.GPL.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Accord.Math, Version=3.4.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
       <HintPath>..\packages\Accord.Math.3.4.0\lib\net40\Accord.Math.dll</HintPath>
       <Private>True</Private>
