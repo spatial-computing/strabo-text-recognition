@@ -51,7 +51,8 @@ namespace Strabo.Test
             //**************************************************************************************************************
             try
             {
-                // TestCommandLineWorker tcl = new TestCommandLineWorker();
+                TestCommandLineWorker tcl = new TestCommandLineWorker();
+                tcl.testBlockMaps();
                 //tcl.TestLocalTianditu_evaFiles();
                 // tcl.TestLocalFiles();
                 // tcl.Test();
@@ -62,7 +63,7 @@ namespace Strabo.Test
                 // test_object.testCommandLineWorker();
                 // test_object.testUSGSMaps();
                 // test_object.testColorSegmentationWorker();
-               //  test_object.testTextLayerExtractionWorker();
+                //  test_object.testTextLayerExtractionWorker();
             }
             catch (Exception e)
             { Log.WriteLine(e.Message); }
