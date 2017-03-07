@@ -47,8 +47,13 @@ namespace Strabo.Core.Worker
             {
                 string tessPath = "";
                 //Zhiyuan Wang: use Tesseract data of English for numbers.
-                string tesslng = (lng == "num") ? "eng" : lng;
-                WrapperTesseract wt = new WrapperTesseract(tessPath, tesslng);
+                // string tesslng = (lng == "num") ? "eng" : lng;
+                // WrapperTesseract wt = new WrapperTesseract(tessPath, tesslng);
+                // ^^ Introduces ambiguity: @ialok
+
+
+                WrapperTesseract wt = new WrapperTesseract(tessPath, lng);
+
                 List<TessResult> tessOcrResultList = wt.Apply(inputPath, outputPath);
 
                 int georef = -1;

@@ -61,10 +61,22 @@ namespace Strabo.Core.TextRecognition
             Log.WriteLine("Setting Tesseract traindata and language");
             //////  Tesseract 3.2 ////////
             if (lng=="eng")
+            {
                 _engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.TesseractAndCube);
+            }
+            else if(lng=="num")
+            {
+                // Just detect numbers
+                // Will not work great on low resolution images
+                // Useful StackOverFlow URL: http://stackoverflow.com/questions/38336601/ocr-tesseractengine
+                Log.WriteLine("Filtering only numbers");
+                _engine = new TesseractEngine(@"C:\Users\ialok\GitHub\strabo-text-recognition\Strabo.CommandLine\bin\Debug\tessdata3\tessdata", "eng", EngineMode.TesseractAndCube);
+                _engine.SetVariable("tessedit_char_whitelist", "0123456789");
+            }
             else
-
+            {
                 _engine = new TesseractEngine(@"./tessdata3", lng, EngineMode.Default);
+            }
             Log.WriteLine("Tesseract Version: " + _engine.Version);
             //_engine.SetVariable("tessedit_char_whitelist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
             //_engine.SetVariable("tessedit_char_blacklist", "¢§+~»~`!@#$%^&*()_+-={}[]|\\:\";\'<>?,./");
@@ -100,9 +112,9 @@ namespace Strabo.Core.TextRecognition
                         var img = Pix.LoadFromFile(filePaths[i]);
                         page = _engine.Process(img, PageSegMode.SingleBlock);
                         text = page.GetText();
-
                         string HOCR = page.GetHOCRText(1);
-                        //PageIteratorLevel a = new PageIteratorLevel();
+                        
+                        // PageIteratorLevel a = new PageIteratorLevel();
                         //Rect boundingbox;
                         //page.AnalyseLayout().TryGetBoundingBox(a, out boundingbox);
 
@@ -116,6 +128,7 @@ namespace Strabo.Core.TextRecognition
 
                         if (text.Length > 0 && RemoveNoiseText.NotTooManyNoiseCharacters(text))
                         {
+                            Console.WriteLine(text);
                             tr.id = splitTokens[0];
                             
                             tr.tess_word3 = Regex.Replace(text, "\n\n", "");
