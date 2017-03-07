@@ -37,61 +37,78 @@ namespace Strabo.Core.Worker
     /// </summary>
     public class TextDetectionWorker
     {
-        public double angle_ratio = 0.3;//0.19
-
+        public double angleRatio = StraboParameters.angleRatio;
         public TextDetectionWorker() { }
-        public void Apply(string intermediatePath, double size_ratio, bool preprocessing, int tnum)
+
+        public void Apply(string intermediatePath, double sizeRatio, bool preProcessing, int threadNumber)
         {
-            string input_dir = intermediatePath;
-            string output_dir = intermediatePath;
-            string fn = StraboParameters.textLayerOutputFileName;
-            int char_size = StraboParameters.char_size;
-            Apply(input_dir, output_dir, fn, char_size, size_ratio, preprocessing, tnum, StraboParameters.language);
+            string inputDir = intermediatePath;
+            string outputDir = intermediatePath;
+            string fileName = StraboParameters.textLayerOutputFileName;
+            int charSize = StraboParameters.char_size;
+
+            Apply(
+                inputDir, outputDir, fileName, charSize, sizeRatio,
+                preProcessing, threadNumber, StraboParameters.language
+                );
         }
-        public void Apply(string input_dir, string output_dir, string fn, int char_size, double size_ratio, bool preprocessing, int tnum, string lang)
+
+        public void Apply(
+            string inputDir, string outputDir, string fileName, int charSize,
+            double sizeRatio, bool preProcessing, int threadNumber, string lang
+            )
         {
             MergeTextStrings mts = new MergeTextStrings();
 
-            ImageSlicer imgslicer = new ImageSlicer();
-            List<TextString> text_string_list = new List<TextString>();
-            List<string> imgpath_list = imgslicer.Apply(1, 1, 100, input_dir + fn, output_dir);
+            ImageSlicer imgSlicer = new ImageSlicer();
+            // List<TextString> text_string_list = new List<TextString>();
+            List<string> imgPathList = imgSlicer.Apply(
+                StraboParameters.rowSlice, StraboParameters.colSlice,
+                StraboParameters.overlap, inputDir + fileName, outputDir
+                );
 
             Log.WriteLine("Grouping text strings...");
-            for (int s = 0; s < imgpath_list.Count; s++)
+            for (int s = 0; s < imgPathList.Count; s++)
             {
                 Bitmap srcimg = null;
 
                 if (lang == "eng")
                 {
-                    using (Bitmap tileimg = new Bitmap(imgpath_list[s]))
+                    using (Bitmap tileimg = new Bitmap(imgPathList[s]))
                     {
-                        RemoveBoarderAndNoiseCC removeBoarderAndNoiseCC = new RemoveBoarderAndNoiseCC();
-                        srcimg = removeBoarderAndNoiseCC.Apply(tileimg, char_size, 0.18);
-                        Log.WriteBitmap2FolderExactFileName(output_dir, srcimg, "CDAInput.png");
+                        RemoveBoarderAndNoiseCC removeBoarderAndNoiseCC =
+                            new RemoveBoarderAndNoiseCC();
+                        srcimg = removeBoarderAndNoiseCC.Apply(
+                            tileimg, charSize, StraboParameters.minPixelAreaSize
+                            );
+                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
                     }
                 }
                 else if(lang == "num")
                 {
-                    using (Bitmap tileimg = new Bitmap(imgpath_list[s]))
+                    using (Bitmap tileimg = new Bitmap(imgPathList[s]))
                     {
-                        RemoveBoarderAndNoiseCC removeBoarderAndNoiseCC = new RemoveBoarderAndNoiseCC();
-                        srcimg = removeBoarderAndNoiseCC.Apply(tileimg, char_size, 0.18);
-                        Log.WriteBitmap2FolderExactFileName(output_dir, srcimg, "CDAInput.png");
+                        RemoveBoarderAndNoiseCC removeBoarderAndNoiseCC = 
+                            new RemoveBoarderAndNoiseCC();
+                        srcimg = removeBoarderAndNoiseCC.Apply(
+                            tileimg, charSize, StraboParameters.minPixelAreaSize
+                            );
+                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
                     }
                 }
                 else
                 {
-                    using (Bitmap tileimg = new Bitmap(imgpath_list[s]))
+                    using (Bitmap tileimg = new Bitmap(imgPathList[s]))
                     {
                         RemoveBoarderCC removeBoarderCC = new RemoveBoarderCC();
                         srcimg = removeBoarderCC.Apply(tileimg);
-                        Log.WriteBitmap2FolderExactFileName(output_dir, srcimg, "CDAInput.png");
+                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
                     }
                 }
                 ConditionalDilationAutomatic cda = new ConditionalDilationAutomatic();
-                cda.ang_threshold = angle_ratio;
-                string outputImagePath = output_dir + s + ".png";
-                cda.Apply(tnum, srcimg, size_ratio, angle_ratio, preprocessing, outputImagePath);
+                cda.angleThreshold = angleRatio;
+                string outputImagePath = outputDir + s + ".png";
+                cda.Apply(threadNumber, srcimg, sizeRatio, angleRatio, preProcessing, outputImagePath);
 
                 using (Bitmap dilatedimg = new Bitmap(outputImagePath))
                 {
@@ -101,7 +118,7 @@ namespace Strabo.Core.Worker
                     for (int i = 0; i < string_list.Count; i++)
                         string_img_list.Add(string_list[i].srcimg);
 
-                    int[] offset = imgslicer.xy_offset_list[s];
+                    int[] offset = imgSlicer.xy_offset_list[s];
 
                     for (int i = 0; i < string_list.Count; i++)
                     {
@@ -121,7 +138,7 @@ namespace Strabo.Core.Worker
                         g.DrawRectangle(new Pen(Color.Green, 4), mts.text_string_list[i].bbx);
 
                     }
-                    Log.WriteBitmap2FolderExactFileName(output_dir, CDAInputwithLabel, "CDAInputwithLabel.png");
+                    Log.WriteBitmap2FolderExactFileName(outputDir, CDAInputwithLabel, "CDAInputwithLabel.png");
                     g.Dispose();
                     g=null;
                 }
@@ -131,7 +148,7 @@ namespace Strabo.Core.Worker
 
             Log.WriteLine("Detecting long string orientation...");
             DetectTextOrientation detectTextOrientation = new DetectTextOrientation();
-            detectTextOrientation.Apply(mts, tnum);
+            detectTextOrientation.Apply(mts, threadNumber);
 
             Log.WriteLine("Detecting short string orientation...");
             for (int i = 0; i < mts.text_string_list.Count; i++)
@@ -152,7 +169,7 @@ namespace Strabo.Core.Worker
             }
 
             Log.WriteLine("Writing string results...");
-            mts.WriteBMP(output_dir);
+            mts.WriteBMP(outputDir);
         }
         #region debuging_code
         //public Bitmap PrintSubStringBBXonMap(Bitmap srcimg)

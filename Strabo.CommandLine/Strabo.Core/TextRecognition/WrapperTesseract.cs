@@ -70,7 +70,7 @@ namespace Strabo.Core.TextRecognition
                 // Will not work great on low resolution images
                 // Useful StackOverFlow URL: http://stackoverflow.com/questions/38336601/ocr-tesseractengine
                 Log.WriteLine("Filtering only numbers");
-                _engine = new TesseractEngine(@"C:\Users\ialok\GitHub\strabo-text-recognition\Strabo.CommandLine\bin\Debug\tessdata3\tessdata", "eng", EngineMode.TesseractAndCube);
+                _engine = new TesseractEngine(@"./tessdata3", "eng", EngineMode.TesseractAndCube);
                 _engine.SetVariable("tessedit_char_whitelist", "0123456789");
             }
             else

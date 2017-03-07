@@ -32,20 +32,42 @@ namespace Strabo.Core.Worker
     {
         public ExtractTextLayerFromMapWorker()
         { }
-        public void Apply(string inputPath, string intermediatePath, int tnum)
+        public void Apply(string inputPath, string intermediatePath, int threadNumber)
         {
-            RGBThreshold thd = StraboParameters.rgbThreshold;
-            string outputPath = intermediatePath + StraboParameters.textLayerOutputFileName;
-            Apply(inputPath, outputPath, intermediatePath, thd, tnum);
+            RGBThreshold threshold = StraboParameters.rgbThreshold;
+            string outputPath = intermediatePath + 
+                StraboParameters.textLayerOutputFileName;
+            Apply(
+                inputPath, outputPath, intermediatePath,
+                threshold, threadNumber
+                );
         }
-        public void Apply(string inputPath, string outputPath, string intermediatePath, RGBThreshold thd, int tnum)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="inputPath">Source Image path</param>
+        /// <param name="outputPath">Output Image path</param>
+        /// <param name="intermediatePath">Location containing different versions of the image</param>
+        /// <param name="threshold">RGB threshold value</param>
+        /// <param name="threadNumber">Number of threads</param>
+        public void Apply(
+            string inputPath, string outputPath,
+            string intermediatePath, RGBThreshold threshold, int threadNumber
+            )
         {
             try
             {
-                if (thd.upperBlueColorThd == thd.lowerBlueColorThd || thd.upperGreenColorThd == thd.lowerGreenColorThd || thd.upperRedColorThd == thd.lowerRedColorThd)
-                    Binarization.ApplyBradleyLocalThresholding(inputPath,outputPath);
+                if (
+                    threshold.upperBlueColorThd == threshold.lowerBlueColorThd
+                    || threshold.upperGreenColorThd == threshold.lowerGreenColorThd
+                    || threshold.upperRedColorThd == threshold.lowerRedColorThd
+                    )
+                    Binarization.ApplyBradleyLocalThresholding(inputPath, outputPath);
                 else
-                    Binarization.ApplyRGBColorThresholding(inputPath, outputPath, thd, tnum);   
+                    Binarization.ApplyRGBColorThresholding(
+                        inputPath, outputPath,
+                        threshold, threadNumber
+                        );   
             }
             catch (Exception e)
             {

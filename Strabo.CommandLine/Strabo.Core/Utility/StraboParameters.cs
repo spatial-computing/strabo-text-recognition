@@ -58,6 +58,28 @@ namespace Strabo.Core.Utility
         private static double _firstToThirdGroupHeightRatio;
         private static double _firstToSecondGroupHeightRatio;
 
+        private static int _spatialDistance;
+        private static int _colorDistance;
+        private static int _medianCutColors;
+
+        private static int _sizeRatio;
+        private static double _angleThreshold;
+        private static int _iterationThreshold;
+        private static int _minimumDistBetweenCC;
+
+        private static double _angleRatio;
+        private static int _rowSlice;
+        private static int _colSlice;
+        private static int _overlap;
+        private static double _minPixelAreaSize;
+
+        private static int _bbxMinWidth;
+        private static int _bbxMaxWidth;
+        private static int _bbxMinHeight;
+        private static int _bbxMaxHeight;
+
+        private static Boolean _preProcessing;
+        private static double _cmdLineWorkerSizeRatio;
 
         public static void readConfigFile(string layer)
         {
@@ -100,6 +122,29 @@ namespace Strabo.Core.Utility
                 _upperToLowerCaseWidthRatio = ReadDouble(layer + "UpperToLowerCaseWidthRatio", 0);
                 _firstToThirdGroupHeightRatio = ReadDouble(layer + "FirstToThirdGroupHeightRatio", 0);
                 _firstToSecondGroupHeightRatio = ReadDouble(layer + "FirstToSecondGroupHeightRatio", 0);
+
+                _spatialDistance = ReadInt(layer + "SpatialDistance", 3);
+                _colorDistance = ReadInt(layer + "ColorDistance", 3);
+                _medianCutColors = ReadInt(layer + "MedianCutColors", 256);
+
+                _sizeRatio = ReadInt(layer + "SizeRatio", 2);
+                _angleThreshold = ReadDouble(layer + "AngleThreshold", 0.3);
+                _iterationThreshold = ReadInt(layer + "IterationThreshold", 15);
+                _minimumDistBetweenCC = ReadInt(layer + "MinimumDistanceBetweenCC", 2);
+
+                _angleRatio = ReadDouble(layer + "AngleRatio", 0.3);
+                _rowSlice = ReadInt(layer + "RowSlice", 1);
+                _colSlice = ReadInt(layer + "ColSlice", 1);
+                _overlap = ReadInt(layer + "Overlap", 100);
+                _minPixelAreaSize = ReadDouble(layer + "MinPixelAreaSize", 0.18);
+
+                _bbxMinHeight = ReadInt(layer + "BbxMinHeight", 10);
+                _bbxMinWidth = ReadInt(layer + "BbxMinWidth", 10);
+                _bbxMaxHeight = ReadInt(layer + "BbxMaxHeight", 500);
+                _bbxMaxWidth = ReadInt(layer + "BbxMaxWidth", 500);
+
+                _preProcessing = ReadBool(layer + "preProcessing", false);
+                _cmdLineWorkerSizeRatio = ReadDouble(layer + "cmdLineWorkerSizeRatio", 2.5);
             }
             catch(Exception e)
             {
@@ -261,6 +306,132 @@ namespace Strabo.Core.Utility
             get
             {
                 return _otd;
+            }
+        }
+        public static int spatialDistance
+        {
+            get
+            {
+                return _spatialDistance;
+            }
+        }
+        public static int colorDistance
+        {
+            get
+            {
+                return _colorDistance;
+            }
+        }
+        public static int medianCutColors
+        {
+            get
+            {
+                return _medianCutColors;
+            }
+        }
+        public static int sizeRatio
+        {
+            get
+            {
+                return _sizeRatio;
+            }
+        }
+        public static double angleThreshold
+        {
+            get
+            {
+                return _angleThreshold;
+            }
+        }
+        public static int iterationThreshold
+        {
+            get
+            {
+                return _iterationThreshold;
+            }
+        }
+        public static int minimumDistBetweenCC
+        {
+            get
+            {
+                return _minimumDistBetweenCC;
+            }
+        }
+        public static double angleRatio
+        {
+            get
+            {
+                return _angleRatio;
+            }
+        }
+        public static int rowSlice
+        {
+            get
+            {
+                return _rowSlice;
+            }
+        }
+        public static int colSlice
+        {
+            get
+            {
+                return _colSlice;
+            }
+        }
+        public static int overlap
+        {
+            get
+            {
+                return _overlap;
+            }
+        }
+        public static double minPixelAreaSize
+        {
+            get
+            {
+                return _minPixelAreaSize;
+            }
+        }
+        public static int bbxMinHeight
+        {
+            get
+            {
+                return _bbxMinHeight;
+            }
+        }
+        public static int bbxMinWidth
+        {
+            get
+            {
+                return _bbxMinWidth;
+            }
+        }
+        public static int bbxMaxHeight
+        {
+            get
+            {
+                return _bbxMaxHeight;
+            }
+        }
+        public static int bbxMaxWidth
+        {
+            get
+            {
+                return _bbxMaxWidth;
+            }
+        }
+        public static bool preProcessing
+        {
+            get
+            {
+                return _preProcessing;
+            }
+        }
+        public static double cmdLineWorkerSizeRatio
+        {
+            get
+            {
+                return _cmdLineWorkerSizeRatio;
             }
         }
     }

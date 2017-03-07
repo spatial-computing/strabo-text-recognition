@@ -185,7 +185,10 @@ namespace Strabo.Core.Worker
             {
 
                 Log.WriteLine("TextDetectionWorker in progress...");
-                _textDetectionWorker.Apply(inputArgs.intermediatePath, 2.5, false, inputArgs.threadNumber);
+                _textDetectionWorker.Apply(
+                    inputArgs.intermediatePath, StraboParameters.cmdLineWorkerSizeRatio,
+                    StraboParameters.preProcessing, inputArgs.threadNumber
+                    );
                 Log.WriteLine("ApplyTextDetection finished");
 
             }
@@ -198,7 +201,10 @@ namespace Strabo.Core.Worker
             {
 
                 Log.WriteLine("TextRecognition in progress...");
-                _textRecognitionWorker.Apply(inputArgs.intermediatePath, inputArgs.outputPath,  inputArgs.outputFileName, top, left, bottom, right);
+                _textRecognitionWorker.Apply(
+                    inputArgs.intermediatePath, inputArgs.outputPath,
+                    inputArgs.outputFileName, top, left, bottom, right
+                    );
                 Log.WriteLine("TextRecognitionWorker finished");
 
             }
