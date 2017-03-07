@@ -25,6 +25,7 @@ using Strabo.Core.TextDetection;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.Worker
 {
@@ -35,8 +36,11 @@ namespace Strabo.Core.Worker
     public class DetectTextStrings
     {
         int width, height;
-        int min_width = 10, min_height = 10;
-        int max_width = 500, max_height = 500;       ///// I have changed this part, I changed max_height and max_height from 500 to 150
+        int min_width = StraboParameters.bbxMinWidth;
+        int min_height = StraboParameters.bbxMinHeight;
+        int max_width = StraboParameters.bbxMaxWidth;
+        int max_height = StraboParameters.bbxMaxHeight;
+
         public DetectTextStrings() { }
        
         public List<TextString> Apply(Bitmap srcimg, Bitmap dilatedimg)

@@ -324,7 +324,7 @@ namespace Strabo.Test
             bbx.BBN = "0";
 
             InputArgs inputArgs = new InputArgs();
-            inputArgs.outputFileName = "OutputImage.png";
+            inputArgs.outputFileName = "Geojson";
 
             inputArgs.bbx = bbx;
             inputArgs.mapLayerName = "block-map";
@@ -343,7 +343,7 @@ namespace Strabo.Test
                 CommandLineWorker cmdWorker = new CommandLineWorker();
 
                 File.Copy(dataPath + "block-map.png", inputArgs.outputPath + "SourceMapImage.png", true);
-                inputArgs.outputFileName = "OutputImage.png";
+                inputArgs.outputFileName = "block-map-output.png";
                 cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
                 File.Copy(inputArgs.outputPath + "block-map-output.pngByPixels.txt", dataPath + "block-map-output.pngByPixels.txt", true);
             }

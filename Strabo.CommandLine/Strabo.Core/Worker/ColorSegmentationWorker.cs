@@ -37,54 +37,71 @@ namespace Strabo.Core.Worker
     public class ColorSegmentationWorker
     {
         public ColorSegmentationWorker() { }
-        public string Apply(string intermediatePath, int tn)
+        public string Apply(string intermediatePath, int threadNumber)
         {
-            string input_dir = intermediatePath;
-            string output_dir = intermediatePath;
-            string fn = StraboParameters.sourceMapFileName;
+            string inputDir = intermediatePath;
+            string outputDir = intermediatePath;
+            string fileName = StraboParameters.sourceMapFileName;
+            // 'k' value in the k-means algorithm
             int k = StraboParameters.numberOfSegmentationColor;
-            return Apply(input_dir, output_dir, fn, k, tn);
+            return Apply(inputDir, outputDir, fileName, k, threadNumber);
         }
-        public string Apply(string input_dir, string output_dir, string fn, int k, int tn)
+
+        /// <summary>
+        /// Applies <c>meanshift</c> and <c>median cut</c> algorithms
+        /// for color quantization
+        /// </summary>
+        /// <param name="inputDir">Input image location</param>
+        /// <param name="outputDir">Output image location</param>
+        /// <param name="fileName">Input filename</param>
+        /// <param name="k">k in the k-keans algorithm</param>
+        /// <param name="threadNumber">Number of threads</param>
+        /// <returns>Path of the Quantized image</returns>
+        public string Apply(string inputDir, string outputDir, string fileName,
+            int k, int threadNumber)
         {
             try
             {
-                string fn_only = Path.GetFileNameWithoutExtension(fn);
+                string fileNameWithoutPath = Path.GetFileNameWithoutExtension(fileName);
 
                 //MeanShift
                 Log.WriteLine("Meanshift in progress...");
                 MeanShiftMultiThreads mt = new MeanShiftMultiThreads();
-                string ms_path = output_dir + fn_only + "_ms.png";
-                //Changed the color distance from 3 to 10, by Ishan
-                mt.ApplyYIQMT(input_dir + fn, tn, 3, 10, ms_path);
+                string meanShiftPath = outputDir + fileNameWithoutPath + "_ms.png";
+
+                mt.ApplyYIQMT(
+                    inputDir + fileName, threadNumber,
+                    StraboParameters.spatialDistance, StraboParameters.colorDistance,
+                    meanShiftPath);
                 mt = null;
                 GC.Collect();
-                Log.WriteLine("Meanshift finished");
+                Log.WriteLine("Meanshift finished...");
 
                 // Median Cut
                 Log.WriteLine("Median Cut in progress...");
-                int mc_colors = 256;
-                string mc_path = output_dir + fn_only + "_mc" + mc_colors.ToString() + ".png";
-
-                Bitmap msimg = new Bitmap(output_dir + fn_only + "_ms.png");
-                
+                int medianCutColors = StraboParameters.medianCutColors;
+                string medianCutPath = outputDir + fileNameWithoutPath + "_mc" +
+                    medianCutColors.ToString() + ".png";
+                Bitmap msimg = new Bitmap(
+                    outputDir + fileNameWithoutPath + "_ms.png"
+                    );
                 msimg = ImageUtils.AnyToFormat32bppRgb(msimg);
-
                 using (msimg)
                 {
                     WuQuantizer wq = new WuQuantizer();
-                    wq.QuantizeImage(msimg).Save(mc_path, ImageFormat.Png);
+                    wq.QuantizeImage(msimg).Save(medianCutPath, ImageFormat.Png);
                 }
                 Log.WriteLine("Median Cut finished");
 
                 // KMeans
                 Log.WriteLine("KMeans in progress...");
                 MyKMeans kmeans = new MyKMeans();
-                string kmeans_path = output_dir + fn_only + "_mc" + mc_colors + "_k" + k + ".png";
-                kmeans.Apply(k, mc_path, kmeans_path);
+                string kmeans_path = outputDir + fileNameWithoutPath + "_mc" +
+                    medianCutColors + "_k" + k + ".png";
+                kmeans.Apply(k, medianCutPath, kmeans_path);
                 kmeans = null;
                 GC.Collect();
-                Log.WriteLine("KMeans finished");
+                Log.WriteLine("KMeans finished...");
                 return kmeans_path;
             }
             catch (Exception e)

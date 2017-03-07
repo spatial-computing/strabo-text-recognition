@@ -28,38 +28,37 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.Worker
 {
     public class ConditionalDilationAutomatic
     {
-        public double size_ratio = 2;
-        public double ang_threshold = 0.3;//0.15;
-        public int iteration_threshold = 15;
+        public double sizeRatio = StraboParameters.sizeRatio;
+        public double angleThreshold = StraboParameters.angleThreshold;
+        public int iterationThreshold = StraboParameters.iterationThreshold;
+
+        int minimum_distance_between_CCs_in_string = StraboParameters.minimumDistBetweenCC;
+
         int width, height, tnum;
-        List<MyConnectedComponentsAnalysisFast.MyBlob> char_blobs;
-        ushort[] original_char_labels;
-        short[] char_labels;
+        ushort[] originalCharLabels;
+        short[] charLabels;
         short[] char_labels_tmp;
         bool[] char_labels_confirmation;
+
+        List<MyConnectedComponentsAnalysisFast.MyBlob> char_blobs;
         Hashtable char_blob_idx_max_size_table = new Hashtable();
-
         HashSet<int> short_char_blob_idx_set = new HashSet<int>();
-
         HashSet<int> expendable_char_blob_idx_set = new HashSet<int>();
-
         List<HashSet<int>> connected_char_blob_idx_set_list = new List<HashSet<int>>();
-
         HashSet<string> weak_link_set = new HashSet<string>();
         Hashtable connecting_angle_table = new Hashtable();
-
         Hashtable iteration_for_first_connection_idx_table = new Hashtable();
 
         int iteration_counter = 0;
 
-        int minimum_distance_between_CCs_in_string = 2;
-
         public ConditionalDilationAutomatic() { }
+
         public void kernel(object step) // expand CC areas
         {
             // multi-threading setup
@@ -71,7 +70,7 @@ namespace Strabo.Core.Worker
             for (int j = start_y; j < stop_y; j++)
                 for (int i = 0; i < width; i++)
                 {
-                    if (char_labels[j * width + i] == 0) //bg
+                    if (charLabels[j * width + i] == 0) //bg
                     {
                         HashSet<short> connected_char_blob_idx_set = new HashSet<short>();
                         for (int x = i - 1; x <= i + 1; x++) // check 8 neighboors
@@ -79,8 +78,8 @@ namespace Strabo.Core.Worker
                             {
                                 if (x < 0 || x >= width || y < 0 || y >= height) continue; // outside image boundaries
                                 int idx = y * width + x;
-                                if (char_labels[idx] != 0 && expendable_char_blob_idx_set.Contains(char_labels[idx] - 1)) //narges
-                                    connected_char_blob_idx_set.Add((short)(char_labels[idx] - 1));
+                                if (charLabels[idx] != 0 && expendable_char_blob_idx_set.Contains(charLabels[idx] - 1)) //narges
+                                    connected_char_blob_idx_set.Add((short)(charLabels[idx] - 1));
                             }
                         // 0 connecting pixels, do not expand
                         if (connected_char_blob_idx_set.Count == 0 || connected_char_blob_idx_set.Count > 2)
@@ -98,7 +97,7 @@ namespace Strabo.Core.Worker
                             char_labels_tmp[j * width + i] = (short)FindLabelForTheBiggestCharBlob(connected_char_blob_idx_set);
                     }
                     else
-                        char_labels_tmp[j * width + i] = char_labels[j * width + i];
+                        char_labels_tmp[j * width + i] = charLabels[j * width + i];
                 }
         }
         public void kernel_confirmation(object step)
@@ -111,7 +110,7 @@ namespace Strabo.Core.Worker
                 for (int i = 0; i < width; i++)
                 {
                     // expended areas and new expension
-                    if (original_char_labels[j * width + i] == 0 &&
+                    if (originalCharLabels[j * width + i] == 0 &&
                         (char_labels_tmp[j * width + i] != 0))
                     {
                         HashSet<short> connected_char_blob_idx_set = new HashSet<short>();
@@ -165,7 +164,7 @@ namespace Strabo.Core.Worker
             double angle2 = 0;
             if (idx22 != -1)
                 angle2 = CosAngel(idx1, idx22, idx2);
-            if (angle1 > ang_threshold || angle2 > ang_threshold) return true;
+            if (angle1 > angleThreshold || angle2 > angleThreshold) return true;
 
             else return false;
         }
@@ -182,8 +181,8 @@ namespace Strabo.Core.Worker
             int size2 = (int)(char_blob_idx_max_size_table[idx2]);
             int size1 = (int)(char_blob_idx_max_size_table[idx1]);
 
-            if ((double)size1 / (double)size2 > size_ratio
-                || (double)size2 / (double)size1 > size_ratio)
+            if ((double)size1 / (double)size2 > sizeRatio
+                || (double)size2 / (double)size1 > sizeRatio)
                 return 0;
             else
             {
@@ -244,9 +243,9 @@ namespace Strabo.Core.Worker
                 for (int i = 0; i < width; i++)
                     if (char_labels_tmp[j * width + i] != 0 &&
                         char_labels_confirmation[j * width + i])
-                        char_labels[j * width + i] = char_labels_tmp[j * width + i];
-                    else if (original_char_labels[j * width + i] == 0)
-                        char_labels[j * width + i] = 0;
+                        charLabels[j * width + i] = char_labels_tmp[j * width + i];
+                    else if (originalCharLabels[j * width + i] == 0)
+                        charLabels[j * width + i] = 0;
         }
         public void k_confirmation()
         {
@@ -265,9 +264,9 @@ namespace Strabo.Core.Worker
             this.tnum = tnum;
             this.width = srcimg.Width;
             this.height = srcimg.Height;
-            int iteration = 2;
-            this.size_ratio = size_ratio;
-            this.ang_threshold = ang_threshold;
+            int iteration = StraboParameters.minimumDistBetweenCC; // default: 2
+            this.sizeRatio = size_ratio;
+            this.angleThreshold = ang_threshold;
             //input image: white as forground
             srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 128);
 
@@ -285,11 +284,11 @@ namespace Strabo.Core.Worker
             MyConnectedComponentsAnalysisFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFast.MyBlobCounter();
 
             this.char_blobs = char_bc.GetBlobs(srcimg);
-            this.char_labels = new short[width * height];
+            this.charLabels = new short[width * height];
             // Log.WriteBitmap2Debug(Printnumb(), "num");
 
             for (int i = 0; i < width * height; i++)
-                char_labels[i] = (short)(char_bc.objectLabels[i]);
+                charLabels[i] = (short)(char_bc.objectLabels[i]);
             for (int i = 0; i < char_blobs.Count; i++)
             {
                 char_blob_idx_max_size_table.Add(i, Math.Max(char_blobs[i].bbx.Width, char_blobs[i].bbx.Height)); // original size of the character //narges
@@ -297,16 +296,16 @@ namespace Strabo.Core.Worker
                 connected_char_blob_idx_set_list.Add(new HashSet<int>());
             }
 
-            original_char_labels = char_bc.objectLabels;
+            originalCharLabels = char_bc.objectLabels;
             for (int i = 0; i < width * height; i++)
-                char_labels[i] = (short)(char_bc.objectLabels[i]);
+                charLabels[i] = (short)(char_bc.objectLabels[i]);
             // first run
             // Log.WriteBitmap2Debug(Print(), "k1_");
             k1();
             // Log.WriteBitmap2Debug(Print(), "k1_" + 0);
             iteration_counter = 1;
-            //   while (expendable_char_blob_idx_set.Count > 1 && iteration_counter < iteration_threshold)
-            while (iteration_counter < iteration_threshold)
+            //   while (expendable_char_blob_idx_set.Count > 1 && iteration_counter < iterationThreshold)
+            while (iteration_counter < iterationThreshold)
             {
                 k1();
                 iteration_counter++;
@@ -386,11 +385,11 @@ namespace Strabo.Core.Worker
             int[] img = new int[height * width];
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
-                    if (char_labels[j * width + i] == 0)
+                    if (charLabels[j * width + i] == 0)
                         img[j * width + i] = 255 * 256 * 256 + 255 * 256 + 255;
-                    else if (char_labels[j * width + i] == 3)
+                    else if (charLabels[j * width + i] == 3)
                         img[j * width + i] = 255 * 256 * 256;
-                    else if (char_labels[j * width + i] == 6)
+                    else if (charLabels[j * width + i] == 6)
                         img[j * width + i] = 255 * 256;
                     else
                         img[j * width + i] = 0;
@@ -416,7 +415,7 @@ namespace Strabo.Core.Worker
             bool[,] img = new bool[height, width];
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
-                    if (char_labels[j * width + i] != 0)
+                    if (charLabels[j * width + i] != 0)
                         img[j, i] = true;
                     else
                         img[j, i] = false;
@@ -427,7 +426,7 @@ namespace Strabo.Core.Worker
             bool[,] img = new bool[height, width];
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
-                    if (char_labels[j * width + i] != 0)
+                    if (charLabels[j * width + i] != 0)
                         img[j, i] = true;
                     else
                         img[j, i] = false;
