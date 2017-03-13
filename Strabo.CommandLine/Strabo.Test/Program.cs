@@ -52,9 +52,10 @@ namespace Strabo.Test
             try
             {
                 TestCommandLineWorker tcl = new TestCommandLineWorker();
-                tcl.testBlockMaps();
+                //tcl.testBlockMaps();
                 //tcl.TestLocalTianditu_evaFiles();
                 // tcl.TestLocalFiles();
+                tcl.testLocalWMWholeFile();
                 // tcl.Test();
 
                 // TestWorkers test_object = new TestWorkers();

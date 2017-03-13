@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="BoundingBoxDetection.cs" />
     <Compile Include="FormattedConsoleLogger.cs" />
+    <Compile Include="LargeImageHandler.cs" />
     <Compile Include="LineDetection.cs" />
     <Compile Include="NeighborhoodExploring.cs" />
     <Compile Include="Program.cs" />
