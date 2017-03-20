@@ -152,7 +152,6 @@ namespace Strabo.Core.Worker
             }
 
             string color_segmentation_result_fn;
-
             if (StraboParameters.numberOfSegmentationColor > 0)
             {
                 try
@@ -174,7 +173,7 @@ namespace Strabo.Core.Worker
             {
                 Log.WriteLine("TextExtractionWorker in progress...");
                 _textLayerExtractionWorker.Apply(color_segmentation_result_fn, inputArgs.intermediatePath, inputArgs.threadNumber);
-                Log.WriteLine("ApplyTextExtarionWorker finished");
+                Log.WriteLine("TextExtractionWorker finished");
             }
             catch (Exception e)
             {
