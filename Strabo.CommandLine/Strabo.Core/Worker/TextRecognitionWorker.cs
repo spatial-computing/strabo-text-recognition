@@ -36,25 +36,43 @@ namespace Strabo.Core.Worker
     public class TextRecognitionWorker
     {
         public TextRecognitionWorker() { }
-        public void Apply(string inputPath, string outputPath,string TesseractResultsJSONFileName, double top, double left, double bottom, double right)
+        public void Apply( string inputPath, string outputPath,
+            string TesseractResultsJSONFileName, double top, double left,
+            double bottom, double right )
         {
-            Apply(inputPath, outputPath, StraboParameters.oTDResultFolder, TesseractResultsJSONFileName, StraboParameters.language, StraboParameters.dictionaryFilePath, StraboParameters.dictionaryExactMatchStringLength,
-                Double.Parse(MapServerParameters.BBOXW), Double.Parse(MapServerParameters.BBOXN), MapServerParameters.xscale, MapServerParameters.yscale, MapServerParameters.srid, top, left, bottom, right, StraboParameters.elasticsearch, StraboParameters.otd);
+            Apply( inputPath, outputPath, StraboParameters.oTDResultFolder,
+                TesseractResultsJSONFileName, StraboParameters.language,
+                StraboParameters.dictionaryFilePath,
+                StraboParameters.dictionaryExactMatchStringLength,
+                Double.Parse(MapServerParameters.BBOXW),
+                Double.Parse(MapServerParameters.BBOXN),
+                MapServerParameters.xscale, MapServerParameters.yscale,
+                MapServerParameters.srid, top, left, bottom, right,
+                StraboParameters.elasticsearch, StraboParameters.otd );
         }
-        public void Apply(string inputPath, string outputPath, string OTDPath ,string TesseractResultsJSONFileName, string lng, string dictionaryFilePath, int dictionaryExactMatchStringLength, double bbxW, double bbxN, double xscale, double yscale, string srid, double top, double left, double bottom, double right, bool elasticsearch, bool otd)
+        public void Apply( string inputPath, string outputPath, string OTDPath,
+            string TesseractResultsJSONFileName, string lng,
+            string dictionaryFilePath, int dictionaryExactMatchStringLength,
+            double bbxW, double bbxN, double xscale, double yscale,
+            string srid, double top, double left, double bottom,
+            double right, bool elasticsearch, bool otd )
         {
             try
             {
                 string tessPath = "";
-                //Zhiyuan Wang: use Tesseract data of English for numbers.
+                // Zhiyuan Wang: use Tesseract data of English for numbers.
                 // string tesslng = (lng == "num") ? "eng" : lng;
                 // WrapperTesseract wt = new WrapperTesseract(tessPath, tesslng);
                 // ^^ Introduces ambiguity: @ialok
 
 
                 WrapperTesseract wt = new WrapperTesseract(tessPath, lng);
-
                 List<TessResult> tessOcrResultList = wt.Apply(inputPath, outputPath);
+
+                foreach(TessResult tr in tessOcrResultList)
+                {
+                    Log.WriteLine("Raw Text: " + tr.tess_raw3 + " Stripped Text:" + tr.tess_word3);
+                }
 
                 int georef = -1;
                 if (elasticsearch)
@@ -67,6 +85,17 @@ namespace Strabo.Core.Worker
                 if (!otd)
                 {
                     tessOcrResultList = ctr.Apply(tessOcrResultList, dictionaryFilePath, dictionaryExactMatchStringLength, lng, top, left, bottom, right, elasticsearch);
+
+                    foreach (TessResult tr in tessOcrResultList)
+                    {
+                       
+                        
+                        Log.WriteLine("Raw Text before GeoJSON: " + tr.tess_raw3 + " Text before GeoJSON: " + tr.tess_word3);
+                        // Log.WriteLine("HOCR: " + tr.hocr);
+                    }
+
+                    NumberCorrection nc = new NumberCorrection(tessOcrResultList);
+                    tessOcrResultList =  nc.mergeFeatures();
                     WriteToJsonFile(tessOcrResultList, outputPath, OTDPath, TesseractResultsJSONFileName, lng, dictionaryFilePath, dictionaryExactMatchStringLength, bbxW, bbxN, xscale, yscale, srid, georef);
                 }
                 if (otd)
@@ -130,12 +159,19 @@ namespace Strabo.Core.Worker
             for (int i = 0; i < tessOcrResultList.Count; i++)
             {
                 List<KeyValuePair<string, string>> items = new List<KeyValuePair<string, string>>();
-                if (tessOcrResultList[i].dict_word3 != null && tessOcrResultList[i].dict_word3.Length > 0) tessOcrResultList[i].dict_word3 = Regex.Replace(tessOcrResultList[i].dict_word3, "\n\n", "");
+                if (tessOcrResultList[i].dict_word3 != null && tessOcrResultList[i].dict_word3.Length > 0)
+                    tessOcrResultList[i].dict_word3 = Regex.Replace(tessOcrResultList[i].dict_word3, "\n\n", "");
+                
                 //if (tessOcrResultList[i].dict_word3 != null && tessOcrResultList[i].dict_word3.Length > 0) tessOcrResultList[i].dict_word3 = Regex.Replace(tessOcrResultList[i].dict_word3, "\n", "");
                 items.Add(new KeyValuePair<string, string>("NameAfterDictionary", tessOcrResultList[i].dict_word3));
-                if (tessOcrResultList[i].tess_word3.Length > 0) tessOcrResultList[i].tess_word3 = Regex.Replace(tessOcrResultList[i].tess_word3, "\n\n", "");
-                if (tessOcrResultList[i].tess_word3.Length > 0) tessOcrResultList[i].tess_word3 = Regex.Replace(tessOcrResultList[i].tess_word3, "\"", "");
-                if (tessOcrResultList[i].tess_word3.Length > 0) tessOcrResultList[i].tess_word3 = Regex.Replace(tessOcrResultList[i].tess_word3, "\n", "");
+
+                if (tessOcrResultList[i].tess_word3.Length > 0)
+                    tessOcrResultList[i].tess_word3 = Regex.Replace(tessOcrResultList[i].tess_word3, "\n\n", "");
+                if (tessOcrResultList[i].tess_word3.Length > 0)
+                    tessOcrResultList[i].tess_word3 = Regex.Replace(tessOcrResultList[i].tess_word3, "\"", "");
+                if (tessOcrResultList[i].tess_word3.Length > 0)
+                    tessOcrResultList[i].tess_word3 = Regex.Replace(tessOcrResultList[i].tess_word3, "\n", "");
+
                 items.Add(new KeyValuePair<string, string>("NameBeforeDictionary", tessOcrResultList[i].tess_word3));
                 items.Add(new KeyValuePair<string, string>("ImageId", tessOcrResultList[i].id));
                 items.Add(new KeyValuePair<string, string>("DictionaryWordSimilarity", tessOcrResultList[i].dict_similarity.ToString()));

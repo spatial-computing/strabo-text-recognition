@@ -412,7 +412,7 @@ namespace Strabo.Core.Worker
         }
         public void Print(string outImagePath)
         {
-            bool[,] img = new bool[height, width];
+            bool[,] img = new bool[height, width];            
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
                     if (charLabels[j * width + i] != 0)

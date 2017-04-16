@@ -342,8 +342,8 @@ namespace Strabo.Test
                 Log.SetLogDir(inputArgs.intermediatePath);
                 CommandLineWorker cmdWorker = new CommandLineWorker();
 
-                File.Copy(dataPath + "D2_CA_ACTON_Authoritative_US_Topos_1959.tif", inputArgs.outputPath + "D2_CA_ACTON_Authoritative_US_Topos_1959.tif", true);
-                inputArgs.outputFileName = "D2_CA_ACTON_Authoritative_US_Topos_1959.tif";
+                File.Copy(dataPath + "InputImage.tif", inputArgs.outputPath + "InputImage.tif", true);
+                inputArgs.outputFileName = "InputImage.tif";
                 cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
                 File.Copy(inputArgs.outputPath + "block-map-output.pngByPixels.txt", dataPath + "block-map-output.pngByPixels.txt", true);
             }

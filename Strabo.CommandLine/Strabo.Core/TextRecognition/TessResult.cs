@@ -28,6 +28,26 @@ namespace Strabo.Core.TextRecognition
 {
     public class TessResult
     {
+        public TessResult()
+        {
+
+        }
+        public TessResult(string id, string tess_word3, string tess_raw3,
+                            double tess_cost3, string hocr, string fileName,
+                            int x, int y, int w, int h)
+        {
+            this.id = id;
+            this.tess_word3 = tess_word3;
+            this.tess_raw3 = tess_raw3;
+            this.tess_cost3 = tess_cost3;
+            this.hocr = hocr;
+            this.fileName = fileName;
+            this.x = x;
+            this.y = y;
+            this.h = h;
+            this.w = w;
+        }
+
         public string id;
         public double dict_similarity;
 

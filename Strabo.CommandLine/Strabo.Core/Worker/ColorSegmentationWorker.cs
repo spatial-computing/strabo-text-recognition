@@ -67,14 +67,17 @@ namespace Strabo.Core.Worker
             
             // string fileNameWithoutPath = Path.GetFileNameWithoutExtension(fileName);
             String sourceFullPath = inputDir + fileName;
+
             Log.WriteLine("Splitting source image into: " +
                 StraboParameters.rowSlice * StraboParameters.colSlice + " blocks");
+
             // Split the image into row*col blocks
             ImageSlicer imgChunks = new ImageSlicer();
             List<string> imgPathList = imgChunks.Apply(
                     StraboParameters.rowSlice, StraboParameters.colSlice,
-                    StraboParameters.overlap, inputDir + fileName, outputDir
+                    0, inputDir + fileName, outputDir
                 );
+
             List<Bitmap> mcImages = new List<Bitmap>();
             try
             {
@@ -121,7 +124,8 @@ namespace Strabo.Core.Worker
                 Log.WriteLine("Stiching Images");
                 ImageStitcher imgSticher = new ImageStitcher();
                 Bitmap stichedImage = imgSticher.mergeContiguousImageBlocks(mcImages,
-                                            StraboParameters.rowSlice, StraboParameters.colSlice);
+                                          StraboParameters.rowSlice, StraboParameters.colSlice);
+
                 // imgSticher.ApplyWithoutGridLines(mcImages, new Bitmap(sourceFullPath).Width);
                 string stichedImagePath = outputDir + "stichedImage" + "_k" + ".png";
                 stichedImage.Save(stichedImagePath);

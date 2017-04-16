@@ -61,6 +61,7 @@
     <Compile Include="TextRecognition\NeedlemanWunsch.cs" />
     <Compile Include="TextRecognition\NGramDistance.cs" />
     <Compile Include="TextRecognition\NonHorizontalTextExtraction.cs" />
+    <Compile Include="TextRecognition\NumberCorrection.cs" />
     <Compile Include="TextRecognition\PotentialTextAreaExtractation.cs" />
     <Compile Include="TextRecognition\QGISJsonNeighbothood.cs" />
     <Compile Include="TextRecognition\RemoveNoiseText.cs" />

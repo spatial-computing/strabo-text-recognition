@@ -81,7 +81,7 @@ namespace Strabo.Core.Worker
                         srcimg = removeBoarderAndNoiseCC.Apply(
                             tileimg, charSize, StraboParameters.minPixelAreaSize
                             );
-                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
+                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput_" + s + ".png");
                     }
                 }
                 else if(lang == "num")
@@ -93,7 +93,7 @@ namespace Strabo.Core.Worker
                         srcimg = removeBoarderAndNoiseCC.Apply(
                             tileimg, charSize, StraboParameters.minPixelAreaSize
                             );
-                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
+                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput_" + s + ".png");
                     }
                 }
                 else
@@ -102,7 +102,7 @@ namespace Strabo.Core.Worker
                     {
                         RemoveBoarderCC removeBoarderCC = new RemoveBoarderCC();
                         srcimg = removeBoarderCC.Apply(tileimg);
-                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
+                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput_" + s + ".png");
                     }
                 }
                 ConditionalDilationAutomatic cda = new ConditionalDilationAutomatic();
@@ -138,18 +138,16 @@ namespace Strabo.Core.Worker
                         g.DrawRectangle(new Pen(Color.Green, 4), mts.text_string_list[i].bbx);
 
                     }
-                    Log.WriteBitmap2FolderExactFileName(outputDir, CDAInputwithLabel, "CDAInputwithLabel.png");
+                    Log.WriteBitmap2FolderExactFileName(outputDir, CDAInputwithLabel, "CDAInputwithLabel_" + s + ".png");
                     g.Dispose();
                     g=null;
                 }
                 srcimg.Dispose();
                 srcimg = null;
             }
-
             Log.WriteLine("Detecting long string orientation...");
             DetectTextOrientation detectTextOrientation = new DetectTextOrientation();
             detectTextOrientation.Apply(mts, threadNumber);
-
             Log.WriteLine("Detecting short string orientation...");
             for (int i = 0; i < mts.text_string_list.Count; i++)
             {
@@ -167,7 +165,6 @@ namespace Strabo.Core.Worker
                     }
                 }
             }
-
             Log.WriteLine("Writing string results...");
             mts.WriteBMP(outputDir);
         }

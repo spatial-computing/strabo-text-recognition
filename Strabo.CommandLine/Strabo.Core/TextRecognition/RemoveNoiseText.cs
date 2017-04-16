@@ -23,6 +23,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.TextRecognition
 {
@@ -53,8 +54,11 @@ namespace Strabo.Core.TextRecognition
            
             //Check alphabet ratio
             string clean = Regex.Replace(word, @"[^a-zA-Z0-9 -]", "");//Regex.Replace(word, @"[^a-zA-Z0-9]", "");
+
+            // @ialok
+
             if (((double)clean.Length / (double)(word.Length-2) <= 0.5))              ////// I removed the equal sign from if statement    
-                return false; //too many noise characters
+                return false; // too many noise characters
             //if (clean.Length < 3)
             //    return false;
             
@@ -71,16 +75,28 @@ namespace Strabo.Core.TextRecognition
             //    word.Contains("_") || word.Contains("$") || word.Contains("¢") || word.Contains("§") || word.Contains("+") || word.Contains("~") || word.Contains("»") || word.Contains("<") || word.Contains(">") || word.Contains(@"\"))
             //    return false;
 
+            // These settings map be map specific
             int count = word.Split('Q').Length - 1;
             if (count >= 2) return false;
             count = word.Split('1').Length - 1;
             if (count >= 4) return false;
             count = word.Split('I').Length - 1;
             if (count >= 5) return false;
-            int backSlashCount = word.Split('\"').Length - 1;
-            if (backSlashCount >= 2) return false;
-           // if ((word.Contains(";")))
-           //     return false;
+
+            // Trailing 1's can be recognized as backslash
+            int backSlashCount = word.Split('\\').Length - 1;
+            if (backSlashCount >= 2)
+                return false;
+
+            // Quote count
+            int quoteCount = word.Split('\"').Length - 1;
+            if (quoteCount >= 2)
+                return false;
+
+            // int backSlashCount = word.Split('\"').Length - 1;
+
+            // if ((word.Contains(";")))
+            //     return false;
 
             //if (!Regex.IsMatch(word, @"[A-Za-z0-9.? )*]"))
             //    return false;

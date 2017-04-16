@@ -66,16 +66,21 @@ namespace Strabo.Core.TextRecognition
             }
             else if(lng=="num")
             {
+                // NUMBER DETECTION IS DUBIOUS
                 // Just detect numbers
                 // Will not work great on low resolution images
                 // Useful StackOverFlow URL: http://stackoverflow.com/questions/38336601/ocr-tesseractengine
-                Log.WriteLine("Filtering only numbers");
-                _engine = new TesseractEngine(@"./tessdata3", "eng", EngineMode.TesseractAndCube);
-                _engine.SetVariable("tessedit_char_whitelist", "0123456789");
+                // Log.WriteLine("Filtering only numbers");
+
+                // _engine = new TesseractEngine(@"./tessdata3", "eng", EngineMode.TesseractAndCube);
+                // _engine.SetVariable("tessedit_char_whitelist", "0123456789");
+
+                lng = "eng";
+                _engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
             }
             else
             {
-                _engine = new TesseractEngine(@"./tessdata3", lng, EngineMode.Default);
+                _engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
             }
             Log.WriteLine("Tesseract Version: " + _engine.Version);
             //_engine.SetVariable("tessedit_char_whitelist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -112,15 +117,13 @@ namespace Strabo.Core.TextRecognition
                         var img = Pix.LoadFromFile(filePaths[i]);
                         page = _engine.Process(img, PageSegMode.SingleBlock);
                         text = page.GetText();
-                        string HOCR = page.GetHOCRText(1);
                         
+                        string HOCR = page.GetHOCRText(1);
+
                         // PageIteratorLevel a = new PageIteratorLevel();
                         //Rect boundingbox;
                         //page.AnalyseLayout().TryGetBoundingBox(a, out boundingbox);
-
-                       
-                        string h= page.GetHOCRText(1);
-                        
+                        string h = page.GetHOCRText(1);                                        
                         conf = page.GetMeanConfidence();
                         page.Dispose();
 
@@ -128,7 +131,7 @@ namespace Strabo.Core.TextRecognition
 
                         if (text.Length > 0 && RemoveNoiseText.NotTooManyNoiseCharacters(text))
                         {
-                            Console.WriteLine(text);
+                            // Console.WriteLine(text);
                             tr.id = splitTokens[0];
                             
                             tr.tess_word3 = Regex.Replace(text, "\n\n", "");

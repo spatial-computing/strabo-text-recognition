@@ -25,8 +25,16 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 
+using Emgu.CV;
+using Emgu.CV.Features2D;
+using Emgu.CV.Util;
+using Emgu.Util.TypeEnum;
+using Emgu.CV.Structure;
+
+
 namespace Strabo.Core.ImageProcessing
 {
+    
     /// <summary>
     /// Narges
     /// MyConnectedComponentsAnalysisFast class is used to retrieve all blobs in an image 

@@ -22,6 +22,7 @@
 
 using System.Collections.Generic;
 using System.Drawing;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.ImageProcessing
 {
@@ -53,9 +54,9 @@ namespace Strabo.Core.ImageProcessing
                 if (char_blobs[i].bbx.Width < char_size &&
                     char_blobs[i].bbx.Height < char_size) // small cc
                     noise_char_idx_set.Add(i);
-                if (char_blobs[i].bbx.Width < char_size && char_blobs[i].bbx.Height > char_size * 3)
+                if (char_blobs[i].bbx.Width < char_size && char_blobs[i].bbx.Height > char_size * StraboParameters.bbxMultiplier)
                     noise_char_idx_set.Add(i);
-                if (char_blobs[i].bbx.Height < char_size && char_blobs[i].bbx.Width > char_size * 3)
+                if (char_blobs[i].bbx.Height < char_size && char_blobs[i].bbx.Width > char_size * StraboParameters.bbxMultiplier)
                     noise_char_idx_set.Add(i);
             }
             for (int i = 0; i < srcimg.Width * srcimg.Height; i++)
