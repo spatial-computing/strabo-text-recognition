@@ -92,6 +92,7 @@
     <Compile Include="TextRecognition\JaroWinklerDistance.cs" />
     <Compile Include="TextRecognition\QGISJson.cs" />
     <Compile Include="Utility\MapServerParameters.cs" />
+    <Compile Include="Worker\ConnectedComponentClassifyWorker.cs" />
     <Compile Include="Worker\GetMapFromServiceWorker.cs" />
     <Compile Include="Worker\SymbolRecognitionWorker.cs" />
     <Compile Include="Worker\TextDetectionWorker.cs" />

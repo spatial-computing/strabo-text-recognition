@@ -119,9 +119,9 @@ namespace Strabo.Core.Worker
 
             Log.WriteLine("Strabo release version:" + StraboParameters.straboReleaseVersion);
             Log.WriteLine("Process map: " + inputArgs.mapLayerName);
-            //set and clear folders
+            //set and clear folders           
             SetFolder(inputArgs.intermediatePath);
-            SetFolder(inputArgs.outputPath);
+            SetFolder(inputArgs.outputPath);            
             
             if (!inputArgs.intermediatePath.EndsWith("\\"))
                 inputArgs.intermediatePath = inputArgs.intermediatePath + "\\";
@@ -180,6 +180,7 @@ namespace Strabo.Core.Worker
                 Log.WriteLine("ApplyTextExtractionWorker: " + e.Message);
                 throw;
             }
+            
             try
             {
 
@@ -196,6 +197,7 @@ namespace Strabo.Core.Worker
                 Log.WriteLine("ApplyTextDetectionWorker: " + e.Message);
                 throw;
             }
+
             try
             {
 

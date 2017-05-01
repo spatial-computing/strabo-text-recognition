@@ -272,11 +272,22 @@ namespace Strabo.Test
             {
                 Log.SetLogDir(inputArgs.intermediatePath);
                 CommandLineWorker cmdWorker = new CommandLineWorker();
-
+                /*
                 File.Copy(dataPath + "wm-test2.png", inputArgs.outputPath + "SourceMapImage.png", true);
                 inputArgs.outputFileName = "wm-test2-output.png";
                 cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
                 File.Copy(inputArgs.outputPath + "wm-test2-output.pngByPixels.txt", dataPath + "wm-test2-output.pngByPixels.txt", true);
+                
+                File.Copy(dataPath + "D2_CA_test.png-1-2.png", inputArgs.outputPath + "SourceMapImage.png", true);
+                inputArgs.outputFileName = "D2_CA_test.png-1-2-output.png";
+                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
+                File.Copy(inputArgs.outputPath + "D2_CA_test.png-1-2-output.pngByPixels.txt", dataPath + "D2_CA_test.png-1-2-output.pngByPixels.txt", true);
+                */
+                File.Copy(dataPath + "D2_CA_test.png-2-3.png", inputArgs.outputPath + "SourceMapImage.png", true);
+                inputArgs.outputFileName = "D2_CA_test.png-2-3-output.png";
+                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
+                File.Copy(inputArgs.outputPath + "D2_CA_test.png-2-3-output.pngByPixels.txt", dataPath + "D2_CA_test.png-2-3-output.pngByPixels.txt", true);
+                
             }
             catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
             Log.WriteLine("Process finished");
@@ -342,10 +353,14 @@ namespace Strabo.Test
                 Log.SetLogDir(inputArgs.intermediatePath);
                 CommandLineWorker cmdWorker = new CommandLineWorker();
 
-                File.Copy(dataPath + "D2_CA_ACTON_Authoritative_US_Topos_1959.tif", inputArgs.outputPath + "D2_CA_ACTON_Authoritative_US_Topos_1959.tif", true);
+                /*File.Copy(dataPath + "D2_CA_ACTON_Authoritative_US_Topos_1959.tif", inputArgs.outputPath + "D2_CA_ACTON_Authoritative_US_Topos_1959.tif", true);
                 inputArgs.outputFileName = "D2_CA_ACTON_Authoritative_US_Topos_1959.tif";
                 cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
-                File.Copy(inputArgs.outputPath + "block-map-output.pngByPixels.txt", dataPath + "block-map-output.pngByPixels.txt", true);
+                File.Copy(inputArgs.outputPath + "block-map-output.pngByPixels.txt", dataPath + "block-map-output.pngByPixels.txt", true);*/
+                File.Copy(dataPath + "D2_CA_test.png", inputArgs.outputPath + "D2_CA_test.png", true);
+                inputArgs.outputFileName = "D2_CA_output.png";
+                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
+                File.Copy(inputArgs.outputPath + "D2_CA_output.pngByPixels.txt", dataPath + "D2_CA_output.pngByPixels.txt", true);
             }
             catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
             Log.WriteLine("Process finished");
@@ -381,7 +396,9 @@ namespace Strabo.Test
                 //Added by Zhiyuan Wang
                 StraboParameters.readConfigFile(inputArgs.mapLayerName);
                 LargeImageHandler handler = new LargeImageHandler();
-                string[] scratchList = handler.splitWholeImage(dataPath, "D2_CA_test.png", 1500, 1500);
+                //string[] scratchList = handler.splitWholeImage(dataPath, "D2_CA_test.png", 1500, 1500);
+                string[] scratchList = new string[1];
+                scratchList[0] = "D2_CA_test.png-1-2.png";
 
                 for (int i = 0; i < scratchList.Length; i++)
                 {

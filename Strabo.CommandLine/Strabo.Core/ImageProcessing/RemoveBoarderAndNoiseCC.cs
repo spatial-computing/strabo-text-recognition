@@ -58,6 +58,14 @@ namespace Strabo.Core.ImageProcessing
                 if (char_blobs[i].bbx.Height < char_size && char_blobs[i].bbx.Width > char_size * 3)
                     noise_char_idx_set.Add(i);
             }
+            int count = 0;
+            for(int i = 0; i < char_blobs.Count; i++)
+            {
+                if (boarder_char_idx_set.Contains(i)) continue;
+                if (noise_char_idx_set.Contains(i)) continue;
+                count++;
+            }
+            int valid_cc = count;
             for (int i = 0; i < srcimg.Width * srcimg.Height; i++)
             {
                 if (char_labels[i] != 0)

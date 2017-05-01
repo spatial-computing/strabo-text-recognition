@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
+using System.IO;
 
 namespace Strabo.Core.Worker
 {
@@ -105,6 +106,27 @@ namespace Strabo.Core.Worker
                         Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
                     }
                 }
+
+                //add the ConnectedComponentClassifyWorker here
+                try
+                {
+                    ConnectedComponentClassifyWorker _connectedComponentClassifyWorker = new ConnectedComponentClassifyWorker();
+                    Log.WriteLine("ConnectedComponentClassifyWorker in progress...");
+                    //Copy "CDAInput.png" as "CDAInput_original.png"
+                    File.Copy(outputDir + "CDAInput.png", outputDir + "CDAInput_original.png");
+                    //Use "CDAInput_original.png" as input, classify the CCs and output as "CDAInput.png"
+                    _connectedComponentClassifyWorker.Apply(outputDir, "CDAInput_original.png", "CDAInput.png", false);
+                    Log.WriteLine("ApplyConnectedComponentClassifyWorker finished");
+                }
+                catch (Exception e)
+                {
+                    Log.WriteLine("ApplyConnectedComponentClassifyWorker: " + e.Message);
+                    throw;
+                }
+
+                //update srcimg
+                srcimg = new Bitmap(outputDir + "CDAInput.png");
+
                 ConditionalDilationAutomatic cda = new ConditionalDilationAutomatic();
                 cda.angleThreshold = angleRatio;
                 string outputImagePath = outputDir + s + ".png";
