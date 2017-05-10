@@ -107,7 +107,7 @@ namespace Strabo.Core.TextRecognition
                     string filename = Path.GetFileNameWithoutExtension(filePaths[i]);
                     String[] splitTokens = filename.Split('_');
 
-                    if (splitTokens.Length != 11)
+                    if (splitTokens.Length != 17)
                         continue;
 
                     using (Image<Gray, Byte> image = new Image<Gray, byte>(filePaths[i]))
@@ -142,10 +142,22 @@ namespace Strabo.Core.TextRecognition
                             
 
                             tr.fileName = Path.GetFileName(filename);
-                            tr.x = Convert.ToInt16(splitTokens[7]);
-                            tr.y = Convert.ToInt16(splitTokens[8]);
-                            tr.w = Convert.ToInt16(splitTokens[9]);
-                            tr.h = Convert.ToInt16(splitTokens[10]);
+
+                            tr.mcX = (int)Convert.ToDouble(splitTokens[3]);
+                            tr.mcY = (int)Convert.ToDouble(splitTokens[4]);
+
+                            tr.x = (int)Convert.ToDouble(splitTokens[7]);
+                            tr.y = (int)Convert.ToDouble(splitTokens[8]);
+
+                            tr.x2 = (int)Convert.ToDouble(splitTokens[9]);
+                            tr.y2 = (int)Convert.ToDouble(splitTokens[10]);
+                            tr.x3 = (int)Convert.ToDouble(splitTokens[11]);
+                            tr.y3 = (int)Convert.ToDouble(splitTokens[12]);
+                            tr.x4 = (int)Convert.ToDouble(splitTokens[13]);
+                            tr.y4 = (int)Convert.ToDouble(splitTokens[14]);
+
+                            tr.w = (int)Convert.ToDouble(splitTokens[15]);
+                            tr.h = (int)Convert.ToDouble(splitTokens[16]);
                             tessOcrResultList.Add(tr);
 
                         }
@@ -153,8 +165,6 @@ namespace Strabo.Core.TextRecognition
                 }
                 Log.WriteLine("Tessearct finished");
                 return tessOcrResultList;
-
-
             }
             catch (Exception e)
             {
@@ -165,7 +175,6 @@ namespace Strabo.Core.TextRecognition
                 throw;
 
             }
-            return tessOcrResultList;
         }
     }
 }

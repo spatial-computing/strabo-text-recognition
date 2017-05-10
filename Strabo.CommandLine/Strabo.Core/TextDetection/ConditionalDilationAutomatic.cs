@@ -34,11 +34,11 @@ namespace Strabo.Core.Worker
 {
     public class ConditionalDilationAutomatic
     {
-        public double sizeRatio = StraboParameters.sizeRatio;
-        public double angleThreshold = StraboParameters.angleThreshold;
-        public int iterationThreshold = StraboParameters.iterationThreshold;
+        public double sizeRatio;
+        public double angleThreshold;
+        public int iterationThreshold;
 
-        int minimum_distance_between_CCs_in_string = StraboParameters.minimumDistBetweenCC;
+        int minimum_distance_between_CCs_in_string;
 
         int width, height, tnum;
         ushort[] originalCharLabels;
@@ -47,18 +47,32 @@ namespace Strabo.Core.Worker
         bool[] char_labels_confirmation;
 
         List<MyConnectedComponentsAnalysisFast.MyBlob> char_blobs;
-        Hashtable char_blob_idx_max_size_table = new Hashtable();
-        HashSet<int> short_char_blob_idx_set = new HashSet<int>();
-        HashSet<int> expendable_char_blob_idx_set = new HashSet<int>();
-        List<HashSet<int>> connected_char_blob_idx_set_list = new List<HashSet<int>>();
-        HashSet<string> weak_link_set = new HashSet<string>();
-        Hashtable connecting_angle_table = new Hashtable();
-        Hashtable iteration_for_first_connection_idx_table = new Hashtable();
+        Hashtable char_blob_idx_max_size_table;
+        HashSet<int> short_char_blob_idx_set;
+        HashSet<int> expendable_char_blob_idx_set;
+        List<HashSet<int>> connected_char_blob_idx_set_list;
+        HashSet<string> weak_link_set;
+        Hashtable connecting_angle_table;
+        Hashtable iteration_for_first_connection_idx_table;
+        int iteration_counter;
 
-        int iteration_counter = 0;
+        public ConditionalDilationAutomatic()
+        {
+            this.sizeRatio = StraboParameters.sizeRatio;
+            this.angleThreshold = StraboParameters.angleThreshold;
+            this.iterationThreshold = StraboParameters.iterationThreshold;
+            this.minimum_distance_between_CCs_in_string = StraboParameters.minimumDistBetweenCC;
+            this.char_blob_idx_max_size_table = new Hashtable();
+            this.short_char_blob_idx_set = new HashSet<int>();
+            this.expendable_char_blob_idx_set = new HashSet<int>();
+            this.connected_char_blob_idx_set_list = new List<HashSet<int>>();
+            this.weak_link_set = new HashSet<string>();
+            this.connecting_angle_table = new Hashtable();
+            this.iteration_for_first_connection_idx_table = new Hashtable();
+            this.iteration_counter = 0;
+        }
 
-        public ConditionalDilationAutomatic() { }
-
+        
         public void kernel(object step) // expand CC areas
         {
             // multi-threading setup
@@ -76,7 +90,9 @@ namespace Strabo.Core.Worker
                         for (int x = i - 1; x <= i + 1; x++) // check 8 neighboors
                             for (int y = j - 1; y <= j + 1; y++)
                             {
-                                if (x < 0 || x >= width || y < 0 || y >= height) continue; // outside image boundaries
+                                // outside image boundaries
+                                if (x < 0 || x >= width || y < 0 || y >= height)
+                                    continue; 
                                 int idx = y * width + x;
                                 if (charLabels[idx] != 0 && expendable_char_blob_idx_set.Contains(charLabels[idx] - 1)) //narges
                                     connected_char_blob_idx_set.Add((short)(charLabels[idx] - 1));
@@ -164,9 +180,10 @@ namespace Strabo.Core.Worker
             double angle2 = 0;
             if (idx22 != -1)
                 angle2 = CosAngel(idx1, idx22, idx2);
-            if (angle1 > angleThreshold || angle2 > angleThreshold) return true;
-
-            else return false;
+            if (angle1 > angleThreshold || angle2 > angleThreshold)
+                return true;
+            else
+                return false;
         }
         public int FindLabelForTheBiggestCharBlob(HashSet<short> char_blob_idx_set)
         {
@@ -176,7 +193,8 @@ namespace Strabo.Core.Worker
             if ((connected_char_blob_idx_set_list[idx1].Count == 2 && !connected_char_blob_idx_set_list[idx1].Contains(idx2))
                 || (connected_char_blob_idx_set_list[idx2].Count == 2 && !connected_char_blob_idx_set_list[idx2].Contains(idx1)))
                 return 0;
-            if (BreakingAngle(idx1, idx2)) return 0;
+            if (BreakingAngle(idx1, idx2))
+                return 0;
             // check for size ratio
             int size2 = (int)(char_blob_idx_max_size_table[idx2]);
             int size1 = (int)(char_blob_idx_max_size_table[idx1]);
@@ -186,8 +204,10 @@ namespace Strabo.Core.Worker
                 return 0;
             else
             {
-                if (size1 > size2) return idx1 + 1;
-                else return idx2 + 1;
+                if (size1 > size2)
+                    return idx1 + 1;
+                else
+                    return idx2 + 1;
             }
         }
 
@@ -218,6 +238,7 @@ namespace Strabo.Core.Worker
             else
                 return false;
         }
+
         public void k1()
         {
             char_labels_tmp = new short[width * height];
@@ -232,9 +253,9 @@ namespace Strabo.Core.Worker
             ConfirmationStep();
             IdentifyExpendableCharBlobs();
         }
+
         public void ConfirmationStep()
         {
-            //Log.WriteBitmap2Debug(PrintTMPRGB(), "tmp_"+iteration_counter);
             // record connectivity
             weak_link_set.Clear(); // we don't check weak links
             k_confirmation();
@@ -247,6 +268,7 @@ namespace Strabo.Core.Worker
                     else if (originalCharLabels[j * width + i] == 0)
                         charLabels[j * width + i] = 0;
         }
+
         public void k_confirmation()
         {
             char_labels_confirmation = new bool[width * height];
@@ -259,6 +281,7 @@ namespace Strabo.Core.Worker
             for (int i = 0; i < tnum; i++)
                 thread_array2[i].Join();
         }
+
         public string Apply(int tnum, Bitmap srcimg, double size_ratio, double ang_threshold, bool preprocessing, string outImagePath)
         {
             this.tnum = tnum;
@@ -276,40 +299,35 @@ namespace Strabo.Core.Worker
                 srcimg = cg.Apply(srcimg);
             }
 
-            //Log.WriteBitmap2Debug(srcimg, "start");
             srcimg = ImageUtils.InvertColors(srcimg);
-
+            Log.WriteBitmap(srcimg, "InvertedImage.png");
             minimum_distance_between_CCs_in_string = iteration;
 
             MyConnectedComponentsAnalysisFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFast.MyBlobCounter();
 
             this.char_blobs = char_bc.GetBlobs(srcimg);
             this.charLabels = new short[width * height];
-            // Log.WriteBitmap2Debug(Printnumb(), "num");
 
             for (int i = 0; i < width * height; i++)
                 charLabels[i] = (short)(char_bc.objectLabels[i]);
+
             for (int i = 0; i < char_blobs.Count; i++)
             {
-                char_blob_idx_max_size_table.Add(i, Math.Max(char_blobs[i].bbx.Width, char_blobs[i].bbx.Height)); // original size of the character //narges
+                char_blob_idx_max_size_table.Add(i, (int)Math.Max(char_blobs[i].bbx.width(), char_blobs[i].bbx.height())); // original size of the character //narges
                 expendable_char_blob_idx_set.Add(i);
                 connected_char_blob_idx_set_list.Add(new HashSet<int>());
             }
-
             originalCharLabels = char_bc.objectLabels;
             for (int i = 0; i < width * height; i++)
                 charLabels[i] = (short)(char_bc.objectLabels[i]);
-            // first run
-            // Log.WriteBitmap2Debug(Print(), "k1_");
+
             k1();
-            // Log.WriteBitmap2Debug(Print(), "k1_" + 0);
+
             iteration_counter = 1;
-            //   while (expendable_char_blob_idx_set.Count > 1 && iteration_counter < iterationThreshold)
             while (iteration_counter < iterationThreshold)
             {
                 k1();
                 iteration_counter++;
-                // Log.WriteBitmap2Debug(Print(), "k1_" + iteration_counter);
             }
             Print(outImagePath);
             return outImagePath;
@@ -332,8 +350,10 @@ namespace Strabo.Core.Worker
 
             for (int i = 0; i < char_blobs.Count; i++)
             {
+                // sample_x and sample_y are concerning
                 char_blobs[i].string_id =
                     string_labels[char_blobs[i].sample_y * width + char_blobs[i].sample_x] - 1;
+
                 string_list[char_blobs[i].string_id].Add(char_blobs[i]);
             }
             for (int i = 0; i < string_list.Count; i++)
@@ -342,7 +362,7 @@ namespace Strabo.Core.Worker
                 {
                     int avg_size = 0;
                     for (int j = 0; j < string_list[i].Count; j++)
-                        avg_size += Math.Max(string_list[i][j].bbx.Width, string_list[i][j].bbx.Height);
+                        avg_size += (int)Math.Max(string_list[i][j].bbx.width(), string_list[i][j].bbx.height());
                     avg_size /= string_list[i].Count;
                     for (int j = 0; j < string_list[i].Count; j++)
                         char_blob_idx_max_size_table[string_list[i][j].pixel_id - 1] = avg_size;
@@ -359,7 +379,9 @@ namespace Strabo.Core.Worker
                 {
                     int max_dist = (int)((double)((int)char_blob_idx_max_size_table[i]) / 3);
                     // int max_dist = (int)((double)((int)char_blob_idx_max_size_table[i])/2 );
-                    if (max_dist < minimum_distance_between_CCs_in_string * 2) max_dist = minimum_distance_between_CCs_in_string * 2;
+                    if (max_dist < minimum_distance_between_CCs_in_string * 2)
+                        max_dist = minimum_distance_between_CCs_in_string * 2;
+
                     if (iteration_counter > max_dist)
                     {
                         expendable_char_blob_idx_set.Remove(i);
@@ -374,8 +396,7 @@ namespace Strabo.Core.Worker
             for (int i = 0; i < char_blobs.Count; i++)
             {
                 Font font2 = new Font("Arial", 8);
-                g.DrawString(i.ToString(), font2, Brushes.Red, char_blobs[i].mass_center);
-                //g.DrawRectangle(new Pen(Color.Yellow, 2), char_blobs[i].bbx);
+                g.DrawString(i.ToString(), font2, Brushes.Red, char_blobs[i].bbx.massCenter());
             }
             g.Dispose();
             return dstimg;
@@ -421,6 +442,7 @@ namespace Strabo.Core.Worker
                         img[j, i] = false;
             ImageUtils.ArrayBool2DToBitmap(img).Save(outImagePath, ImageFormat.Png);
         }
+
         public Bitmap Print()
         {
             bool[,] img = new bool[height, width];
@@ -432,33 +454,37 @@ namespace Strabo.Core.Worker
                         img[j, i] = false;
             return ImageUtils.ArrayBool2DToBitmap(img);
         }
+
         public double CosAngel(int idx1, int idx2, int i)
         {
-            double angel1 = CosAngel(new Point(char_blobs[idx1].bbx.X + char_blobs[idx1].bbx.Width / 2, char_blobs[idx1].bbx.Y + char_blobs[idx1].bbx.Height / 2),
-            new Point(char_blobs[idx2].bbx.X + char_blobs[idx2].bbx.Width / 2, char_blobs[idx2].bbx.Y + char_blobs[idx2].bbx.Height / 2),
-            new Point(char_blobs[i].bbx.X + char_blobs[i].bbx.Width / 2, char_blobs[i].bbx.Y + char_blobs[i].bbx.Height / 2));
-            double angel2 = NormAngel(idx1, idx2, i);
+            double angle1 = CosAngel(new PointF(char_blobs[idx1].bbx.massCenter().X, char_blobs[idx1].bbx.massCenter().Y),
+                                    new PointF(char_blobs[idx2].bbx.massCenter().X, char_blobs[idx2].bbx.massCenter().Y),
+                                    new PointF(char_blobs[i].bbx.massCenter().X, char_blobs[i].bbx.massCenter().Y));
 
-            return (angel2 - angel1) / angel2;
+            double angle2 = NormAngel(idx1, idx2, i);
+
+            return (angle2 - angle1) / angle1;
         }
         public double NormAngel(int idx1, int idx2, int i)
         {
-            int h1 = Math.Max(char_blobs[idx1].bbx.Width, char_blobs[idx1].bbx.Height);
-            int w1 = Math.Min(char_blobs[idx1].bbx.Width, char_blobs[idx1].bbx.Height);
 
-            int h2 = Math.Max(char_blobs[idx2].bbx.Width, char_blobs[idx2].bbx.Height);
-            int w2 = Math.Min(char_blobs[idx2].bbx.Width, char_blobs[idx2].bbx.Height);
+            float h1 = Math.Max(char_blobs[idx1].bbx.width(), char_blobs[idx1].bbx.height());
+            float w1 = Math.Min(char_blobs[idx1].bbx.width(), char_blobs[idx1].bbx.height());
 
-            int hi = Math.Max(char_blobs[i].bbx.Width, char_blobs[i].bbx.Height);
-            int wi = Math.Min(char_blobs[i].bbx.Width, char_blobs[i].bbx.Height);
+            float h2 = Math.Max(char_blobs[idx2].bbx.width(), char_blobs[idx2].bbx.height());
+            float w2 = Math.Min(char_blobs[idx2].bbx.width(), char_blobs[idx2].bbx.height());
 
-            Point p1 = new Point(w1 / 2, h1 / 2);
-            Point p3 = new Point(wi / 2 + w1, hi / 2);
-            Point p2 = new Point(w2 / 2 + w1 + wi, h2 / 2);
+            float hi = Math.Max(char_blobs[i].bbx.width(), char_blobs[i].bbx.height());
+            float wi = Math.Min(char_blobs[i].bbx.width(), char_blobs[i].bbx.height());
 
+            PointF p1 = new PointF(w1/2, h1/2);
+            PointF p2 = new PointF(w2 / 2 + w1 + wi, h2 / 2);
+            PointF p3 = new PointF(wi/2 + w1, hi/2);
+
+                                    
             return CosAngel(p1, p2, p3);
         }
-        public double CosAngel(Point p1, Point p2, Point p3)
+        public double CosAngel(PointF p1, PointF p2, PointF p3)
         {
             double error = 0.00001;
             double x1 = p1.X;
@@ -475,7 +501,8 @@ namespace Strabo.Core.Worker
             double tmp1 = (Math.Sqrt((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3)) * Math.Sqrt((x1 - x3) * (x1 - x3) + (y1 - y3) * (y1 - y3)));
             double tmp2 = adotb / tmp1;
             double angel = 0;
-            if (Math.Abs(Math.Abs(tmp2) - 1) < error) angel = 180;
+            if (Math.Abs(Math.Abs(tmp2) - 1) < error)
+                angel = 180;
             else
             {
                 angel = Math.Acos(adotb / tmp1);

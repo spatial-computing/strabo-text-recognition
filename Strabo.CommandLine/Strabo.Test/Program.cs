@@ -33,6 +33,10 @@ using Strabo.Core.Utility;
 using SpellChecker.Net.Search.Spell;
 using System.Drawing;
 
+using Emgu.CV;
+using Emgu.CV.Structure;
+using Emgu.CV.UI;
+
 namespace Strabo.Test
 {
     class MainClass
@@ -53,6 +57,37 @@ namespace Strabo.Test
             {
                 TestCommandLineWorker tcl = new TestCommandLineWorker();
                 tcl.testBlockMaps();
+
+                //PointF[] points = new PointF[]
+                //{
+                //    new PointF(561.629f, 168.07f),
+                //    new PointF(317.392f, 129.095f),
+                //    new PointF(323.532f, 88.8367f),
+                //    new PointF(567.769f, 136.812f)
+                //};
+
+                //Rectangle rect = new Rectangle(250, 150, 71, 141);
+
+                //MCvBox2D bbx = PointCollection.MinAreaRect(points);
+                //Console.WriteLine("Angle: " + bbx.angle);
+                //string vertex = "";
+                //foreach(PointF pts in bbx.GetVertices())
+                //{
+                //    vertex += "(" + pts.X + ", " + pts.Y + ") ";
+                //}
+                //Console.WriteLine("vertices: " + vertex);
+                //Console.WriteLine("Width: " + bbx.size.Width + " Height: " + bbx.size.Height);
+
+                //Image<Bgr, byte> img = new Image<Bgr, byte>(600, 600, new Bgr(Color.White));
+                //img.Draw(bbx, new Bgr(Color.Red), 1);
+
+                //foreach (PointF p in points)
+                //    img.Draw(new CircleF(p, 2), new Bgr(Color.Green), 1);
+
+                //img.Draw(rect, new Bgr(Color.Black), 1);
+
+                //ImageViewer.Show(img, String.Format("Time used: {0} milliseconds", 200000));
+
                 //tcl.TestLocalTianditu_evaFiles();
                 // tcl.TestLocalFiles();
                 // tcl.testLocalWMWholeFile();

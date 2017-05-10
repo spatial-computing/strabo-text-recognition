@@ -9,67 +9,27 @@ namespace Strabo.Core.TextRecognition
 {
     public class NumberCorrection
     {
-
-        //// Find nearest neighbor only when the character size is less than 4
-        //private List<TessResult> smallestFeatures { get; set; }
-        //private List<TessResult> mediumFeatures { get; set; }
-        //private List<TessResult> smallFeatures { get; set; }
-        //private List<TessResult> regularFeatures { get; set; }
-        //private List<TessResult> otherFeatures { get; set; }
-        
         private List<TessResult> mergedFeatures { get; set; }
         private List<TessResult> allFeatures { get; set; }
-        private Dictionary<TessResult, SimplePriorityQueue<Tuple<TessResult, double>> > nearestNeighbors { get; set; }
+        private Dictionary<TessResult, SimplePriorityQueue<Tuple<TessResult, double>>> nearestNeighbors { get; set; }
 
         public NumberCorrection(List<TessResult> ocrResults)
         {
 
-            mergedFeatures = new List<TessResult>();
-            allFeatures = ocrResults;
-            nearestNeighbors = new Dictionary<TessResult, SimplePriorityQueue<Tuple<TessResult, double>>>();
+            this.mergedFeatures = new List<TessResult>();
+            this.allFeatures = ocrResults;
+            this.nearestNeighbors = new Dictionary<TessResult, SimplePriorityQueue<Tuple<TessResult, double>>>();
             findNearestNeighbors(ocrResults);
 
-            //smallestFeatures = new List<TessResult>();
-            //smallFeatures = new List<TessResult>();
-            //mediumFeatures = new List<TessResult>();
-            //regularFeatures = new List<TessResult>();
-            //otherFeatures = new List<TessResult>();
-
-            //// Separate the features into regular and small
-            //foreach (TessResult tr in ocrResults)
-            //{
-            //    string[] fileInfo = tr.fileName.Split('_');
-            //    int charCount = int.Parse(fileInfo[2]);
-
-            //    // Separate out the featureSet based on the charCount
-            //    switch (charCount)
-            //    {
-            //        case 1:
-            //            smallestFeatures.Add(tr);
-            //            break;
-            //        case 2:
-            //            smallFeatures.Add(tr);
-            //            break;
-            //        case 3:
-            //            mediumFeatures.Add(tr);
-            //            break;
-            //        case 4:
-            //            regularFeatures.Add(tr);
-            //            break;
-            //        default:
-            //            otherFeatures.Add(tr);
-            //            break;
-            //    }
-            //}
         }
 
         private double getL2Distance(TessResult tr1, TessResult tr2)
         {
             return Math.Sqrt(
-                    (int)Math.Pow(tr1.x - tr2.x, 2) + (int)Math.Pow(tr1.y - tr2.y, 2)
+                    (int)Math.Pow(tr1.mcX - tr2.mcX, 2) + (int)Math.Pow(tr1.mcY - tr2.mcY, 2)
                 );
         }
-        
+
         /// <summary>
         /// Finds the 5 nearest neighbors for each element
         /// It finds all the neaerest neighbors for each element 
@@ -78,13 +38,14 @@ namespace Strabo.Core.TextRecognition
         /// <param name="ocrResults"></param>
         private void findNearestNeighbors(List<TessResult> ocrResults)
         {
-            for(int i = 0; i<ocrResults.Count; i++)
+            for (int i = 0; i < ocrResults.Count; i++)
             {
-                SimplePriorityQueue<Tuple<TessResult, double>> neighbors = 
+                SimplePriorityQueue<Tuple<TessResult, double>> neighbors =
                         new SimplePriorityQueue<Tuple<TessResult, double>>();
                 SimplePriorityQueue<Tuple<TessResult, double>> nearest5Neighbors =
                         new SimplePriorityQueue<Tuple<TessResult, double>>();
-                for (int j = 0; j <ocrResults.Count; j++)
+
+                for (int j = 0; j < ocrResults.Count; j++)
                 {
                     if (i == j)
                         continue;
@@ -96,7 +57,7 @@ namespace Strabo.Core.TextRecognition
                 }
                 // Get the 5 nearest neighbors
                 int count = 0;
-                while(count<5 && neighbors.Count != 0)
+                while (count < 5 && neighbors.Count != 0)
                 {
                     Tuple<TessResult, double> node = neighbors.Dequeue();
                     // Log.WriteLine("Node: " + ocrResults[i].fileName + " Neighbor: " + node.Item1.fileName);
@@ -114,6 +75,8 @@ namespace Strabo.Core.TextRecognition
             // the xOverlap should be more than the start of tr2.x
             // but the xOverlap shoulbe be less than the end of tr2
             int numChar = tr1.tess_word3.ToCharArray().Length;
+            if (numChar == 0)
+                return false;
             int xOverlap = tr1.x + tr1.w + tr1.w / numChar;
             int yStart = tr1.y - tr1.h / 2;
             int yEnd = tr1.y + tr1.h + tr1.h / 2;
@@ -132,8 +95,9 @@ namespace Strabo.Core.TextRecognition
             // the xOverlap should be more than the start of tr2.x
             // but the xOverlap shoulbe be less than the end of tr2
             int numChar = tr1.tess_word3.ToCharArray().Length;
+            if (numChar == 0)
+                return false;
             int yOverlap = tr1.y + tr1.h + tr1.h / numChar;
-
             int xStart = tr1.x - tr1.w / 2;
             int xEnd = tr1.x + tr1.w + tr1.w / 2;
             if ((yOverlap > tr2.y) && (yOverlap < tr2.y + tr2.h) &&
@@ -186,17 +150,18 @@ namespace Strabo.Core.TextRecognition
                 return false;
             }
         }
-        
+
         /// <summary>
         ///  Merges features with character count = 2
         /// </summary>
         private void mergeSmallFeatures()
         {
-            foreach(TessResult tr in this.nearestNeighbors.Keys)
+            foreach (TessResult tr in this.nearestNeighbors.Keys)
             {
                 // Only merge features with charCount = 2
-                if(int.Parse(tr.fileName.Split('_')[2]) == 2) {
-                    Tuple <TessResult, double> nearestFeature = this.nearestNeighbors[tr].First();
+                if (int.Parse(tr.fileName.Split('_')[2]) == 2)
+                {
+                    Tuple<TessResult, double> nearestFeature = this.nearestNeighbors[tr].First();
 
                     if (int.Parse(nearestFeature.Item1.fileName.Split('_')[2]) == 2 &&
                         _checkFeatureOverlaps(tr, nearestFeature))
@@ -204,7 +169,7 @@ namespace Strabo.Core.TextRecognition
                 }
             }
         }
-        
+
         /// <summary>
         /// Tries to merge features of size 3 with 1
         /// </summary>
@@ -250,7 +215,7 @@ namespace Strabo.Core.TextRecognition
         private void estimateBestPrefixSuffix()
         {
             List<TessResult> toChange = new List<TessResult>();
-            foreach(TessResult tr in this.allFeatures)
+            foreach (TessResult tr in this.allFeatures)
             {
                 // If features with charCount = 3 still exists
                 // This means merging has failed
@@ -263,7 +228,7 @@ namespace Strabo.Core.TextRecognition
                         Tuple<TessResult, double> nearestFeature = this.nearestNeighbors[tr].Dequeue();
                         char[] individualDigits = nearestFeature.Item1.tess_word3.ToCharArray();
 
-                        if (individualDigits.Length == 4 && 
+                        if (individualDigits.Length == 4 &&
                             int.Parse(digits[0].ToString()) == int.Parse(individualDigits[0].ToString()))
                         {
                             tr.tess_word3 += individualDigits[3].ToString();
@@ -280,7 +245,7 @@ namespace Strabo.Core.TextRecognition
                     }
                 }
             }
-            foreach(TessResult tr in toChange)
+            foreach (TessResult tr in toChange)
             {
                 this.mergedFeatures.Add(tr);
                 this.allFeatures.Remove(tr);
@@ -309,7 +274,7 @@ namespace Strabo.Core.TextRecognition
                     continue;
 
                 }
-                else if(expectedDigits + 1 == numDigits)
+                else if (expectedDigits + 1 == numDigits)
                 {
                     continue;
                 }
@@ -319,9 +284,9 @@ namespace Strabo.Core.TextRecognition
                     // should be 1
                     toChange.Add(tr);
                 }
-                    
+
             }
-            foreach(TessResult tr in toChange)
+            foreach (TessResult tr in toChange)
             {
                 this.allFeatures.Remove(tr);
             }

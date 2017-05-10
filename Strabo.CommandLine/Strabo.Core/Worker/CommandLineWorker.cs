@@ -143,7 +143,7 @@ namespace Strabo.Core.Worker
                 }
                 else
                     File.Copy(inputArgs.outputPath + StraboParameters.sourceMapFileName, inputArgs.intermediatePath + StraboParameters.sourceMapFileName, true);
-                File.Copy(inputArgs.intermediatePath+StraboParameters.sourceMapFileName, inputArgs.outputPath+StraboParameters.sourceMapFileName,true);
+                File.Copy(inputArgs.intermediatePath+StraboParameters.sourceMapFileName, inputArgs.outputPath+StraboParameters.sourceMapFileName, true);
             }
             catch (Exception e)
             {
@@ -195,6 +195,7 @@ namespace Strabo.Core.Worker
                catch (Exception e)
                {
                    Log.WriteLine("ApplyTextDetectionWorker: " + e.Message);
+                   Log.WriteLine(e.StackTrace);
                    throw;
                }
 

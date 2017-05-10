@@ -15,7 +15,7 @@ namespace Strabo.Core.TextRecognition
             double sweight = 0.5;
             int dictionaryExactMatchStringLength = 2;
             CleanTesseractResult ctr = new CleanTesseractResult();
-            tessOcrResultList = ctr.RemoveMergeMultiLineResults(tessOcrResultList,3);
+            tessOcrResultList = ctr.RemoveMergeMultiLineResults(tessOcrResultList, 3);
             for (int i = 0; i < tessOcrResultList.Count; i++)
             {
                 if (tessOcrResultList[i].id != "-1" && lng == "eng")
@@ -28,7 +28,7 @@ namespace Strabo.Core.TextRecognition
                 }
 
             }
-            for (int i = 0; i < tessOcrResultList.Count; i++ )
+            for (int i = 0; i < tessOcrResultList.Count; i++)
             {
                 if (tessOcrResultList[i].id == "-1")
                     tessOcrResultList.RemoveAt(i);
@@ -63,7 +63,7 @@ namespace Strabo.Core.TextRecognition
 
                     }
                 }
-                }
+            }
 
             for (int i = 0; i < tessOcrResultList.Count; i++)
             {

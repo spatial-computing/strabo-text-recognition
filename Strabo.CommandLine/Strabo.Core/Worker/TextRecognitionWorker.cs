@@ -29,8 +29,6 @@ using System.Drawing;
 using System.Text.RegularExpressions;
 using System.IO;
 
-
-
 namespace Strabo.Core.Worker
 {
     public class TextRecognitionWorker
@@ -75,11 +73,11 @@ namespace Strabo.Core.Worker
                 }
 
                 int georef = -1;
-                if (elasticsearch)
-                {
-                    CheckType ct = new CheckType();
-                    tessOcrResultList = ct.Apply(tessOcrResultList, georef, lng);
-                }
+                //if (elasticsearch)
+                //{
+                //    CheckType ct = new CheckType();
+                //    tessOcrResultList = ct.Apply(tessOcrResultList, georef, lng);
+                //}
 
                 CleanTesseractResult ctr = new CleanTesseractResult();
                 if (!otd)
@@ -95,7 +93,8 @@ namespace Strabo.Core.Worker
                     }
 
                     NumberCorrection nc = new NumberCorrection(tessOcrResultList);
-                    tessOcrResultList =  nc.mergeFeatures();
+                    tessOcrResultList = nc.mergeFeatures();
+
                     WriteToJsonFile(tessOcrResultList, outputPath, OTDPath, TesseractResultsJSONFileName, lng, dictionaryFilePath, dictionaryExactMatchStringLength, bbxW, bbxN, xscale, yscale, srid, georef);
                 }
                 if (otd)
@@ -177,7 +176,7 @@ namespace Strabo.Core.Worker
                 items.Add(new KeyValuePair<string, string>("DictionaryWordSimilarity", tessOcrResultList[i].dict_similarity.ToString()));
                 items.Add(new KeyValuePair<string, string>("TesseractCost", tessOcrResultList[i].tess_cost3.ToString()));
                 items.Add(new KeyValuePair<string, string>("SameMatches", tessOcrResultList[i].sameMatches));
-                QGISJson.AddFeature(tessOcrResultList[i].x, tessOcrResultList[i].y, tessOcrResultList[i].h, tessOcrResultList[i].w, georef, items);
+                QGISJson.AddFeature(tessOcrResultList[i], georef, items);
             }
             QGISJson.WriteGeojsonFiles();
             Log.WriteLine("GeoJSON generated");

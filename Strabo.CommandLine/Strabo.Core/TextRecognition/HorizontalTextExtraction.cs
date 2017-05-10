@@ -14,8 +14,8 @@ namespace Strabo.Core.TextRecognition
     {
         public bool IsCharacter(Bitmap PotentialAreaPoints)
         {
-           // PotentialTextAreaExtractation Area = new PotentialTextAreaExtractation();
-           // Bitmap Neighborhood = Area.FromArrayToImage(PotentialAreaPoints);
+            // PotentialTextAreaExtractation Area = new PotentialTextAreaExtractation();
+            // Bitmap Neighborhood = Area.FromArrayToImage(PotentialAreaPoints);
             Bitmap Neighborhood = PotentialAreaPoints;
             MyConnectedComponentsAnalysisFast.MyBlobCounter blobs = new MyConnectedComponentsAnalysisFast.MyBlobCounter();
 
@@ -28,7 +28,7 @@ namespace Strabo.Core.TextRecognition
                     return false;
                 List<MyConnectedComponentsAnalysisFast.MyBlob> holes_char_blobs = blobs.GetBlobs(Neighborhood);  //// hole detection
 
-               /// Neighborhood.Save(@"C:\Users\narges\Documents\test\FALSE-HOLE.PNG");
+                /// Neighborhood.Save(@"C:\Users\narges\Documents\test\FALSE-HOLE.PNG");
 
                 if (holes_char_blobs.Count > StraboParameters.HoleThreshold)
                     return false;
@@ -41,13 +41,13 @@ namespace Strabo.Core.TextRecognition
 
                 for (int i = 0; i < char_blobs.Count; i++)
                 {
-                    int MaxSize = 0;
-                    if (char_blobs[i].bbx.Width == Neighborhood.Width || char_blobs[i].bbx.Height == Neighborhood.Height)
+                    float MaxSize = 0;
+                    if (char_blobs[i].bbx.width() == Neighborhood.Width || char_blobs[i].bbx.height() == Neighborhood.Height)
                     {
-                        if (char_blobs[i].bbx.Width == Neighborhood.Width)
-                            MaxSize = char_blobs[i].bbx.Width;
+                        if (char_blobs[i].bbx.width() == Neighborhood.Width)
+                            MaxSize = char_blobs[i].bbx.width();
                         else
-                            MaxSize = char_blobs[i].bbx.Height;
+                            MaxSize = char_blobs[i].bbx.height();
                         double AveragePixel = (double)char_blobs[i].pixel_count / (double)MaxSize;
                         if (AveragePixel < StraboParameters.AveragePixel)
                         {
@@ -63,7 +63,7 @@ namespace Strabo.Core.TextRecognition
             return true;
         }
 
-    
+
         public List<NeighborhoodResult> Apply(int width, int height, int x, int y, string RecognizedText, string imageID, Bitmap OriginalBinaryImage, List<NeighborhoodResult> Neighbors)
         {
             Boolean Continue = true;
@@ -139,7 +139,7 @@ namespace Strabo.Core.TextRecognition
                             AddedAreaResults AddedArea = Area.FromImageToArray(OriginalBinaryImage, boundingbox);
                             //int[,] AddedAreaPoints = Area.FromImageToArray(OriginalBinaryImage, boundingbox);
                             ///AddedArea.Area.Save(@"C:\Users\narges\Documents\test\false.png");
-                            
+
                             PixelToSizeRatio = (double)(AddedArea.AreaForeGoundPixels) / (double)(AddedAreaWidth * (height + HeightAddition));
                             string TextNonText = "";
 
@@ -170,7 +170,7 @@ namespace Strabo.Core.TextRecognition
                             }
                             NeighborhoodResult neighbor;
 
-                            if (i==0)
+                            if (i == 0)
                                 neighbor = new NeighborhoodResult(point.X, point.Y, point.X + AddedAreaWidth, point.Y, point.X + AddedAreaWidth, point.Y + height + HeightAddition, point.X, point.Y + height + HeightAddition, imageID + "-left-" + Convert.ToString(NumberOfNeighbors), imageID, Convert.ToString(Math.Round((decimal)PixelToSizeRatio, 2)), TextNonText);
                             else
                                 neighbor = new NeighborhoodResult(point.X, point.Y, point.X + AddedAreaWidth, point.Y, point.X + AddedAreaWidth, point.Y + height + HeightAddition, point.X, point.Y + height + HeightAddition, imageID + "-right-" + Convert.ToString(NumberOfNeighbors), imageID, Convert.ToString(Math.Round((decimal)PixelToSizeRatio, 2)), TextNonText);
@@ -190,14 +190,14 @@ namespace Strabo.Core.TextRecognition
                 }
 
 
-                if ( NumberOfNeighbors == 0 && !RemoveNoiseText.NotTooManyNoiseCharacters(RecognizedText))
+                if (NumberOfNeighbors == 0 && !RemoveNoiseText.NotTooManyNoiseCharacters(RecognizedText))
                     Neighbors.RemoveAt(Neighbors.Count - 1);
 
-                
+
             }
             catch (Exception exception)
             {
-                Log.Write("Horizontal Text Detection Error"+exception.Message);
+                Log.Write("Horizontal Text Detection Error" + exception.Message);
             }
             return Neighbors;
         }

@@ -25,11 +25,15 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-using Emgu.CV;
-using Emgu.CV.Features2D;
-using Emgu.CV.Util;
-using Emgu.Util.TypeEnum;
-using Emgu.CV.Structure;
+//using Emgu.CV;
+//using Emgu.CV.Features2D;
+//using Emgu.CV.Util;
+//using Emgu.Util.TypeEnum;
+//using Emgu.CV.Structure;
+
+//using AForge.Imaging;
+
+using Strabo.Core.BoundingBox;
 
 
 namespace Strabo.Core.ImageProcessing
@@ -45,18 +49,21 @@ namespace Strabo.Core.ImageProcessing
     {
         public class MyBlob
         {
-            public Rectangle bbx;
-            public Point mass_center;
-            //LineOfBestFit lbf;               Because LineOfBestFit has commented here, I will comment lines that are related to LineOfBestFit- lines are 355,356 and 357
+            // public Rectangle bbx;  // Trying out minimum bbx
+            public MinimumBoundingBox bbx;
+            public Rectangle maxBbx;
+            public Point maxBbxMassCenter;
+            public int maxBbxArea;
+
+            // public Point mass_center;
+            // LineOfBestFit lbf;               Because LineOfBestFit has commented here, I will comment lines that are related to LineOfBestFit- lines are 355,356 and 357
 
             public int pixel_count = 0;         /// It has been used in MyConnectedComponentsAnalysisFast but MyBlobCounter
-            public int area;                    /// It has been used in MyConnectedComponentsAnalysisFast but MyBlobCounter
             public int pixel_id;
             //  public List<int> string_id_list = new List<int>();    It has not been used anywhere
             public int string_id;
-            //   public bool salient;                     It has not been used anywhere
             public List<int> neighbors = new List<int>();
-            public double orientation = -1;        //It has been used in MyConnectedComponentsAnalysisFast but MyBlobCounter
+            // public double orientation = -1;        //It has been used in MyConnectedComponentsAnalysisFast but MyBlobCounter
             public int sample_x;
             public int sample_y;
             public double m;
@@ -68,11 +75,19 @@ namespace Strabo.Core.ImageProcessing
             public bool sizefilter_included = true;
             public bool split_here = false;
             public int neighbor_count = 0;
-            // public double[] mean_shift_results = new double[4];     It has not been used anywhere
-           // public double[] mean_shift_results2 = new double[4];    It has not been used anywhere 
-          //  public byte[] rgb = new byte[3];                        It has not been used anywhere
 
+            public MyBlob(PointF[] points)
+            {
+                // MinumumBoundingBox provides methods for
+                // area, orientation, dimensions and many other
+                this.bbx = new MinimumBoundingBox(points);
+            }
+            public MyBlob()
+            {
+
+            }
         }
+
         public class MyBlobCounter
         {
 
@@ -83,26 +98,35 @@ namespace Strabo.Core.ImageProcessing
           //  private int[] white;     bbx, black and white have not been used so I commented them 
 
             private int[] objectSize;
-            private void Process(Bitmap srcImg)           ////I don’t know if I should have another function with a similar name that accepts path as input?
+
+            // To any new user modifying this code
+            // Do not write comments like this
+            ////I don’t know if I should have another function with a similar name that accepts path as input?
+            private void Process(Bitmap srcImg)           
             {
+                // Steps:
+                // Get source Image dimensions
+                // Allocate labels Array
+                // Initialize the label count as 0
+                // Initialize the maximum number of labels that can be found
+                // Map all labels to themselves
+
                 srcImg = ImageUtils.toGray(srcImg);
-                // get source image size
                 int width = srcImg.Width;                          
                 int height = srcImg.Height;                         
-                // allocate labels array
                 objectLabels = new ushort[width * height];
-                // initial labels count
+
                 ushort labelsCount = 0;                             
-                // create map
                 int maxObjects = ((width / 2) + 1) * ((height / 2) + 1) + 1;
                 int[] map = new int[maxObjects];
-                // initially map all labels to themself
                 for (int i = 0; i < maxObjects; i++)
                     map[i] = i;
+
                 // lock source bitmap data
                 BitmapData srcData = srcImg.LockBits(
                     new Rectangle(0, 0, width, height),
                     ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
+
                 int srcStride = srcData.Stride;
                 int srcOffset = srcStride - width;
                 // do the job
@@ -266,23 +290,22 @@ namespace Strabo.Core.ImageProcessing
                     }
                 }
                 // repair object labels
-                for (int i = 0, n = objectLabels.Length; i < n; i++)
+                for (int i=0, n=objectLabels.Length; i<n; i++)
                 {
                     objectLabels[i] = reMap[objectLabels[i]];
                 }
             }
+
             // Get array of objects rectangles
             public List<MyBlob> GetBlobs(Bitmap srcImg)
             {
                 Process(srcImg);
+
                 ushort[] labels = this.objectLabels;
                 int count = this.objectsCount;
                 this.objectSize = new int[count + 1];
                 double[] center_x = new double[count + 1];
                 double[] center_y = new double[count + 1];
-                // LBF off for now
-                //LineOfBestFit[] lbf = new LineOfBestFit[count + 1];
-                // image size
                 int width = srcImg.Width;
                 int height = srcImg.Height;
                 int i = 0, label;
@@ -298,6 +321,7 @@ namespace Strabo.Core.ImageProcessing
                     x1[j] = width;
                     y1[j] = height;
                 }
+
                 // walk through labels array, skip one row and one col
                 for (int y = 0; y < height; y++)
                 {
@@ -308,11 +332,9 @@ namespace Strabo.Core.ImageProcessing
                         // skip unlabeled pixels
                         if (label == 0)
                             continue;
-                        // LBF off for now
-                        //if (lbf[label] == null)
-                        //    lbf[label] = new LineOfBestFit();
-                        //lbf[label].Update(x, height - y);
+
                         this.objectSize[label]++;
+
                         // check and update all coordinates
                         center_x[label] += x;
                         center_y[label] += y;
@@ -336,38 +358,50 @@ namespace Strabo.Core.ImageProcessing
                         }
                     }
                 }
+
+                //Get the list of pixel locations to calculate minimum bounding rectangles
+                List<PointF[]> positions = new List<PointF[]>();
+                //Store the next bias to insert in each list in positions
+                int[] nextPos = new int[count+1];
+
+                //It seems that the index of label has been out of range of positions, 
+                //so use a dictionary to project labels to their position in nextPos array
+                //Dictionary<int, int> labelToNumInOrder = new Dictionary<int, int>();
+                for (int j = 1; j <= count; j++)
+                {
+                    positions.Add(new PointF[objectSize[j]]);
+                }
+                i = 0;
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++, i++)
+                    {
+                        // because label starts from 1
+                        label = labels[i] - 1;
+                        if (label == -1)
+                            continue;
+
+                        // not sure if the label number is always less than count ????
+                        positions[label][nextPos[label]] = new PointF(x, y);
+                        nextPos[label] += 1;
+                    }
+                }
+
                 List<MyBlob> blobs = new List<MyBlob>();
                 for (int j = 1; j <= count; j++)
                 {
-                    MyBlob b = new MyBlob();
-                    b.bbx = new Rectangle(x1[j], y1[j], x2[j] - x1[j] + 1, y2[j] - y1[j] + 1);
+                    MyBlob b = new MyBlob(positions[j - 1]);
+                    b.maxBbx = new Rectangle(x1[j], y1[j], x2[j] - x1[j] + 1, y2[j] - y1[j] + 1);
                     b.pixel_count = this.objectSize[j];
-                    b.mass_center = new Point(Convert.ToInt32(center_x[j] / (double)b.pixel_count), Convert.ToInt32(center_y[j] / (double)b.pixel_count));
-                    b.area = (x2[j] - x1[j] + 1) * (y2[j] - y1[j] + 1);
+                    b.maxBbxMassCenter = new Point(Convert.ToInt32(center_x[j] / (double)b.pixel_count), Convert.ToInt32(center_y[j] / (double)b.pixel_count));
+                    b.maxBbxArea = (x2[j] - x1[j] + 1) * (y2[j] - y1[j] + 1);
+
                     b.pixel_id = j;
                     b.sample_x = sample_x[j];
                     b.sample_y = sample_y[j];
-                    // LBF off for now
-                    if (b.bbx.Width == 1)
-                    {
-                        b.orientation = 90;
-                        b.m = Double.NaN;
-                        b.b = x1[j]; // x = 4
-                    }
-                    else if (b.bbx.Height == 1)
-                    {
-                        b.orientation = 180;
-                        b.m = 0;
-                        b.b = y1[j]; // y = 4
-                    }
-                    else
-                    {
-                     //   b.orientation = lbf[j].GetOrientation();  
-                      //  b.m = lbf[j].m;
-                       // b.b = lbf[j].b;
-                    }
                     blobs.Add(b);
                 }
+
                 return blobs;
             }
         }

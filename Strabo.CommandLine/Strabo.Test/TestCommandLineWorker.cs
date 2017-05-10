@@ -328,7 +328,7 @@ namespace Strabo.Test
 
             inputArgs.bbx = bbx;
             inputArgs.mapLayerName = "block-map";
-            inputArgs.threadNumber = 8;
+            inputArgs.threadNumber = 1;
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
             string dataPath = Directory.GetParent(appPath).Parent.Parent.FullName + "\\data\\";

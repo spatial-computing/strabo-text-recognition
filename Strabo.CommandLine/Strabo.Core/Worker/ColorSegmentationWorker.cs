@@ -72,6 +72,7 @@ namespace Strabo.Core.Worker
                 StraboParameters.rowSlice * StraboParameters.colSlice + " blocks");
 
             // Split the image into row*col blocks
+            // We do not want the image to overlap during color segmentation
             ImageSlicer imgChunks = new ImageSlicer();
             List<string> imgPathList = imgChunks.Apply(
                     StraboParameters.rowSlice, StraboParameters.colSlice,
@@ -124,7 +125,7 @@ namespace Strabo.Core.Worker
                 Log.WriteLine("Stiching Images");
                 ImageStitcher imgSticher = new ImageStitcher();
                 Bitmap stichedImage = imgSticher.mergeContiguousImageBlocks(mcImages,
-                                          StraboParameters.rowSlice, StraboParameters.colSlice);
+                                         StraboParameters.rowSlice, StraboParameters.colSlice);
 
                 // imgSticher.ApplyWithoutGridLines(mcImages, new Bitmap(sourceFullPath).Width);
                 string stichedImagePath = outputDir + "stichedImage" + "_k" + ".png";
@@ -147,75 +148,5 @@ namespace Strabo.Core.Worker
                 }
             }
         }
-
-        /*
-        public string Apply(string inputDir, string outputDir, string fileName,
-            int k, int threadNumber)
-        {
-            try
-            {
-                string fileNameWithoutPath = Path.GetFileNameWithoutExtension(fileName);
-
-                //MeanShift
-                ImageSlicer imgChunks = new ImageSlicer();
-                List<string> imgPathList = imgChunks.Apply(
-                        StraboParameters.rowSlice, StraboParameters.colSlice,
-                        StraboParameters.overlap, inputDir+fileName, outputDir
-                    );
-                Console.WriteLine("Hello");
-                Log.WriteLine("Number of images: " + imgPathList.Count);
-
-                Log.WriteLine("Meanshift in progress...");
-                MeanShiftMultiThreads mt = new MeanShiftMultiThreads();
-                string meanShiftPath = outputDir + fileNameWithoutPath + "_ms.png";
-
-                mt.ApplyYIQMT(
-                    inputDir + fileName, threadNumber,
-                    StraboParameters.spatialDistance, StraboParameters.colorDistance,
-                    meanShiftPath);
-                mt = null;
-                GC.Collect();
-                Log.WriteLine("Meanshift finished...");
-
-                // Median Cut
-                Log.WriteLine("Median Cut in progress...");
-                int medianCutColors = StraboParameters.medianCutColors;
-                string medianCutPath = outputDir + fileNameWithoutPath + "_mc" +
-                    medianCutColors.ToString() + ".png";
-                Bitmap msimg = new Bitmap(
-                    outputDir + fileNameWithoutPath + "_ms.png"
-                    );
-                msimg = ImageUtils.AnyToFormat32bppRgb(msimg);
-                using (msimg)
-                {
-
-                    ColorImageQuantizer ciq = new ColorImageQuantizer(new MedianCutQuantizer());
-                    // WuQuantizer wq = new WuQuantizer();
-                    // wq.QuantizeImage(msimg).Save(medianCutPath, ImageFormat.Png);
-                    Bitmap tempImage = ciq.ReduceColors(msimg, medianCutColors);
-                    tempImage.Save(medianCutPath);
-                }
-                Log.WriteLine("Median Cut finished");
-
-                // KMeans
-                Log.WriteLine("KMeans in progress...");
-                MyKMeans kmeans = new MyKMeans();
-                string kmeans_path = outputDir + fileNameWithoutPath + "_mc" +
-                    medianCutColors + "_k" + k + ".png";
-                kmeans.Apply(k, medianCutPath, kmeans_path);
-                kmeans = null;
-                GC.Collect();
-                Log.WriteLine("KMeans finished...");
-                return kmeans_path;
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine("ColorSegmentationWorker: " + e.Message);
-                Log.WriteLine(e.Source);
-                Log.WriteLine(e.StackTrace);
-                throw;
-            }
-        }
-        */
     }
 }

@@ -51,20 +51,20 @@ namespace Strabo.Core.TextRecognition
         public double LeftDown_X;
         public double LeftDown_Y;
 
-       public PointF MinX;
-       public PointF MinY;
+        public PointF MinX;
+        public PointF MinY;
 
-       public PointF MaxX;
-       public PointF MaxY;
+        public PointF MaxX;
+        public PointF MaxY;
 
-       public string ImageID;
-       public string OriginalImageID;
-       public string PixelToSizeRatio;
-       public string Text;
+        public string ImageID;
+        public string OriginalImageID;
+        public string PixelToSizeRatio;
+        public string Text;
 
-       public PointF[] Vertices;
+        public PointF[] Vertices;
 
-       public NeighborhoodResult(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, string imageID, string originalImageID, string pixelToSizeRatio, string textNonText)
+        public NeighborhoodResult(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, string imageID, string originalImageID, string pixelToSizeRatio, string textNonText)
         {
             Vertices = new PointF[4];
 
@@ -173,7 +173,7 @@ namespace Strabo.Core.TextRecognition
 
                         boundingbox = new Rectangle(x, y, width, height);
                         AddedAreaResults AddedArea = Area.FromImageToArray(OriginalBinaryImage, boundingbox);
-                       // int[,] TextLabelAreaPoints = Area.FromImageToArray(OriginalBinaryImage, boundingbox);
+                        // int[,] TextLabelAreaPoints = Area.FromImageToArray(OriginalBinaryImage, boundingbox);
 
                         double PixelToSizeRatio = (double)(AddedArea.AreaForeGoundPixels) / (double)(width * (height));
 
@@ -181,7 +181,7 @@ namespace Strabo.Core.TextRecognition
                         Neighbors.Add(Neighbor);   //////// in this part I add the result of strabo (not neighborhoods) to Neighbors list
 
                         HorizontalTextExtraction AreaDetection = new HorizontalTextExtraction();
-                        Neighbors = AreaDetection.Apply(width, height, x, y, tessOcrResultList[k].tess_word3.Substring(0, tessOcrResultList[k].tess_word3.Length ), tessOcrResultList[k].id, OriginalBinaryImage, Neighbors);
+                        Neighbors = AreaDetection.Apply(width, height, x, y, tessOcrResultList[k].tess_word3.Substring(0, tessOcrResultList[k].tess_word3.Length), tessOcrResultList[k].id, OriginalBinaryImage, Neighbors);
 
                     }
                     else
@@ -224,7 +224,7 @@ namespace Strabo.Core.TextRecognition
             }
         }
 
-       
+
 
 
         public List<TessResult> EditTesseractResults(List<TessResult> tessResults, string inputpath)
@@ -263,9 +263,9 @@ namespace Strabo.Core.TextRecognition
 
                             Rectangle boundingbox = new Rectangle(bbx_X, bbx_Y, bbx_Width, bbx_Height);
 
-                            
 
-                                
+
+
                             //int[,] AddedAreaPoints = Area.FromImageToArray(OriginalBinaryImage, boundingbox);
                             //Bitmap NewBBx = Area.FromArrayToImage(AddedAreaPoints);
                             Bitmap NewBBx = Area.FromImageToArray(OriginalBinaryImage, boundingbox).Area;
@@ -285,7 +285,7 @@ namespace Strabo.Core.TextRecognition
                             if (tessResults[i].tess_raw3.Contains("\n\n"))
                             {
                                 string temp = "";
-                                temp=tessResults[i].tess_raw3.Replace("\n\n", "\n");
+                                temp = tessResults[i].tess_raw3.Replace("\n\n", "\n");
                                 tessResults[i].tess_raw3 = temp;
                             }
 
@@ -392,7 +392,7 @@ namespace Strabo.Core.TextRecognition
         public void CropNewTextLabels(string inputPath, string OTDPath)
         {
 
-            string[] NeighborhoodAreas=new string[0];
+            string[] NeighborhoodAreas = new string[0];
             PointF MinX, MaxX, MinY, MaxY;
             int NumberOfNeighbors;
             Rectangle boundingbox;
@@ -497,7 +497,7 @@ namespace Strabo.Core.TextRecognition
 
 
                     }
-                    ImageStitcher imgstitcher = new ImageStitcher();                   
+                    ImageStitcher imgstitcher = new ImageStitcher();
                     CropedFromOriginalImage = imgstitcher.ExpandCanvas(CropedFromOriginalImage, 20);
                     CropedFromOriginalImage.Save(inputPath + OTDPath + "\\" + FileName + ".png");
                 }
@@ -617,14 +617,14 @@ namespace Strabo.Core.TextRecognition
             return Meeting;
         }
 
-       
+
         public bool UpDownPixels(int[,] AddedArea)
         {
             bool EnoughPixels = true;
             int UpNumberOfPixels = 0;
             int DownNumberOfPixels = 0;
 
-            for (int i = 0 ; i < Convert.ToInt32(AddedArea.Rows()/2) ; i++)
+            for (int i = 0; i < Convert.ToInt32(AddedArea.Rows() / 2); i++)
             {
                 for (int j = 0; j < AddedArea.Columns(); j++)
                 {
@@ -633,7 +633,7 @@ namespace Strabo.Core.TextRecognition
                 }
             }
 
-            for (int i = (Convert.ToInt32(AddedArea.Rows()/2)+1) ; i < Convert.ToUInt32(AddedArea.Rows()); i++)
+            for (int i = (Convert.ToInt32(AddedArea.Rows() / 2) + 1); i < Convert.ToUInt32(AddedArea.Rows()); i++)
             {
                 for (int j = 0; j < AddedArea.Columns(); j++)
                 {
@@ -642,12 +642,12 @@ namespace Strabo.Core.TextRecognition
                 }
             }
 
-            double PixelsRatio=0;
+            double PixelsRatio = 0;
 
             if (UpNumberOfPixels > DownNumberOfPixels)
-                PixelsRatio = (double)(DownNumberOfPixels)/(double)(UpNumberOfPixels);
+                PixelsRatio = (double)(DownNumberOfPixels) / (double)(UpNumberOfPixels);
             else
-                PixelsRatio = (double)(UpNumberOfPixels)/(double)(DownNumberOfPixels);
+                PixelsRatio = (double)(UpNumberOfPixels) / (double)(DownNumberOfPixels);
 
             if (PixelsRatio < 0.42)
                 EnoughPixels = false;
@@ -655,7 +655,7 @@ namespace Strabo.Core.TextRecognition
             return EnoughPixels;
         }
 
-       
+
         public void ScanImage(Bitmap srcImg)
         {
             srcImg = ImageUtils.toGray(srcImg);
@@ -713,7 +713,7 @@ namespace Strabo.Core.TextRecognition
             // unlock source images
             srcImg.UnlockBits(srcData);
         }
-   
+
 
 
     }

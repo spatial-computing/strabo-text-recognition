@@ -81,7 +81,7 @@ namespace Strabo.Core.TextRecognition
             //if (!RemoveNoiseText.NotTooManyNoiseCharacters(tessOcrResult.tess_word3))
             //    tessOcrResult.id = "-1";
             //else
-                tessOcrResult.tess_word3 = Regex.Replace(tessOcrResult.tess_word3, @"[^a-zA-Z0-9\s]", "");
+            tessOcrResult.tess_word3 = Regex.Replace(tessOcrResult.tess_word3, @"[^a-zA-Z0-9\s]", "");
             return tessOcrResult;
         }
         public TessResult CleanChinese(TessResult tessOcrResult)
@@ -144,7 +144,7 @@ namespace Strabo.Core.TextRecognition
         {
             try
             {
-                if(!elasticsearch)
+                if (!elasticsearch)
                     tessOcrResultList = RemoveMergeMultiLineResults(tessOcrResultList, 3);
 
 
@@ -156,8 +156,8 @@ namespace Strabo.Core.TextRecognition
                     }
                     else
                         CheckDictionaryElasticSearch.readDictionary(top, left, bottom, right);
-                
-                
+
+
 
                 for (int i = 0; i < tessOcrResultList.Count; i++)
                 {
@@ -185,7 +185,7 @@ namespace Strabo.Core.TextRecognition
                         if (dictionaryPath != "" && tessOcrResultList[i].tess_word3.Length >= dictionaryExactMatchStringLength)
                         {
                             Log.WriteLine("Post Processing using dictionary");
-                            if(elasticsearch)
+                            if (elasticsearch)
                                 tessOcrResultList[i] = CheckDictionaryElasticSearch.getDictionaryWord(tessOcrResultList[i], dictionaryExactMatchStringLength);
                             else
                                 tessOcrResultList[i] = CheckDictionary.getDictionaryWord(tessOcrResultList[i], dictionaryExactMatchStringLength);

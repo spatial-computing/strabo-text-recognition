@@ -55,7 +55,7 @@ namespace Strabo.Core.TextRecognition
         public string tess_word3;
         public string dict_word3;
         public double tess_cost3;
-        public string hocr; 
+        public string hocr;
 
         public string tess_word;
         public string dict_word;
@@ -64,8 +64,18 @@ namespace Strabo.Core.TextRecognition
         public string fileName;
         public int x;
         public int y;
+        public int x2;
+        public int y2;
+        public int x3;
+        public int y3;
+        public int x4;
+        public int y4;
+
         public int w;
         public int h;
+
+        public int mcX;
+        public int mcY;
         public string sameMatches;
 
         public bool front = false;

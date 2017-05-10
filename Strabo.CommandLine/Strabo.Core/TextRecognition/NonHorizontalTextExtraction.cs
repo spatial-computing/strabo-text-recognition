@@ -21,7 +21,7 @@ namespace Strabo.Core.TextRecognition
             int numberOfRecognizedLetters = RecognizedText.Length;
 
             if (box.size.Height > box.size.Width)   ///Non horizental bounding boxes that slope of bounding box is less than zero 
-            ///
+                                                    ///
             {
                 double WidthAddition = Area.AddToHeight(RecognizedText, addedArea.size.Width);
                 double angleInRadius = ((90 + box.angle) * Math.PI) / 180;
@@ -209,64 +209,64 @@ namespace Strabo.Core.TextRecognition
 
                 //unsafe
                 //{
-                    int offset1 = (_srcData.Stride - boundingbox.Width * 3);
-                    // do the job
-                    unsafe
-                    {
-                        byte* src = (byte*)_srcData.Scan0.ToPointer();
+                int offset1 = (_srcData.Stride - boundingbox.Width * 3);
+                // do the job
+                unsafe
+                {
+                    byte* src = (byte*)_srcData.Scan0.ToPointer();
 
-                        // for each row
-                        for (int y = 0; y < boundingbox.Height; y += 1)
+                    // for each row
+                    for (int y = 0; y < boundingbox.Height; y += 1)
+                    {
+                        // for each pixel
+                        for (int x = 0; x < boundingbox.Width; x++, src += 3)
                         {
-                            // for each pixel
-                            for (int x = 0; x < boundingbox.Width; x++, src += 3)
+                            if ((x + boundingbox.X < OriginalBinaryImage.Width) && (y + boundingbox.Y < OriginalBinaryImage.Height))
                             {
-                                if ((x + boundingbox.X < OriginalBinaryImage.Width) && (y + boundingbox.Y < OriginalBinaryImage.Height))
+
+                                double[] result = new double[4];
+                                for (int l = 0; l < result.Length; l++)
+                                    result[l] = (y + boundingbox.Y) - slope[l] * (x + boundingbox.X) + b[l];
+
+                                if (result[0] < 0 && result[1] > 0 && result[2] > 0 && result[3] < 0)   /// explore if pixel is in bounding box of Min Area Rectangle
                                 {
 
-                                    double[] result = new double[4];
-                                    for (int l = 0; l < result.Length; l++)
-                                        result[l] = (y + boundingbox.Y) - slope[l] * (x + boundingbox.X) + b[l];
-
-                                    if (result[0] < 0 && result[1] > 0 && result[2] > 0 && result[3] < 0)   /// explore if pixel is in bounding box of Min Area Rectangle
+                                    if ((src[RGB.R] == 0) &&
+                                        (src[RGB.G] == 0) &&
+                                        (src[RGB.B] == 0))
                                     {
+                                        //AddedAreaPoints[y, x] = 1;
+                                        AddedAreaPixelNumber++;
+                                        _dstimg[y, x] = true;
+                                        _dstimg_HoleDetection[y, x] = false;
+                                    }
+                                    else
+                                    {
+                                        //AddedAreaPoints[y, x] = 0;
+                                        _dstimg[y, x] = false;
+                                        _dstimg_HoleDetection[y, x] = true;
 
-                                        if ((src[RGB.R] == 0) &&
-                                            (src[RGB.G] == 0) &&
-                                            (src[RGB.B] == 0))
-                                        {
-                                            //AddedAreaPoints[y, x] = 1;
-                                            AddedAreaPixelNumber++;
-                                            _dstimg[y, x] = true;
-                                            _dstimg_HoleDetection[y, x] = false;
-                                        }
-                                        else
-                                        {
-                                            //AddedAreaPoints[y, x] = 0;
-                                            _dstimg[y, x] = false;
-                                            _dstimg_HoleDetection[y, x] = true;
-                           
-                                        }
+                                    }
 
-                                        if ((x + boundingbox.X) == Convert.ToInt32(ExploreAddedArea_MinPoint.X) || (y + boundingbox.Y) == Convert.ToInt32(ExploreAddedArea_MinPoint.Y) || (x + boundingbox.X) == Convert.ToInt32(ExploreAddedArea_MaxPoint.X) || (y + boundingbox.Y) == Convert.ToInt32(ExploreAddedArea_MaxPoint.Y))
-                                        {
-                                            if (((x + boundingbox.X) - Convert.ToInt32(ExploreAddedArea_MinPoint.X)) > 0 && (y + boundingbox.Y) - Convert.ToInt32(ExploreAddedArea_MinPoint.Y) > 0 && ((x + boundingbox.X) - Convert.ToInt32(ExploreAddedArea_MinPoint.X)) > boundingbox.Width && (y + boundingbox.Y) - Convert.ToInt32(ExploreAddedArea_MinPoint.Y)>boundingbox.Height)
+                                    if ((x + boundingbox.X) == Convert.ToInt32(ExploreAddedArea_MinPoint.X) || (y + boundingbox.Y) == Convert.ToInt32(ExploreAddedArea_MinPoint.Y) || (x + boundingbox.X) == Convert.ToInt32(ExploreAddedArea_MaxPoint.X) || (y + boundingbox.Y) == Convert.ToInt32(ExploreAddedArea_MaxPoint.Y))
+                                    {
+                                        if (((x + boundingbox.X) - Convert.ToInt32(ExploreAddedArea_MinPoint.X)) > 0 && (y + boundingbox.Y) - Convert.ToInt32(ExploreAddedArea_MinPoint.Y) > 0 && ((x + boundingbox.X) - Convert.ToInt32(ExploreAddedArea_MinPoint.X)) > boundingbox.Width && (y + boundingbox.Y) - Convert.ToInt32(ExploreAddedArea_MinPoint.Y) > boundingbox.Height)
                                             _dstimg_HoleDetection[(y + boundingbox.Y) - Convert.ToInt32(ExploreAddedArea_MinPoint.Y), (x + boundingbox.X) - Convert.ToInt32(ExploreAddedArea_MinPoint.X)] = true;
-                                        }
                                     }
                                 }
                             }
-                            src += offset1;
                         }
+                        src += offset1;
                     }
+                }
 
-             //   }
+                //   }
 
                 OriginalBinaryImage.UnlockBits(_srcData);
 
                 Bitmap img = ImageUtils.Array2DToBitmap(_dstimg);
                 Bitmap img1 = ImageUtils.Array2DToBitmap(_dstimg_HoleDetection);
-                
+
                 AddedAreaPixelToSizeRatio = (double)(AddedAreaPixelNumber) / (addedArea.size.Height * addedArea.size.Width);
                 if (AddedAreaPixelToSizeRatio > StraboParameters.PixelToSizeRatio)
                 {
@@ -286,7 +286,7 @@ namespace Strabo.Core.TextRecognition
 
             catch (Exception exception)
             {
-                Log.Write("Nonhorizontal Area Extraction Error "+exception.Message);
+                Log.Write("Nonhorizontal Area Extraction Error " + exception.Message);
             }
             return PixelsRatio_Character;
         }
@@ -317,13 +317,13 @@ namespace Strabo.Core.TextRecognition
 
                 for (int i = 0; i < char_blobs.Count; i++)
                 {
-                    int MaxSize = 0;
-                    if (char_blobs[i].bbx.Width == addedArea.size.Width || char_blobs[i].bbx.Height == addedArea.size.Height)
+                    float MaxSize = 0;
+                    if (char_blobs[i].bbx.width() == addedArea.size.Width || char_blobs[i].bbx.height() == addedArea.size.Height)
                     {
-                        if (char_blobs[i].bbx.Width == addedArea.size.Width)
-                            MaxSize = char_blobs[i].bbx.Width;
+                        if (char_blobs[i].bbx.width() == addedArea.size.Width)
+                            MaxSize = char_blobs[i].bbx.width();
                         else
-                            MaxSize = char_blobs[i].bbx.Height;
+                            MaxSize = char_blobs[i].bbx.height();
                         double AveragePixel = (double)char_blobs[i].pixel_count / (double)MaxSize;
                         if (AveragePixel < StraboParameters.PixelToSizeRatio)
                             return false;
@@ -411,8 +411,8 @@ namespace Strabo.Core.TextRecognition
                             TextNonText = "Text";
 
                         if ((i == 0 && box.size.Height < box.size.Width) || (i == 1 && box.size.Height > box.size.Width))   //// left neighbors
-                          neighbor = new NeighborhoodResult(AddedAreaVertices[0].X, AddedAreaVertices[0].Y, AddedAreaVertices[1].X, AddedAreaVertices[1].Y, AddedAreaVertices[2].X,
-                                AddedAreaVertices[2].Y, AddedAreaVertices[3].X, AddedAreaVertices[3].Y, Convert.ToString(imageID) + "-left-" + Convert.ToString(NumberofNeighbors), Convert.ToString(imageID), Convert.ToString(Math.Round((decimal)AddedAreaPixelToSizeRatio, 2)), TextNonText);
+                            neighbor = new NeighborhoodResult(AddedAreaVertices[0].X, AddedAreaVertices[0].Y, AddedAreaVertices[1].X, AddedAreaVertices[1].Y, AddedAreaVertices[2].X,
+                                  AddedAreaVertices[2].Y, AddedAreaVertices[3].X, AddedAreaVertices[3].Y, Convert.ToString(imageID) + "-left-" + Convert.ToString(NumberofNeighbors), Convert.ToString(imageID), Convert.ToString(Math.Round((decimal)AddedAreaPixelToSizeRatio, 2)), TextNonText);
                         else    ////// right neighbors
                             neighbor = new NeighborhoodResult(AddedAreaVertices[0].X, AddedAreaVertices[0].Y, AddedAreaVertices[1].X, AddedAreaVertices[1].Y, AddedAreaVertices[2].X,
                                   AddedAreaVertices[2].Y, AddedAreaVertices[3].X, AddedAreaVertices[3].Y, Convert.ToString(imageID) + "-right-" + Convert.ToString(NumberofNeighbors), Convert.ToString(imageID), Convert.ToString(Math.Round((decimal)AddedAreaPixelToSizeRatio, 2)), TextNonText);
@@ -488,56 +488,56 @@ namespace Strabo.Core.TextRecognition
 
             //unsafe
             //{
-                int offset1 = (_srcData.Stride - boundingbox.Width * 3);
-                // do the job
-                unsafe
-                {
-                    byte* src = (byte*)_srcData.Scan0.ToPointer();
+            int offset1 = (_srcData.Stride - boundingbox.Width * 3);
+            // do the job
+            unsafe
+            {
+                byte* src = (byte*)_srcData.Scan0.ToPointer();
 
-                    // for each row
-                    for (int y = 0; y < boundingbox.Height; y += 1)
+                // for each row
+                for (int y = 0; y < boundingbox.Height; y += 1)
+                {
+                    // for each pixel
+                    for (int x = 0; x < boundingbox.Width; x++, src += 3)
                     {
-                        // for each pixel
-                        for (int x = 0; x < boundingbox.Width; x++, src += 3)
+                        if ((x + boundingbox.X < OriginalBinaryImage.Width) && (y + boundingbox.Y < OriginalBinaryImage.Height))
                         {
-                            if ((x + boundingbox.X < OriginalBinaryImage.Width) && (y + boundingbox.Y < OriginalBinaryImage.Height))
+
+                            double[] result = new double[4];
+                            for (int l = 0; l < result.Length; l++)
+                                result[l] = (y + boundingbox.Y) - slope[l] * (x + boundingbox.X) + b[l];
+
+                            if (result[0] < 0 && result[1] > 0 && result[2] > 0 && result[3] < 0)   /// explore if pixel is in bounding box of Min Area Rectangle
                             {
 
-                                double[] result = new double[4];
-                                for (int l = 0; l < result.Length; l++)
-                                    result[l] = (y + boundingbox.Y) - slope[l] * (x + boundingbox.X) + b[l];
-
-                                if (result[0] < 0 && result[1] > 0 && result[2] > 0 && result[3] < 0)   /// explore if pixel is in bounding box of Min Area Rectangle
+                                if ((src[RGB.R] == 0) &&
+                                    (src[RGB.G] == 0) &&
+                                    (src[RGB.B] == 0))
                                 {
-
-                                    if ((src[RGB.R] == 0) &&
-                                        (src[RGB.G] == 0) &&
-                                        (src[RGB.B] == 0))
-                                    {
-                                        //AddedAreaPoints[y, x] = 1;
-                                        _dstimg[y, x] = true;
-                                        AreaPoints[y, x] = 1;
-                                        // ForegroundPixels++;
-                                    }
-                                    else
-                                    {
-                                        //AddedAreaPoints[y, x] = 0;
-                                        _dstimg[y, x] = false;
-                                        AreaPoints[y, x] = 0;
-                                    }
+                                    //AddedAreaPoints[y, x] = 1;
+                                    _dstimg[y, x] = true;
+                                    AreaPoints[y, x] = 1;
+                                    // ForegroundPixels++;
+                                }
+                                else
+                                {
+                                    //AddedAreaPoints[y, x] = 0;
+                                    _dstimg[y, x] = false;
+                                    AreaPoints[y, x] = 0;
                                 }
                             }
                         }
-                        src += offset1;                        
                     }
+                    src += offset1;
                 }
+            }
 
-          //  }
+            //  }
 
             OriginalBinaryImage.UnlockBits(_srcData);
 
             Bitmap img = ImageUtils.Array2DToBitmap(_dstimg);
-           // img.Save(@"C:\Users\narges\Documents\test\test(Non-Horizontal).png");
+            // img.Save(@"C:\Users\narges\Documents\test\test(Non-Horizontal).png");
             //AddedAreaResults Area = new AddedAreaResults(img, ForegroundPixels);
 
 
