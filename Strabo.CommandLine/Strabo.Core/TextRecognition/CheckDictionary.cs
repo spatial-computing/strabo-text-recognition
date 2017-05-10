@@ -199,7 +199,8 @@ namespace Strabo.Core.TextRecognition
             if (tr.tess_word3.Contains("ouse"))
                 Console.WriteLine("debug");
             try
-            {
+            { 
+                // Also removes any single digit that may be valid
                 if (tr.tess_word3 == null || tr.tess_word3.Length < _dictionaryExactMatchStringLength) //input is invalid
                 {
                     tr.id = "-1";
@@ -208,12 +209,21 @@ namespace Strabo.Core.TextRecognition
                 {
                     DictResult dictR;
 
-                    if (!tr.tess_word3.Contains(" ") && !tr.tess_word3.Contains("\n")) // input is a single word
+                    if (!tr.tess_word3.Contains(" ") && !tr.tess_word3.Contains("\n"))
+                    {
+                        // input is a single word
                         dictR = checkOneWord(tr.tess_word3);
-                    else if (!tr.tess_word3.Contains("\n")) // input is a single line
+                    }
+                    else if (!tr.tess_word3.Contains("\n"))
+                    {
+                        // input is a single line
                         dictR = checkOneLine(tr.tess_word3);
-                    else // input is multi-lines
+                    }
+                    else
+                    {
+                        // input is multi-lines
                         dictR = checkMultiLines(tr.tess_word3);
+                    }
                     tr.dict_similarity = dictR.similarity;
                     tr.dict_word3 = dictR.text;
                 }

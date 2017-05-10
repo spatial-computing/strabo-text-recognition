@@ -81,7 +81,7 @@ namespace Strabo.Core.TextRecognition
             //if (!RemoveNoiseText.NotTooManyNoiseCharacters(tessOcrResult.tess_word3))
             //    tessOcrResult.id = "-1";
             //else
-                tessOcrResult.tess_word3 = Regex.Replace(tessOcrResult.tess_word3, @"[^a-zA-Z0-9\s]", "");
+            tessOcrResult.tess_word3 = Regex.Replace(tessOcrResult.tess_word3, @"[^a-zA-Z0-9\s]", "");
             return tessOcrResult;
         }
         public TessResult CleanChinese(TessResult tessOcrResult)
@@ -92,24 +92,72 @@ namespace Strabo.Core.TextRecognition
         }
         public TessResult CleanNumber(TessResult tessOcrResult)
         {
-            tessOcrResult.tess_word3 = Regex.Replace(tessOcrResult.tess_word3, @"[^0-9]", "");
+            // °
+            string raw_result = tessOcrResult.tess_word3;
+
+            Log.WriteLine("Raw CleanNumber: " + raw_result);
+
+            raw_result = checkForDegrees(raw_result);
+            raw_result = checkFor1s(raw_result);
+
+            tessOcrResult.tess_word3 = Regex.Replace(raw_result, @"[^0-9]", "");
+            Log.WriteLine("Raw CleanNumber after final Regex: " + tessOcrResult.tess_word3);
+
             return tessOcrResult;
         }
+
+        private string checkForDegrees(string raw_result)
+        {
+            // Two types of degrees exists
+            // ASCII 0176, 0186
+            const char degree_1 = (char)176;
+            string degreestr = degree_1.ToString();
+            raw_result = raw_result.Replace(degreestr, "0");
+
+            const char degree_2 = (char)186;
+            degreestr = degree_2.ToString();
+            raw_result = raw_result.Replace(degreestr, "0");
+
+            return raw_result;
+        }
+
+        private string checkFor1s(string raw_result)
+        {
+            // 1 can be mistaken for \, /, |, l
+
+            // Replacing | with 1
+            raw_result = raw_result.Replace('|', '1');
+
+            // Replacing l with 1
+            raw_result = raw_result.Replace('l', '1');
+
+            // Replacing \ with 1
+            raw_result = raw_result.Replace('\\', '1');
+
+            // Replacing / with 1
+            raw_result = raw_result.Replace('/', '1');
+
+            return raw_result;
+        }
+
         public List<TessResult> Apply(List<TessResult> tessOcrResultList, string dictionaryPath, int dictionaryExactMatchStringLength, string lng, double top, double left, double bottom, double right, bool elasticsearch)
         {
             try
             {
-                if(!elasticsearch)
+                if (!elasticsearch)
                     tessOcrResultList = RemoveMergeMultiLineResults(tessOcrResultList, 3);
 
 
                 if (dictionaryPath != "")
                     if (!elasticsearch)
+                    {
+                        Log.WriteLine("Reading Dictionary");
                         CheckDictionary.readDictionary(dictionaryPath);
+                    }
                     else
                         CheckDictionaryElasticSearch.readDictionary(top, left, bottom, right);
-                
-                
+
+
 
                 for (int i = 0; i < tessOcrResultList.Count; i++)
                 {
@@ -136,7 +184,8 @@ namespace Strabo.Core.TextRecognition
                         //    tessOcrResultList[i].id = "-1";
                         if (dictionaryPath != "" && tessOcrResultList[i].tess_word3.Length >= dictionaryExactMatchStringLength)
                         {
-                            if(elasticsearch)
+                            Log.WriteLine("Post Processing using dictionary");
+                            if (elasticsearch)
                                 tessOcrResultList[i] = CheckDictionaryElasticSearch.getDictionaryWord(tessOcrResultList[i], dictionaryExactMatchStringLength);
                             else
                                 tessOcrResultList[i] = CheckDictionary.getDictionaryWord(tessOcrResultList[i], dictionaryExactMatchStringLength);
@@ -149,8 +198,13 @@ namespace Strabo.Core.TextRecognition
                 {
                     if (tessOcrResultList[i].id == "-1")
                     {
+                        Log.WriteLine("Removed Word: " + tessOcrResultList[i].tess_word3);
                         tessOcrResultList.RemoveAt(i);
                         i--;
+                    }
+                    else
+                    {
+                        Log.WriteLine("Final Word: " + tessOcrResultList[i].tess_word3);
                     }
                 }
                 return tessOcrResultList;

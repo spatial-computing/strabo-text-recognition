@@ -328,6 +328,42 @@ namespace Strabo.Test
 
             inputArgs.bbx = bbx;
             inputArgs.mapLayerName = "block-map";
+            inputArgs.threadNumber = 1;
+
+            string appPath = AppDomain.CurrentDomain.BaseDirectory;
+            string dataPath = Directory.GetParent(appPath).Parent.Parent.FullName + "\\data\\";
+
+            inputArgs.bbx = bbx;
+
+            inputArgs.intermediatePath = dataPath + "intermediate\\";
+            inputArgs.outputPath = dataPath + "output\\";
+            try
+            {
+                Log.SetLogDir(inputArgs.intermediatePath);
+                CommandLineWorker cmdWorker = new CommandLineWorker();
+
+                File.Copy(dataPath + "InputImage.tif", inputArgs.outputPath + "InputImage.tif", true);
+                inputArgs.outputFileName = "InputImage.tif";
+                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
+                File.Copy(inputArgs.outputPath + "block-map-output.pngByPixels.txt", dataPath + "block-map-output.pngByPixels.txt", true);
+            }
+            catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
+            Log.WriteLine("Process finished");
+
+        }
+
+        public void testLocalWMWholeFile()
+        {
+            //InputArgs inputArgs = new InputArgs();
+            BoundingBox bbx = new BoundingBox();
+            bbx.BBW = "0";
+            bbx.BBN = "0";
+
+            InputArgs inputArgs = new InputArgs();
+            inputArgs.outputFileName = "Geojson";
+
+            inputArgs.bbx = bbx;
+            inputArgs.mapLayerName = "wm-whole";
             inputArgs.threadNumber = 8;
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
@@ -342,14 +378,23 @@ namespace Strabo.Test
                 Log.SetLogDir(inputArgs.intermediatePath);
                 CommandLineWorker cmdWorker = new CommandLineWorker();
 
-                File.Copy(dataPath + "block-map.png", inputArgs.outputPath + "SourceMapImage.png", true);
-                inputArgs.outputFileName = "block-map-output.png";
-                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
-                File.Copy(inputArgs.outputPath + "block-map-output.pngByPixels.txt", dataPath + "block-map-output.pngByPixels.txt", true);
+                //Added by Zhiyuan Wang
+                StraboParameters.readConfigFile(inputArgs.mapLayerName);
+                LargeImageHandler handler = new LargeImageHandler();
+                string[] scratchList = handler.splitWholeImage(dataPath, "D2_CA_test.png", 1500, 1500);
+
+                for (int i = 0; i < scratchList.Length; i++)
+                {
+                    //File.Copy(dataPath + scratchList[i], inputArgs.outputPath + "SourceMapImage" + i + ".png", true);
+                    File.Copy(dataPath + scratchList[i], inputArgs.outputPath + "SourceMapImage.png", true);
+                    inputArgs.outputFileName = "D2_CA_test" + i + ".png";
+                    cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
+                    File.Copy(inputArgs.outputPath + "D2_CA_test" + i + ".pngByPixels.txt", dataPath + scratchList[i] + "ByPixels.txt", true);
+                }
+
             }
             catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
             Log.WriteLine("Process finished");
-
         }
     }
 }

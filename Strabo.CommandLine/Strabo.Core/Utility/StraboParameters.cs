@@ -81,6 +81,8 @@ namespace Strabo.Core.Utility
         private static Boolean _preProcessing;
         private static double _cmdLineWorkerSizeRatio;
 
+        private static int _bbxMultiplier;
+
         public static void readConfigFile(string layer)
         {
             try
@@ -145,6 +147,8 @@ namespace Strabo.Core.Utility
 
                 _preProcessing = ReadBool(layer + "preProcessing", false);
                 _cmdLineWorkerSizeRatio = ReadDouble(layer + "cmdLineWorkerSizeRatio", 2.5);
+
+                _bbxMultiplier = ReadInt(layer + "bbxMultiplier", 3);
             }
             catch(Exception e)
             {
@@ -432,6 +436,13 @@ namespace Strabo.Core.Utility
             get
             {
                 return _cmdLineWorkerSizeRatio;
+            }
+        }
+        public static int bbxMultiplier
+        {
+            get
+            {
+                return _bbxMultiplier;
             }
         }
     }

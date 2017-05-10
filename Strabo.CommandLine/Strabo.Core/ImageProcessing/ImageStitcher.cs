@@ -42,6 +42,57 @@ namespace Strabo.Core.ImageProcessing
             g.Dispose();
             return string_img;
         }
+
+        public Bitmap mergeContiguousImageBlocks(List<Bitmap> srcImgs, 
+            int row, int col)
+        {
+            // Assume all the sub-images will have similar dimensions
+            // Width = (width of 1 image) * (number of columns)
+            // Height = (height of 1 image) * (number of rows)
+            int imgWidth = srcImgs[0].Width * col;
+            int imgHeight = srcImgs[0].Height * row;
+            Bitmap stichedImage = new Bitmap(imgWidth, imgHeight);
+
+            try
+            {
+                using (Graphics g = Graphics.FromImage(stichedImage))
+                {
+                    g.Clear(Color.White);
+                    int row_offset = 0;
+                    for (int r = 0; r < row; r++)
+                    {
+                        int col_offset = 0;
+                        for (int c = 0; c < col; c++)
+                        {
+                            int idx = r * col + c;
+                            if (idx >= srcImgs.Count)
+                                continue;
+                            g.DrawImage(srcImgs[idx], new Rectangle(col_offset, row_offset, srcImgs[idx].Width, srcImgs[idx].Height));
+                            // g.DrawImage(srcImgs[idx], col_offset, row_offset);
+                            col_offset += srcImgs[c].Width;
+                        }
+                        row_offset += srcImgs[r].Height;
+                    }
+                    return stichedImage;
+                }
+            }
+            catch(System.Exception)
+            {
+                if(stichedImage != null)
+                {
+                    stichedImage.Dispose();
+                }
+                throw;
+            }
+            finally
+            {
+                // Cleanup memory
+                foreach(Bitmap img in srcImgs)
+                {
+                    img.Dispose();
+                }
+            }
+        }
         public Bitmap ApplyWithoutGridLines(List<Bitmap> srcimg_list, int max_width)
         {
             for (int i = 0; i < srcimg_list.Count; i++)

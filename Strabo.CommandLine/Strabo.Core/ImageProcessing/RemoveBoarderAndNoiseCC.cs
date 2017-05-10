@@ -22,6 +22,7 @@
 
 using System.Collections.Generic;
 using System.Drawing;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.ImageProcessing
 {
@@ -43,21 +44,28 @@ namespace Strabo.Core.ImageProcessing
 
             for (int i = 0; i < char_blobs.Count; i++)
             {
-                if (char_blobs[i].bbx.X == 0 ||
-                   char_blobs[i].bbx.Right == srcimg.Width ||
-                   char_blobs[i].bbx.Top == 0 ||
-                    char_blobs[i].bbx.Bottom == srcimg.Height)
+
+                if (char_blobs[i].bbx.returnExtremeStartX() == 0 ||
+                   (char_blobs[i].bbx.returnExtremeEndX() == srcimg.Width) ||
+                   (char_blobs[i].bbx.returnExtremeStartY() == 0) ||
+                   (char_blobs[i].bbx.returnExtremeEndY() == srcimg.Height))
+                {
                     boarder_char_idx_set.Add(i);
-                if (((double)char_blobs[i].pixel_count / (double)char_blobs[i].area) < min_pixel_area_size) //line
+                }
+                    
+                // Line
+                if (((double)char_blobs[i].pixel_count/char_blobs[i].bbx.area()) < min_pixel_area_size)
                     noise_char_idx_set.Add(i);
-                if (char_blobs[i].bbx.Width < char_size &&
-                    char_blobs[i].bbx.Height < char_size) // small cc
+                // Small CC
+                if (char_blobs[i].bbx.width() < char_size &&
+                    char_blobs[i].bbx.height() < char_size)
                     noise_char_idx_set.Add(i);
-                if (char_blobs[i].bbx.Width < char_size && char_blobs[i].bbx.Height > char_size * 3)
+                if (char_blobs[i].bbx.width() < char_size && char_blobs[i].bbx.height() > char_size * StraboParameters.bbxMultiplier)
                     noise_char_idx_set.Add(i);
-                if (char_blobs[i].bbx.Height < char_size && char_blobs[i].bbx.Width > char_size * 3)
+                if (char_blobs[i].bbx.height() < char_size && char_blobs[i].bbx.width() > char_size * StraboParameters.bbxMultiplier)
                     noise_char_idx_set.Add(i);
             }
+
             for (int i = 0; i < srcimg.Width * srcimg.Height; i++)
             {
                 if (char_labels[i] != 0)

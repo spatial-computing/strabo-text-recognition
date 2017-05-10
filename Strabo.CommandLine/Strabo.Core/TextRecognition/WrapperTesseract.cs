@@ -66,16 +66,21 @@ namespace Strabo.Core.TextRecognition
             }
             else if(lng=="num")
             {
+                // NUMBER DETECTION IS DUBIOUS
                 // Just detect numbers
                 // Will not work great on low resolution images
                 // Useful StackOverFlow URL: http://stackoverflow.com/questions/38336601/ocr-tesseractengine
-                Log.WriteLine("Filtering only numbers");
-                _engine = new TesseractEngine(@"./tessdata3", "eng", EngineMode.TesseractAndCube);
-                _engine.SetVariable("tessedit_char_whitelist", "0123456789");
+                // Log.WriteLine("Filtering only numbers");
+
+                // _engine = new TesseractEngine(@"./tessdata3", "eng", EngineMode.TesseractAndCube);
+                // _engine.SetVariable("tessedit_char_whitelist", "0123456789");
+
+                lng = "eng";
+                _engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
             }
             else
             {
-                _engine = new TesseractEngine(@"./tessdata3", lng, EngineMode.Default);
+                _engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
             }
             Log.WriteLine("Tesseract Version: " + _engine.Version);
             //_engine.SetVariable("tessedit_char_whitelist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -102,7 +107,7 @@ namespace Strabo.Core.TextRecognition
                     string filename = Path.GetFileNameWithoutExtension(filePaths[i]);
                     String[] splitTokens = filename.Split('_');
 
-                    if (splitTokens.Length != 11)
+                    if (splitTokens.Length != 17)
                         continue;
 
                     using (Image<Gray, Byte> image = new Image<Gray, byte>(filePaths[i]))
@@ -112,15 +117,13 @@ namespace Strabo.Core.TextRecognition
                         var img = Pix.LoadFromFile(filePaths[i]);
                         page = _engine.Process(img, PageSegMode.SingleBlock);
                         text = page.GetText();
-                        string HOCR = page.GetHOCRText(1);
                         
+                        string HOCR = page.GetHOCRText(1);
+
                         // PageIteratorLevel a = new PageIteratorLevel();
                         //Rect boundingbox;
                         //page.AnalyseLayout().TryGetBoundingBox(a, out boundingbox);
-
-                       
-                        string h= page.GetHOCRText(1);
-                        
+                        string h = page.GetHOCRText(1);                                        
                         conf = page.GetMeanConfidence();
                         page.Dispose();
 
@@ -128,7 +131,7 @@ namespace Strabo.Core.TextRecognition
 
                         if (text.Length > 0 && RemoveNoiseText.NotTooManyNoiseCharacters(text))
                         {
-                            Console.WriteLine(text);
+                            // Console.WriteLine(text);
                             tr.id = splitTokens[0];
                             
                             tr.tess_word3 = Regex.Replace(text, "\n\n", "");
@@ -139,10 +142,22 @@ namespace Strabo.Core.TextRecognition
                             
 
                             tr.fileName = Path.GetFileName(filename);
-                            tr.x = Convert.ToInt16(splitTokens[7]);
-                            tr.y = Convert.ToInt16(splitTokens[8]);
-                            tr.w = Convert.ToInt16(splitTokens[9]);
-                            tr.h = Convert.ToInt16(splitTokens[10]);
+
+                            tr.mcX = (int)Convert.ToDouble(splitTokens[3]);
+                            tr.mcY = (int)Convert.ToDouble(splitTokens[4]);
+
+                            tr.x = (int)Convert.ToDouble(splitTokens[7]);
+                            tr.y = (int)Convert.ToDouble(splitTokens[8]);
+
+                            tr.x2 = (int)Convert.ToDouble(splitTokens[9]);
+                            tr.y2 = (int)Convert.ToDouble(splitTokens[10]);
+                            tr.x3 = (int)Convert.ToDouble(splitTokens[11]);
+                            tr.y3 = (int)Convert.ToDouble(splitTokens[12]);
+                            tr.x4 = (int)Convert.ToDouble(splitTokens[13]);
+                            tr.y4 = (int)Convert.ToDouble(splitTokens[14]);
+
+                            tr.w = (int)Convert.ToDouble(splitTokens[15]);
+                            tr.h = (int)Convert.ToDouble(splitTokens[16]);
                             tessOcrResultList.Add(tr);
 
                         }
@@ -150,8 +165,6 @@ namespace Strabo.Core.TextRecognition
                 }
                 Log.WriteLine("Tessearct finished");
                 return tessOcrResultList;
-
-
             }
             catch (Exception e)
             {
@@ -162,7 +175,6 @@ namespace Strabo.Core.TextRecognition
                 throw;
 
             }
-            return tessOcrResultList;
         }
     }
 }

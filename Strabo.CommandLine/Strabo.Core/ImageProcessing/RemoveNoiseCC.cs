@@ -20,6 +20,7 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
+using Strabo.Core.Utility;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -31,7 +32,7 @@ namespace Strabo.Core.ImageProcessing
 
         public Bitmap Apply(Bitmap srcimg, int char_size)
         {
-            double min_pixel_area_size = 0.18;
+            double min_pixel_area_size = StraboParameters.minPixelAreaSize;
 
             srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
             srcimg = ImageUtils.InvertColors(srcimg);
@@ -44,14 +45,20 @@ namespace Strabo.Core.ImageProcessing
 
             for (int i = 0; i < char_blobs.Count; i++)
             {
-                if(((double)char_blobs[i].pixel_count / (double)char_blobs[i].area) <min_pixel_area_size) //line
+                // If the ratio of number of pixels to the bounding box area is less than a our threshold
+                // Mark the detected bbx as noise
+                if ( ((double)char_blobs[i].pixel_count/char_blobs[i].bbx.area()) < min_pixel_area_size) 
                     noise_char_idx_set.Add(i);
-                if(char_blobs[i].bbx.Width < char_size &&
-                    char_blobs[i].bbx.Height < char_size ) // small cc
+
+                // Check for small Connected Componentt
+                if (char_blobs[i].bbx.width() < char_size &&
+                    char_blobs[i].bbx.height() < char_size ) 
                     noise_char_idx_set.Add(i);
-                if(char_blobs[i].bbx.Width < char_size && char_blobs[i].bbx.Height > char_size *3)
+
+                if(char_blobs[i].bbx.width() < char_size && char_blobs[i].bbx.height() > char_size * StraboParameters.bbxMultiplier)
                     noise_char_idx_set.Add(i);
-                if (char_blobs[i].bbx.Height < char_size && char_blobs[i].bbx.Width > char_size * 3)
+
+                if (char_blobs[i].bbx.height() < char_size && char_blobs[i].bbx.width() > char_size * StraboParameters.bbxMultiplier)
                     noise_char_idx_set.Add(i);
             }
 

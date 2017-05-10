@@ -37,6 +37,7 @@
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
     <PlatformTarget>x86</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -49,12 +50,14 @@
   <ItemGroup>
     <Compile Include="BoundingBoxDetection.cs" />
     <Compile Include="FormattedConsoleLogger.cs" />
+    <Compile Include="LargeImageHandler.cs" />
     <Compile Include="LineDetection.cs" />
     <Compile Include="NeighborhoodExploring.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleImageSVM.cs" />
     <Compile Include="ScalingImage.cs" />
+    <Compile Include="testCDAInputCleanerWorker.cs" />
     <Compile Include="TestColorSegmentation.cs" />
     <Compile Include="TestCommandLineWorker.cs" />
     <Compile Include="TestGetMapFromServiceWorker.cs" />
@@ -153,6 +156,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.dll</HintPath>
     </Reference>
+    <Reference Include="Emgu.CV.UI, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.CV.UI.dll</HintPath>
+    </Reference>
     <Reference Include="Emgu.Util, Version=2.4.10.1939, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.4.10.1940\bin\Emgu.Util.dll</HintPath>
@@ -161,6 +168,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.XML" />
     <Reference Include="Tesseract">
       <HintPath>..\packages\Tesseract.2.3.0.0\lib\net40\Tesseract.dll</HintPath>

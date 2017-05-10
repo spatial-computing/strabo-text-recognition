@@ -27,6 +27,7 @@ using Strabo.Core.Utility;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Threading;
 
 namespace Strabo.Core.Worker
@@ -37,8 +38,12 @@ namespace Strabo.Core.Worker
     /// </summary>
     public class TextDetectionWorker
     {
-        public double angleRatio = StraboParameters.angleRatio;
-        public TextDetectionWorker() { }
+        public double angleRatio;
+
+        public TextDetectionWorker()
+        {
+            this.angleRatio = StraboParameters.angleRatio;
+        }
 
         public void Apply(string intermediatePath, double sizeRatio, bool preProcessing, int threadNumber)
         {
@@ -70,6 +75,7 @@ namespace Strabo.Core.Worker
             Log.WriteLine("Grouping text strings...");
             for (int s = 0; s < imgPathList.Count; s++)
             {
+                string cdaFileName = "";
                 Bitmap srcimg = null;
 
                 if (lang == "eng")
@@ -81,7 +87,7 @@ namespace Strabo.Core.Worker
                         srcimg = removeBoarderAndNoiseCC.Apply(
                             tileimg, charSize, StraboParameters.minPixelAreaSize
                             );
-                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
+                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput_" + s + ".png");
                     }
                 }
                 else if(lang == "num")
@@ -93,7 +99,7 @@ namespace Strabo.Core.Worker
                         srcimg = removeBoarderAndNoiseCC.Apply(
                             tileimg, charSize, StraboParameters.minPixelAreaSize
                             );
-                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
+                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput_" + s + ".png");
                     }
                 }
                 else
@@ -102,9 +108,31 @@ namespace Strabo.Core.Worker
                     {
                         RemoveBoarderCC removeBoarderCC = new RemoveBoarderCC();
                         srcimg = removeBoarderCC.Apply(tileimg);
-                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput.png");
+                        cdaFileName = "CDAInput_" + s + ".png";
+                        Log.WriteBitmap2FolderExactFileName(outputDir, srcimg, "CDAInput_" + s + ".png");
                     }
                 }
+
+                //add the ConnectedComponentClassifyWorker here
+                try
+                {
+                    ConnectedComponentClassifyWorker _connectedComponentClassifyWorker = new ConnectedComponentClassifyWorker();
+                    Log.WriteLine("ConnectedComponentClassifyWorker in progress...");
+                    //Copy "CDAInput.png" as "CDAInput_original.png"
+                    File.Copy(outputDir + "CDAInput_" + s + ".png", outputDir + "CDAInput_original_" + s + ".png");
+                    //Use "CDAInput_original.png" as input, classify the CCs and output as "CDAInput.png"
+                    _connectedComponentClassifyWorker.Apply(outputDir, "CDAInput_original_" + s + ".png", "CDAInput_" + s + ".png", false);
+                    Log.WriteLine("ApplyConnectedComponentClassifyWorker finished");
+                }
+                catch (Exception e)
+                {
+                    Log.WriteLine("ApplyConnectedComponentClassifyWorker: " + e.Message);
+                    throw;
+                }
+
+                //update srcimg
+                srcimg = new Bitmap(outputDir + "CDAInput_" + s + ".png");
+
                 ConditionalDilationAutomatic cda = new ConditionalDilationAutomatic();
                 cda.angleThreshold = angleRatio;
                 string outputImagePath = outputDir + s + ".png";
@@ -112,12 +140,13 @@ namespace Strabo.Core.Worker
 
                 using (Bitmap dilatedimg = new Bitmap(outputImagePath))
                 {
+
                     DetectTextStrings detectTS = new DetectTextStrings();
                     List<TextString> string_list = detectTS.Apply(srcimg, dilatedimg);
+
                     List<Bitmap> string_img_list = new List<Bitmap>();
                     for (int i = 0; i < string_list.Count; i++)
                         string_img_list.Add(string_list[i].srcimg);
-
                     int[] offset = imgSlicer.xy_offset_list[s];
 
                     for (int i = 0; i < string_list.Count; i++)
@@ -127,18 +156,21 @@ namespace Strabo.Core.Worker
                         mts.AddTextString(string_list[i]);
                     }
                 }
+
                 using (Bitmap CDAInputwithLabel=new Bitmap (outputImagePath))
                 {
                     Graphics g = Graphics.FromImage(CDAInputwithLabel);
-                    for (int i = 0; i < mts.text_string_list.Count; i++)
+                    for (int i = 0; i < mts.textStringList.Count; i++)
                     {
                         Font font = new Font("Arial", 20);
-                        g.DrawString(i.ToString(), font, Brushes.Red, mts.text_string_list[i].bbx.X, mts.text_string_list[i].bbx.Y);
+                        g.DrawString(i.ToString(), font, Brushes.Red, mts.textStringList[i].bbx.firstVertex().X, mts.textStringList[i].bbx.firstVertex().Y);
 
-                        g.DrawRectangle(new Pen(Color.Green, 4), mts.text_string_list[i].bbx);
+                        // Rectangle boundingRect = new Rectangle((int)mts.text_string_list[i].bbx.firstVertex().X,
+                        //   (int)mts.text_string_list[i].bbx.firstVertex().Y, (int)mts.text_string_list[i].bbx.width(), (int)mts.text_string_list[i].bbx.height());
 
+                        g.DrawPolygon(new Pen(Color.Green, 4), mts.textStringList[i].bbx.vertices());
                     }
-                    Log.WriteBitmap2FolderExactFileName(outputDir, CDAInputwithLabel, "CDAInputwithLabel.png");
+                    Log.WriteBitmap2FolderExactFileName(outputDir, CDAInputwithLabel, "CDAInputwithLabel_" + s + ".png");
                     g.Dispose();
                     g=null;
                 }
@@ -146,28 +178,51 @@ namespace Strabo.Core.Worker
                 srcimg = null;
             }
 
+            //ImageStitcher imgstitcher1 = new ImageStitcher();
+            //foreach (TextString ts in mts.textStringList)
+            //{
+            //    if(ts.char_list.Count > 2)
+            //    {
+            //        string file_name = "temp_" + ts.bbx.massCenter().X + "_" + ts.bbx.massCenter().Y + ".png";
+            //        Console.WriteLine(file_name + " | " + "Orientation: " + ts.bbx.orientation() + " Angle: " + ts.bbx.returnCalculatedAngle());
+
+            //        Log.WriteBitmap(ts.srcimg, file_name);
+            //        double angle = ts.bbx.returnCalculatedAngle();
+            //        RotateBilinear filter = new RotateBilinear(180 - angle, false);
+            //        filter.FillColor = Color.White;
+            //        RotateBilinear filter2 = new RotateBilinear(0-angle, false);
+            //        filter2.FillColor = Color.White;
+            //        // apply the filter
+            //        Log.WriteBitmap(filter.Apply(ts.srcimg), "rotated_1_" + file_name);
+            //        Log.WriteBitmap(filter2.Apply(ts.srcimg),  "rotated_2_" + file_name);
+            //        // imgstitcher1.ExpandCanvas(text_string_list[i].rotated_img_list[s], 20)
+
+            //    }
+            //}
+
             Log.WriteLine("Detecting long string orientation...");
             DetectTextOrientation detectTextOrientation = new DetectTextOrientation();
             detectTextOrientation.Apply(mts, threadNumber);
 
-            Log.WriteLine("Detecting short string orientation...");
-            for (int i = 0; i < mts.text_string_list.Count; i++)
-            {
-                if (mts.text_string_list[i].char_list.Count <= 3)
-                {
-                    List<int> nearest_string_list = detectTextOrientation.findNearestSrings(i, mts.text_string_list);
-                    int initial_orientation_count = mts.text_string_list[i].orientation_list.Count;
-                    for (int j = 0; j < nearest_string_list.Count; j++)
-                        mts.text_string_list[i].orientation_list.AddRange(mts.text_string_list[nearest_string_list[j]].orientation_list);
-                    for (int j = initial_orientation_count; j < mts.text_string_list[i].orientation_list.Count; j++)
-                    {
-                        RotateBilinear filter = new RotateBilinear(mts.text_string_list[i].orientation_list[j]);
-                        Bitmap rotateimg = ImageUtils.InvertColors(filter.Apply(ImageUtils.InvertColors(mts.text_string_list[i].srcimg)));
-                        mts.text_string_list[i].rotated_img_list.Add(rotateimg);
-                    }
-                }
-            }
+            //Log.WriteLine("Detecting short string orientation...");
 
+            //for (int i = 0; i < mts.textStringList.Count; i++)
+            //{
+            //    if (mts.textStringList[i].char_list.Count <= 3)
+            //    {
+            //        List<int> nearest_string_list = detectTextOrientation.findNearestSrings(i, mts.textStringList);
+
+            //        int initial_orientation_count = mts.textStringList[i].orientation_list.Count;
+            //        for (int j = 0; j < nearest_string_list.Count; j++)
+            //            mts.textStringList[i].orientation_list.AddRange(mts.textStringList[nearest_string_list[j]].orientation_list);
+            //        for (int j = initial_orientation_count; j < mts.textStringList[i].orientation_list.Count; j++)
+            //        {
+            //            RotateBilinear filter = new RotateBilinear(mts.textStringList[i].orientation_list[j]);
+            //            Bitmap rotateimg = ImageUtils.InvertColors(filter.Apply(ImageUtils.InvertColors(mts.textStringList[i].srcimg)));
+            //            mts.textStringList[i].rotated_img_list.Add(rotateimg);
+            //        }
+            //    }
+            //}
             Log.WriteLine("Writing string results...");
             mts.WriteBMP(outputDir);
         }

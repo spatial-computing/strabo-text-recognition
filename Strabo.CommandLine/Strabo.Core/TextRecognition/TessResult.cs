@@ -28,6 +28,26 @@ namespace Strabo.Core.TextRecognition
 {
     public class TessResult
     {
+        public TessResult()
+        {
+
+        }
+        public TessResult(string id, string tess_word3, string tess_raw3,
+                            double tess_cost3, string hocr, string fileName,
+                            int x, int y, int w, int h)
+        {
+            this.id = id;
+            this.tess_word3 = tess_word3;
+            this.tess_raw3 = tess_raw3;
+            this.tess_cost3 = tess_cost3;
+            this.hocr = hocr;
+            this.fileName = fileName;
+            this.x = x;
+            this.y = y;
+            this.h = h;
+            this.w = w;
+        }
+
         public string id;
         public double dict_similarity;
 
@@ -35,7 +55,7 @@ namespace Strabo.Core.TextRecognition
         public string tess_word3;
         public string dict_word3;
         public double tess_cost3;
-        public string hocr; 
+        public string hocr;
 
         public string tess_word;
         public string dict_word;
@@ -44,8 +64,18 @@ namespace Strabo.Core.TextRecognition
         public string fileName;
         public int x;
         public int y;
+        public int x2;
+        public int y2;
+        public int x3;
+        public int y3;
+        public int x4;
+        public int y4;
+
         public int w;
         public int h;
+
+        public int mcX;
+        public int mcY;
         public string sameMatches;
 
         public bool front = false;

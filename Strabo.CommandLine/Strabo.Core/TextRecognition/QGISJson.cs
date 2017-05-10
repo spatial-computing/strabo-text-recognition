@@ -22,6 +22,8 @@
 
 using Strabo.Core.Utility;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 
 namespace Strabo.Core.TextRecognition
 {
@@ -33,26 +35,31 @@ namespace Strabo.Core.TextRecognition
         public static double Ny;
         public static double yscale;
         public static double xscale;
-        public static string srid="EPSG:27700";
+        public static string srid = "EPSG:27700";
         public static string filename;
         private static string _streamRef;
 
         public static void Start()
         {
-             _streamPixel = "{\"type\":\"FeatureCollection\",\"features\":[";
-            _streamRef ="{\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\""+srid+"\"}},\"type\":\"FeatureCollection\",\"features\":[";
+            _streamPixel = "{\"type\":\"FeatureCollection\",\"features\":[";
+            _streamRef = "{\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"" + srid + "\"}},\"type\":\"FeatureCollection\",\"features\":[";
 
         }
-        public static void AddFeature(int x, int y, int h, int w, int geo_Ref, List<KeyValuePair<string,string>> items)
+        public static void AddFeature(TessResult tr, int geo_Ref, List<KeyValuePair<string, string>> items)
         {
-            AddCordinationFeature(x, y, h, w, items);
 
-            _streamPixel += "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[" + x.ToString() + "," + (geo_Ref * y).ToString() + "],[" +
-                (x + w).ToString() + "," + (geo_Ref * y).ToString() + "],[" + (x + w).ToString() + "," + (geo_Ref * (y + h)).ToString() + "],[" + x.ToString() + "," + (geo_Ref * (y + h)).ToString() + "],[" +
-                x.ToString() + "," + (geo_Ref * y).ToString() + "]]]}";
+            AddCordinationFeature(tr, items);
+
+            _streamPixel += "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[" +
+                tr.x.ToString() + "," + (geo_Ref * tr.y).ToString() + "],[" +
+                tr.x2.ToString() + "," + (geo_Ref * tr.y2).ToString() + "],[" +
+                (tr.x3).ToString() + "," + (geo_Ref * (tr.y3)).ToString() + "],[" +
+                tr.x4.ToString() + "," + (geo_Ref * (tr.y4)).ToString() + "]," +
+                "[" + tr.x.ToString() + ", " + (geo_Ref * tr.y).ToString() + "]]]}";
+
             for (int i = 0; i < items.Count; i++)
                 _streamPixel += ",\"" + items[i].Key + "\":\"" + items[i].Value + "\"";
-            _streamPixel +=",},";
+            _streamPixel += ",},";
 
         }
 
@@ -72,23 +79,31 @@ namespace Strabo.Core.TextRecognition
             System.IO.File.WriteAllText(path + "\\" + filename + "ByPixels.txt", _streamPixel);
 
         }
-        private static void AddCordinationFeature(int x, int y, int h, int w, List<KeyValuePair<string,string>> items)
+        private static void AddCordinationFeature(TessResult tr, List<KeyValuePair<string, string>> items)
         {
-            double refx, refy, refh, refw;
-            refx = Wx + (x * xscale);///(double)(MapServerParameters.Resize);
-            refy = Ny - (y * yscale);// / (double)(MapServerParameters.Resize);
-            refh = h * yscale;// / (double)(MapServerParameters.Resize);
-            refw = w * xscale;// / (double)(MapServerParameters.Resize);
+            //double refx, refy, refh, refw;
+            //refx = Wx + (x * xscale);///(double)(MapServerParameters.Resize);
+            //refy = Ny - (y * yscale);// / (double)(MapServerParameters.Resize);
+            //refh = h * yscale;// / (double)(MapServerParameters.Resize);
+            //refw = w * xscale;// / (double)(MapServerParameters.Resize);
 
-            _streamRef += "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[" + refx.ToString() + "," + (refy).ToString() + "],[" +
-            (refx + refw).ToString() + "," + (refy).ToString() + "],[" + (refx + refw).ToString() + "," + ((refy - refh)).ToString() + "],[" + refx.ToString() + "," + ((refy - refh)).ToString() + "],[" +
-            refx.ToString() + "," + (refy).ToString() + "]]]}";
+            _streamRef += "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[" +
+                    (Wx + xscale * tr.x).ToString() + "," + (Ny - tr.y * yscale).ToString() + "],[" +
+                    (Wx + xscale * tr.x2).ToString() + "," + (Ny - tr.y2 * yscale).ToString() + "],[" +
+                    (Wx + xscale * tr.x3).ToString() + "," + (Ny - tr.y3 * yscale).ToString() + "],[" +
+                    (Wx + xscale * tr.x4).ToString() + "," + (Ny - tr.y4 * yscale).ToString() + "]," +
+                    "[" + (Wx + xscale * tr.x).ToString() + ", " + (Ny - tr.y * yscale).ToString() + "]]]}";
+
+            //_streamRef += "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[" + refx.ToString() + "," + (refy).ToString() + "],[" +
+            //(refx + refw).ToString() + "," + (refy).ToString() + "],[" + (refx + refw).ToString() + "," + ((refy - refh)).ToString() + "],[" + refx.ToString() + "," + ((refy - refh)).ToString() + "],[" +
+            //refx.ToString() + "," + (refy).ToString() + "]]]}";
+
             for (int i = 0; i < items.Count; i++)
             {
                 _streamRef += ",\"" + items[i].Key + "\":\"" + items[i].Value + "\"";
             }
-             _streamRef += ",},";
-            
+            _streamRef += ",},";
+
         }
     }
 }

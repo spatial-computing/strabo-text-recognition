@@ -143,7 +143,7 @@ namespace Strabo.Core.Worker
                 }
                 else
                     File.Copy(inputArgs.outputPath + StraboParameters.sourceMapFileName, inputArgs.intermediatePath + StraboParameters.sourceMapFileName, true);
-                File.Copy(inputArgs.intermediatePath+StraboParameters.sourceMapFileName, inputArgs.outputPath+StraboParameters.sourceMapFileName,true);
+                File.Copy(inputArgs.intermediatePath+StraboParameters.sourceMapFileName, inputArgs.outputPath+StraboParameters.sourceMapFileName, true);
             }
             catch (Exception e)
             {
@@ -152,7 +152,6 @@ namespace Strabo.Core.Worker
             }
 
             string color_segmentation_result_fn;
-
             if (StraboParameters.numberOfSegmentationColor > 0)
             {
                 try
@@ -170,49 +169,52 @@ namespace Strabo.Core.Worker
             else
                 color_segmentation_result_fn = inputArgs.intermediatePath + StraboParameters.sourceMapFileName;
 
-            try
-            {
-                Log.WriteLine("TextExtractionWorker in progress...");
-                _textLayerExtractionWorker.Apply(color_segmentation_result_fn, inputArgs.intermediatePath, inputArgs.threadNumber);
-                Log.WriteLine("ApplyTextExtarionWorker finished");
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine("ApplyTextExtractionWorker: " + e.Message);
-                throw;
-            }
-            try
-            {
+               try
+               {
+                   Log.WriteLine("TextExtractionWorker in progress...");
+                   _textLayerExtractionWorker.Apply(color_segmentation_result_fn, inputArgs.intermediatePath, inputArgs.threadNumber);
+                   Log.WriteLine("TextExtractionWorker finished");
+               }
+               catch (Exception e)
+               {
+                   Log.WriteLine("ApplyTextExtractionWorker: " + e.Message);
+                   throw;
+               }
 
-                Log.WriteLine("TextDetectionWorker in progress...");
-                _textDetectionWorker.Apply(
-                    inputArgs.intermediatePath, StraboParameters.cmdLineWorkerSizeRatio,
-                    StraboParameters.preProcessing, inputArgs.threadNumber
-                    );
-                Log.WriteLine("ApplyTextDetection finished");
+               try
+               {
 
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine("ApplyTextDetectionWorker: " + e.Message);
-                throw;
-            }
-            try
-            {
+                   Log.WriteLine("TextDetectionWorker in progress...");
+                   _textDetectionWorker.Apply(
+                       inputArgs.intermediatePath, StraboParameters.cmdLineWorkerSizeRatio,
+                       StraboParameters.preProcessing, inputArgs.threadNumber
+                       );
+                   Log.WriteLine("ApplyTextDetection finished");
 
-                Log.WriteLine("TextRecognition in progress...");
-                _textRecognitionWorker.Apply(
-                    inputArgs.intermediatePath, inputArgs.outputPath,
-                    inputArgs.outputFileName, top, left, bottom, right
-                    );
-                Log.WriteLine("TextRecognitionWorker finished");
+               }
+               catch (Exception e)
+               {
+                   Log.WriteLine("ApplyTextDetectionWorker: " + e.Message);
+                   Log.WriteLine(e.StackTrace);
+                   throw;
+               }
 
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine("ApplyTextRecognition: " + e.Message);
-                throw;
-            }
+               try
+               {
+
+                   Log.WriteLine("TextRecognition in progress...");
+                   _textRecognitionWorker.Apply(
+                       inputArgs.intermediatePath, inputArgs.outputPath,
+                       inputArgs.outputFileName, top, left, bottom, right
+                       );
+                   Log.WriteLine("TextRecognitionWorker finished");
+
+               }
+               catch (Exception e)
+               {
+                   Log.WriteLine("ApplyTextRecognition: " + e.Message);
+                   throw;
+               }
 
             Log.WriteLine("Execution time: " + Log.GetDurationInSeconds().ToString());
         }

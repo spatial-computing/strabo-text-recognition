@@ -36,7 +36,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BoundingBox\MinimumBoundingBox.cs" />
     <Compile Include="ImageProcessing\Binarization.cs" />
+    <Compile Include="BoundingBox\BoundingBox.cs" />
     <Compile Include="ImageProcessing\ColorHistogram.cs" />
     <Compile Include="ImageProcessing\RemoveBoarderAndNoiseCC.cs" />
     <Compile Include="ImageProcessing\RemoveNoiseCC.cs" />
@@ -61,6 +63,7 @@
     <Compile Include="TextRecognition\NeedlemanWunsch.cs" />
     <Compile Include="TextRecognition\NGramDistance.cs" />
     <Compile Include="TextRecognition\NonHorizontalTextExtraction.cs" />
+    <Compile Include="TextRecognition\NumberCorrection.cs" />
     <Compile Include="TextRecognition\PotentialTextAreaExtractation.cs" />
     <Compile Include="TextRecognition\QGISJsonNeighbothood.cs" />
     <Compile Include="TextRecognition\RemoveNoiseText.cs" />
@@ -92,6 +95,7 @@
     <Compile Include="TextRecognition\JaroWinklerDistance.cs" />
     <Compile Include="TextRecognition\QGISJson.cs" />
     <Compile Include="Utility\MapServerParameters.cs" />
+    <Compile Include="Worker\ConnectedComponentClassifyWorker.cs" />
     <Compile Include="Worker\GetMapFromServiceWorker.cs" />
     <Compile Include="Worker\SymbolRecognitionWorker.cs" />
     <Compile Include="Worker\TextDetectionWorker.cs" />
@@ -331,6 +335,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AForge.Math.2.2.5\lib\AForge.Math.dll</HintPath>
     </Reference>
+    <Reference Include="clipper_library, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Clipper.6.4.0\lib\net40\clipper_library.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Elasticsearch.Net">
       <HintPath>..\packages\Elasticsearch.Net.1.7.1\lib\net40\Elasticsearch.Net.dll</HintPath>
     </Reference>
@@ -384,6 +392,10 @@
     <Reference Include="nQuant.Core, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\nQuant.1.0.3\Lib\net40\nQuant.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Priority Queue, Version=4.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OptimizedPriorityQueue.4.0.4\lib\net20\Priority Queue.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />

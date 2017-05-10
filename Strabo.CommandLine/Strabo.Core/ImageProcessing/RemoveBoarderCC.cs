@@ -42,10 +42,8 @@ namespace Strabo.Core.ImageProcessing
 
             for (int i = 0; i < char_blobs.Count; i++)
             {
-               if(char_blobs[i].bbx.X ==0 ||
-                  char_blobs[i].bbx.Right == srcimg.Width ||
-                  char_blobs[i].bbx.Top ==0 ||
-                   char_blobs[i].bbx.Bottom == srcimg.Height)
+               if (char_blobs[i].bbx.returnExtremeStart().X == 0 || char_blobs[i].bbx.returnExtremeEnd().X == srcimg.Width ||
+                  char_blobs[i].bbx.returnExtremeStart().Y == 0 || char_blobs[i].bbx.returnExtremeEnd().Y == srcimg.Height)
                     boarder_char_idx_set.Add(i);
             }
             
