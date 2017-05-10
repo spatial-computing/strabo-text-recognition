@@ -345,7 +345,7 @@ namespace Strabo.Test
                 File.Copy(dataPath + "InputImage.tif", inputArgs.outputPath + "InputImage.tif", true);
                 inputArgs.outputFileName = "InputImage.tif";
                 cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
-                File.Copy(inputArgs.outputPath + "block-map-output.pngByPixels.txt", dataPath + "block-map-output.pngByPixels.txt", true);
+                // File.Copy(inputArgs.outputPath + "block-map-output.pngByPixels.txt", dataPath + "block-map-output.pngByPixels.txt", true);
             }
             catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
             Log.WriteLine("Process finished");
