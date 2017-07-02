@@ -20,7 +20,9 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using System.Configuration;
+using System;
+using System.Collections;
+using System.IO;
 
 namespace Strabo.Core.Utility
 {
@@ -29,9 +31,49 @@ namespace Strabo.Core.Utility
     /// </summary>
     public static class ReadConfigFile
     {
+        static Hashtable config = new Hashtable();
+        public static void init()
+        {
+            try
+            {
+                StreamReader sr = new StreamReader(@".\config.txt");
+                string line = sr.ReadLine();
+                while (line != null)
+                {
+                    char[] s = { ':' };
+                    string[] tokens = line.Split(s);
+                    if (!config.ContainsKey(tokens[0] + ":" + tokens[1]))
+                    {
+                        config.Add(tokens[0] + ":" + tokens[1], tokens[2]);
+                    }
+                    line = sr.ReadLine();
+                }
+                sr.Close();
+            }
+            catch (Exception e)
+            {
+                Log.WriteLine(e.Message);
+                Log.WriteLine(e.Source);
+                Log.WriteLine(e.StackTrace);
+                throw;
+            }
+        }
         public static string ReadModelConfiguration(string key)
         {
-            return ConfigurationManager.AppSettings[key].ToString();
+            try
+            {
+                if (config.ContainsKey(key))
+                    return config[key].ToString();
+                else
+                    return "";
+            }
+            catch (Exception e)
+            {
+                Log.WriteLine(e.Message);
+                Log.WriteLine(e.Source);
+                Log.WriteLine(e.StackTrace);
+                throw;
+            }
         }
     }
 }

@@ -19,10 +19,6 @@
  * California. For more information, publications, and related projects, 
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Strabo.Core.TextRecognition
 {

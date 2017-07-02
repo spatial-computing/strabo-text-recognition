@@ -40,7 +40,6 @@ namespace Strabo.Core.TextRecognition
         static int _maxWordLength = 4;
         static int _minWordLength = 2;
         static double _minWordSimilarity = 0.33;
-        static int _minWordLengthForDictionaryComparison = 3;
         static List<string>[] _IndexDictionary = new List<string>[_maxNumCharacterInAWord];
         static bool dictProcessed = false;
         static int _dictionaryExactMatchStringLength;
@@ -196,8 +195,8 @@ namespace Strabo.Core.TextRecognition
         {
             _dictionaryExactMatchStringLength = dictionaryExactMatchStringLength;
 
-            if (tr.tess_word3.Contains("ouse"))
-                Console.WriteLine("debug");
+            //if (tr.tess_word3.Contains("ouse"))
+            //    Console.WriteLine("debug");
             try
             { 
                 // Also removes any single digit that may be valid

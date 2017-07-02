@@ -4,6 +4,93 @@
         <name>Accord.MachineLearning</name>
     </assembly>
     <members>
+        <member name="T:Accord.MachineLearning.BalancedKMeans">
+            <summary>
+              Balanced K-Means algorithm. Note: The balanced clusters will be
+              available in the <see cref="P:Accord.MachineLearning.BalancedKMeans.Labels"/> property of this instance!
+            </summary>
+            
+            <remarks>
+            <para>
+              The Balanced k-Means algorithm attempts to find a clustering where each cluster
+              has approximately the same number of data points. The Balanced k-Means implementation
+              used in the framework uses the <see cref="T:Accord.Math.Optimization.Munkres"/> algorithm to solve the assignment
+              problem thus enforcing balance between the clusters.</para>
+              
+            <para>
+              Note: the <see cref="M:Accord.MachineLearning.BalancedKMeans.Learn(System.Double[][],System.Double[])"/> method of this class will
+              return the centroids of balanced clusters, but please note that these centroids
+              cannot be used to obtain balanced clusterings for another (or even the same) data 
+              set. Instead, in order to inspect the balanced clustering that has been obtained
+              after calling <see cref="M:Accord.MachineLearning.BalancedKMeans.Learn(System.Double[][],System.Double[])"/>, please take a look at the
+              contents of the <see cref="P:Accord.MachineLearning.BalancedKMeans.Labels"/> property.</para>
+            </remarks>
+            
+            <para>
+              References:
+              <list type="bullet">
+                <item><description>
+                  M. I. Malinen and P.Fränti, "Balanced K-means for Clustering", Joint Int.Workshop on Structural, Syntactic, 
+                  and Statistical Pattern Recognition (S+SSPR 2014), LNCS 8621, 32-41, Joensuu, Finland, August 2014. </description></item>
+                <item><description>
+                  M. I. Malinen, "New alternatives for k-Means clustering." PhD thesis. Available in:
+                  http://cs.uef.fi/sipu/pub/PhD_Thesis_Mikko_Malinen.pdf </description></item>
+              </list></para>
+            
+            
+            <example>
+              How to perform clustering with Balanced K-Means.
+              
+            <code source="Unit Tests\Accord.Tests.MachineLearning\Clustering\BalancedKMeansTest.cs" region="doc_learn" />
+            </example>
+            
+            <seealso cref="T:Accord.MachineLearning.KMeans"/>
+            <seealso cref="T:Accord.MachineLearning.BinarySplit"/>
+            <seealso cref="T:Accord.MachineLearning.GaussianMixtureModel"/>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.BalancedKMeans.Labels">
+            <summary>
+              Gets the labels assigned for each data point in the last 
+              call to <see cref="M:Accord.MachineLearning.BalancedKMeans.Learn(System.Double[][],System.Double[])"/>.
+            </summary>
+            
+            <value>The labels.</value>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.BalancedKMeans.#ctor(System.Int32,Accord.Math.Distances.IDistance{System.Double[]})">
+            <summary>
+              Initializes a new instance of the Balanced K-Means algorithm.
+            </summary>
+            
+            <param name="k">The number of clusters to divide the input data into.</param>    
+            <param name="distance">The distance function to use. Default is to
+            use the <see cref="M:Accord.Math.Distance.SquareEuclidean(System.Double[],System.Double[])"/> distance.</param>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.BalancedKMeans.#ctor(System.Int32)">
+            <summary>
+              Initializes a new instance of the Balanced K-Means algorithm.
+            </summary>
+            
+            <param name="k">The number of clusters to divide the input data into.</param>    
+            
+        </member>
+        <member name="M:Accord.MachineLearning.BalancedKMeans.Learn(System.Double[][],System.Double[])">
+            <summary>
+              Learns a model that can map the given inputs to the desired outputs. Note:
+              the model created by this function will not be able to produce balanced
+              clusterings. To retrieve the balanced labels, check the <see cref="P:Accord.MachineLearning.BalancedKMeans.Labels"/> 
+              property of this class after calling this function.
+            </summary>
+            
+            <param name="x">The model inputs.</param>
+            <param name="weights">The weight of importance for each input sample.</param>
+            
+            <returns>A model that has learned how to produce suitable outputs
+              given the input data <paramref name="x" />.</returns>
+            
+        </member>
         <member name="T:Accord.MachineLearning.DecisionTrees.NamespaceDoc">
             <summary>
              Contains discrete and continuous Decision Trees, with 
@@ -186,7 +273,7 @@
              <example>
              <para>
                This example shows the simplest way to induce a decision tree with continuous variables.</para>
-             <code source="Unit Tests\Accord.Tests.MachineLearning\DecisionTrees\C45LearningTest.cs" region="doc_simplest" />
+               <code source="Unit Tests\Accord.Tests.MachineLearning\DecisionTrees\C45LearningTest.cs" region="doc_simplest" />
              
              <para>
                This is the same example as above, but the decision variables are specified manually.</para>
@@ -345,112 +432,18 @@
              
              <example>
              <para>
-               In this example, we will be using the famous Play Tennis example by Tom Mitchell (1998).
-               In Mitchell's example, one would like to infer if a person would play tennis or not
-               based solely on four input variables. Those variables are all categorical, meaning that
-               there is no order between the possible values for the variable (i.e. there is no order
-               relationship between Sunny and Rain, one is not bigger nor smaller than the other, but are 
-               just distinct). Moreover, the rows, or instances presented above represent days on which the
-               behavior of the person has been registered and annotated, pretty much building our set of 
-               observation instances for learning:</para>
-             
-             <code>
-               DataTable data = new DataTable("Mitchell's Tennis Example");
+               This example shows the simplest way to induce a decision tree with discrete variables.</para>
+               <code source="Unit Tests\Accord.Tests.MachineLearning\DecisionTrees\ID3LearningTest.cs" region="doc_learn_simplest" />
                
-               data.Columns.Add("Day", "Outlook", "Temperature", "Humidity", "Wind", "PlayTennis");
-               
-               data.Rows.Add(   "D1",   "Sunny",      "Hot",       "High",   "Weak",    "No"  );
-               data.Rows.Add(   "D2",   "Sunny",      "Hot",       "High",  "Strong",   "No"  ); 
-               data.Rows.Add(   "D3",  "Overcast",    "Hot",       "High",   "Weak",    "Yes" );
-               data.Rows.Add(   "D4",   "Rain",       "Mild",      "High",   "Weak",    "Yes" ); 
-               data.Rows.Add(   "D5",   "Rain",       "Cool",     "Normal",  "Weak",    "Yes" ); 
-               data.Rows.Add(   "D6",   "Rain",       "Cool",     "Normal", "Strong",   "No"  ); 
-               data.Rows.Add(   "D7",  "Overcast",    "Cool",     "Normal", "Strong",   "Yes" );
-               data.Rows.Add(   "D8",   "Sunny",      "Mild",      "High",   "Weak",    "No"  );  
-               data.Rows.Add(   "D9",   "Sunny",      "Cool",     "Normal",  "Weak",    "Yes" ); 
-               data.Rows.Add(   "D10", "Rain",        "Mild",     "Normal",  "Weak",    "Yes" ); 
-               data.Rows.Add(   "D11",  "Sunny",      "Mild",     "Normal", "Strong",   "Yes" );
-               data.Rows.Add(   "D12", "Overcast",    "Mild",      "High",  "Strong",   "Yes" ); 
-               data.Rows.Add(   "D13", "Overcast",    "Hot",      "Normal",  "Weak",    "Yes" ); 
-               data.Rows.Add(   "D14",  "Rain",       "Mild",      "High",  "Strong",   "No"  );
-             </code>
-             
-             <para>
-               In order to try to learn a decision tree, we will first convert this problem to a more simpler
-               representation. Since all variables are categories, it does not matter if they are represented
-               as strings, or numbers, since both are just symbols for the event they represent. Since numbers
-               are more easily representable than text string, we will convert the problem to use a discrete 
-               alphabet through the use of a <see cref="T:Accord.Statistics.Filters.Codification">codebook</see>.</para>
-             
-             <para>
-               A codebook effectively transforms any distinct possible value for a variable into an integer 
-               symbol. For example, “Sunny” could as well be represented by the integer label 0, “Overcast” 
-               by “1”, Rain by “2”, and the same goes by for the other variables. So:</para>
-             
-             <code>
-               // Create a new codification codebook to 
-               // convert strings into integer symbols
-               Codification codebook = new Codification(data,
-                 "Outlook", "Temperature", "Humidity", "Wind", "PlayTennis");
-               
-               // Translate our training data into integer symbols using our codebook:
-               DataTable symbols = codebook.Apply(data); 
-               int[][] inputs  = symbols.ToArray&lt;int>("Outlook", "Temperature", "Humidity", "Wind"); 
-               int[]   outputs = symbols.ToArray&lt;int>("PlayTennis");
-             </code>
-             
-             <para>
-               Now that we already have our learning input/ouput pairs, we should specify our
-               decision tree. We will be trying to build a tree to predict the last column, entitled
-               “PlayTennis”. For this, we will be using the “Outlook”, “Temperature”, “Humidity” and
-               “Wind” as predictors (variables which will we will use for our decision). Since those
-               are categorical, we must specify, at the moment of creation of our tree, the
-               characteristics of each of those variables. So:
-             </para>
-             
-             <code>
-               // Gather information about decision variables
-               DecisionVariable[] attributes =
-               {
-                 new DecisionVariable("Outlook",     3), // 3 possible values (Sunny, overcast, rain)
-                 new DecisionVariable("Temperature", 3), // 3 possible values (Hot, mild, cool)  
-                 new DecisionVariable("Humidity",    2), // 2 possible values (High, normal)    
-                 new DecisionVariable("Wind",        2)  // 2 possible values (Weak, strong) 
-               };
-               
-               int classCount = 2; // 2 possible output values for playing tennis: yes or no
-            
-               //Create the decision tree using the attributes and classes
-               DecisionTree tree = new DecisionTree(attributes, classCount); 
-             </code>
-             
-             <para>Now we have created our decision tree. Unfortunately, it is not really very useful,
-             since we haven't taught it the problem we are trying to predict. So now we must instantiate
-             a learning algorithm to make it useful. For this task, in which we have only categorical 
-             variables, the simplest choice is to use the ID3 algorithm by Quinlan. Let’s do it:</para>
-             
-             <code>
-               // Create a new instance of the ID3 algorithm
-               ID3Learning id3learning = new ID3Learning(tree);
-            
-               // Learn the training instances!
-               id3learning.Run(inputs, outputs); 
-             </code>
-             
-             <para>The tree can now be queried for new examples through its <see cref="M:Accord.MachineLearning.DecisionTrees.DecisionTree.Compute(System.Double[])"/>
-             method. For example, we can use: </para>
-             
-             <code>
-               string answer = codebook.Translate("PlayTennis",
-                 tree.Compute(codebook.Translate("Sunny", "Hot", "High", "Strong")));
-             </code>
-             
-             <para>In the above example, answer will be "No".</para>
-             
+            <para>
+               This example shows a common textbook example, and how to induce a decision tree using a 
+               <see cref="T:Accord.Statistics.Filters.Codification">codebook</see> to convert string (text) variables into discrete symbols.</para>
+               <code source="Unit Tests\Accord.Tests.MachineLearning\DecisionTrees\ID3LearningTest.cs" region="doc_learn_mitchell" />
              </example>
-             
             
+             <see cref="T:Accord.MachineLearning.DecisionTrees.DecisionTree"/> 
              <see cref="T:Accord.MachineLearning.DecisionTrees.Learning.C45Learning"/>
+             <see cref="T:Accord.MachineLearning.DecisionTrees.RandomForestLearning"/>
              
         </member>
         <member name="P:Accord.MachineLearning.DecisionTrees.Learning.ID3Learning.MaxHeight">
@@ -795,6 +788,17 @@
               sample usage and example of learning, please see the documentation
               page for <see cref="T:Accord.MachineLearning.DecisionTrees.RandomForestLearning"/>.</para>
             </remarks>
+            
+            <example>
+            <para>
+              This example shows the simplest way to induce a decision tree with continuous variables.</para>
+            <code source="Unit Tests\Accord.Tests.MachineLearning\DecisionTrees\RandomForestTest.cs" region="doc_iris" />
+            <para>
+              The next example shows how to induce a decision tree with continuous variables using a 
+              <see cref="T:Accord.Statistics.Filters.Codification">codebook</see> to manage how input 
+              variables should be encoded.</para>
+            <code source="Unit Tests\Accord.Tests.MachineLearning\DecisionTrees\RandomForestTest.cs" region="doc_nursery" />
+            </example>
             
             <seealso cref="T:Accord.MachineLearning.DecisionTrees.DecisionTree"/>
             <seealso cref="T:Accord.MachineLearning.DecisionTrees.RandomForestLearning"/>
@@ -1659,10 +1663,27 @@
                the <see cref="T:Accord.MachineLearning.DecisionTrees.RandomForestLearning">random forest learning algorithm</see>.</para>
              </remarks>
             
+             <example>
+             <para>
+               This example shows the simplest way to induce a decision tree with discrete variables.</para>
+               <code source="Unit Tests\Accord.Tests.MachineLearning\DecisionTrees\ID3LearningTest.cs" region="doc_learn_simplest" />
+               
+            <para>
+               This example shows a common textbook example, and how to induce a decision tree using a 
+               <see cref="T:Accord.Statistics.Filters.Codification">codebook</see> to convert string (text) variables into discrete symbols.</para>
+               <code source="Unit Tests\Accord.Tests.MachineLearning\DecisionTrees\ID3LearningTest.cs" region="doc_learn_mitchell" />
+               <para>For more examples with discrete variables, please see <see cref="T:Accord.MachineLearning.DecisionTrees.Learning.ID3Learning"/></para>
+             
+             <para>
+               This example shows the simplest way to induce a decision tree with continuous variables.</para>
+               <code source="Unit Tests\Accord.Tests.MachineLearning\DecisionTrees\C45LearningTest.cs" region="doc_simplest" />
+               <para>For more examples with continuous variables, please see <see cref="T:Accord.MachineLearning.DecisionTrees.Learning.C45Learning"/></para>
+             </example>
+             
              <seealso cref="T:Accord.MachineLearning.DecisionTrees.Learning.ID3Learning"/>
              <seealso cref="T:Accord.MachineLearning.DecisionTrees.Learning.C45Learning"/>
              <seealso cref="T:Accord.MachineLearning.DecisionTrees.RandomForestLearning"/>
-            
+             
         </member>
         <member name="P:Accord.MachineLearning.DecisionTrees.DecisionTree.Root">
             <summary>
@@ -1833,13 +1854,13 @@
         </member>
         <member name="M:Accord.MachineLearning.DecisionTrees.DecisionTree.Save(System.IO.Stream)">
             <summary>
-              Obsolete. Please use <see cref="M:Accord.IO.Serializer.Save``1(``0,System.IO.Stream)"/> (or use it as an extension method).
+              Obsolete. Please use <see cref="M:Accord.IO.Serializer.Save``1(``0,System.IO.Stream,Accord.IO.SerializerCompression)"/> (or use it as an extension method).
             </summary>
             
         </member>
         <member name="M:Accord.MachineLearning.DecisionTrees.DecisionTree.Load(System.IO.Stream)">
             <summary>
-              Obsolete. Please use <see cref="M:Accord.IO.Serializer.Load``1(System.IO.Stream)"/>.
+              Obsolete. Please use <see cref="M:Accord.IO.Serializer.Load``1(System.IO.Stream,Accord.IO.SerializerCompression)"/>.
             </summary>
             
         </member>
@@ -2079,6 +2100,367 @@
             </remarks>
             
         </member>
+        <member name="T:Accord.MachineLearning.BaseKNearestNeighbors`3">
+            <summary>
+              Base class for K-Nearest Neighbor (k-NN) algorithms.
+            </summary>
+            
+            <typeparam name="TModel">The type of the model being learned.</typeparam>
+            <typeparam name="TInput">The type of the input data.</typeparam>
+            <typeparam name="TDistance">The type for distance functions that can be used with this algorithm.</typeparam>
+            
+            <seealso cref="T:Accord.MachineLearning.KNearestNeighbors"/>
+            <seealso cref="T:Accord.MachineLearning.KNearestNeighbors`1"/>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.BaseKNearestNeighbors`3.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Accord.MachineLearning.BaseKNearestNeighbors`3"/> class.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.BaseKNearestNeighbors`3.Distance">
+            <summary>
+              Gets or sets the distance function used
+              as a distance metric between data points.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.BaseKNearestNeighbors`3.K">
+            <summary>
+              Gets or sets the number of nearest neighbors to be used 
+              in the decision. Default is 5.
+            </summary>
+            
+            <value>The number of neighbors.</value>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.BaseKNearestNeighbors`3.Token">
+            <summary>
+              Gets or sets a cancellation token that can be used to 
+              stop the learning algorithm while it is running.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.BaseKNearestNeighbors`3.Inputs">
+            <summary>
+              Gets the set of points given
+              as input of the algorithm.
+            </summary>
+            
+            <value>The input points.</value>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.BaseKNearestNeighbors`3.Outputs">
+            <summary>
+              Gets the set of labels associated
+              with each <see cref="P:Accord.MachineLearning.BaseKNearestNeighbors`3.Inputs"/> point.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.BaseKNearestNeighbors`3.Score(`1,System.Int32)">
+            <summary>
+            Computes a numerical score measuring the association between
+            the given <paramref name="input" /> vector and a given
+            <paramref name="classIndex" />.
+            </summary>
+            <param name="input">The input vector.</param>
+            <param name="classIndex">The index of the class whose score will be computed.</param>
+            <returns>System.Double.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.BaseKNearestNeighbors`3.GetNearestNeighbors(`1,System.Int32[]@)">
+            <summary>
+              Gets the top <see cref="P:Accord.MachineLearning.BaseKNearestNeighbors`3.K"/> points that are the closest
+              to a given <paramref name="input"> reference point</paramref>.
+            </summary>
+            
+            <param name="input">The query point whose neighbors will be found.</param>
+            <param name="labels">The label for each neighboring point.</param>
+            
+            <returns>
+              An array containing the top <see cref="P:Accord.MachineLearning.BaseKNearestNeighbors`3.K"/> points that are 
+              at the closest possible distance to <paramref name="input"/>.
+            </returns>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.BaseKNearestNeighbors`3.Learn(`1[],System.Int32[][],System.Double[])">
+            <summary>
+              Learns a model that can map the given inputs to the given outputs.
+            </summary>
+            
+            <param name="x">The model inputs.</param>
+            <param name="y">The desired outputs associated with each <paramref name="x">inputs</paramref>.</param>
+            <param name="weights">The weight of importance for each input-output pair.</param>
+            
+            <returns>A model that has learned how to produce <paramref name="y"/> given <paramref name="x"/>.</returns>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.BaseKNearestNeighbors`3.Learn(`1[],System.Boolean[][],System.Double[])">
+            <summary>
+              Learns a model that can map the given inputs to the given outputs.
+            </summary>
+            
+            <param name="x">The model inputs.</param>
+            <param name="y">The desired outputs associated with each <paramref name="x">inputs</paramref>.</param>
+            <param name="weights">The weight of importance for each input-output pair.</param>
+            
+            <returns>A model that has learned how to produce <paramref name="y"/> given <paramref name="x"/>.</returns>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.BaseKNearestNeighbors`3.Learn(`1[],System.Int32[],System.Double[])">
+            <summary>
+              Learns a model that can map the given inputs to the given outputs.
+            </summary>
+            
+            <param name="x">The model inputs.</param>
+            <param name="y">The desired outputs associated with each <paramref name="x">inputs</paramref>.</param>
+            <param name="weights">The weight of importance for each input-output pair.</param>
+            
+            <returns>A model that has learned how to produce <paramref name="y"/> given <paramref name="x"/>.</returns>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.TermFrequency">
+            <summary>
+              Weighting schemes for term-frequency (TF).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.MachineLearning.TermFrequency.Binary">
+            <summary>
+              Binary TF variant (0, 1).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.MachineLearning.TermFrequency.Default">
+            <summary>
+              Raw frequency variant (f_{t,d}).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.MachineLearning.TermFrequency.Log">
+            <summary>
+              Log normalization (1 + log(f_{t,d})).
+            </summary>
+        </member>
+        <member name="F:Accord.MachineLearning.TermFrequency.DoubleNormalization">
+            <summary>
+              Double normalization (0.5 + 0.5 { f_{t,d} / max_t'{ f_{t',d} } }
+            </summary>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.InverseDocumentFrequency">
+            <summary>
+              Weighting schemes for Inverse Document Frequency (IDF).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.MachineLearning.InverseDocumentFrequency.Unary">
+            <summary>
+              Unary (1).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.MachineLearning.InverseDocumentFrequency.Default">
+            <summary>
+              Inverse document frequency, log(N / n_t).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.MachineLearning.InverseDocumentFrequency.Smooth">
+            <summary>
+              Smooth inverse document frequency, log(N / (1 + n_t)).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.MachineLearning.InverseDocumentFrequency.Max">
+            <summary>
+              Max inverse document frequency, log( max_t'{n_t} / n_t).
+            </summary>
+        </member>
+        <member name="F:Accord.MachineLearning.InverseDocumentFrequency.Probabilistic">
+            <summary>
+              Probabilistic inverse document frequency, log((N -n_t) / n_t).
+            </summary>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.TFIDF">
+            <summary>
+              Term Frequency - Inverse Term Frequency.
+            </summary>
+            
+            <example>
+              <code source="Unit Tests\Accord.Tests.MachineLearning\TFIDFTest.cs" region="doc_learn"/>
+            </example>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.TFIDF.Counts">
+            <summary>
+              Gets the number of documents that contain each code word. Each element 
+              is associated with a word, and the value of the element gives the number 
+              of documents that contain this word.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.TFIDF.NumberOfDocuments">
+            <summary>
+              Gets the total number of documents considered by this TF-IDF.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.TFIDF.NumberOfWords">
+            <summary>
+              Gets the number of words in this codebook.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.TFIDF.NumberOfInputs">
+            <summary>
+            Gets the number of inputs accepted by the model.
+            </summary>
+            
+            <value>The number of inputs.</value>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.TFIDF.NumberOfOutputs">
+            <summary>
+            Gets the number of outputs generated by the model.
+            </summary>
+            
+            <value>The number of outputs.</value>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.TFIDF.Idf">
+            <summary>
+              Gets or sets the inverse document frequency (IDF) definition to be used.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.TFIDF.Tf">
+            <summary>
+              Gets or sets the term frequency (TF) definition to be used.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.TFIDF.UpdateDictionary">
+            <summary>
+            Gets or sets a value indicating whether new words should be added to the
+            dictionary in the next call to <see cref="M:Accord.MachineLearning.TFIDF.Learn(System.String[][],System.Double[])"/>.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.TFIDF.InverseDocumentFrequency">
+            <summary>
+              Gets the inverse document frequency vector used to scale term-frequency vectors.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.#ctor">
+            <summary>
+              Constructs a new <see cref="T:Accord.MachineLearning.TFIDF"/>.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.#ctor(System.String[][])">
+            <summary>
+              Constructs a new <see cref="T:Accord.MachineLearning.TFIDF"/>.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.Learn(System.String[][],System.Double[])">
+            <summary>
+            Learns a model that can map the given inputs to the desired outputs.
+            </summary>
+            <param name="x">The model inputs.</param>
+            <param name="weights">The weight of importance for each input sample.</param>
+            <returns>A model that has learned how to produce suitable outputs
+            given the input data <paramref name="x" />.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.Transform(System.String[][],System.Double[][])">
+            <summary>
+            Applies the transformation to a set of input vectors,
+            producing an associated set of output vectors.
+            </summary>
+            <param name="input">The input data to which
+            the transformation should be applied.</param>
+            <param name="result">The location to where to store the
+            result of this transformation.</param>
+            <returns>The output generated by applying this
+            transformation to the given input.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.Transform(System.String[][],Accord.Math.Sparse{System.Double}[]@)">
+            <summary>
+            Applies the transformation to a set of input vectors,
+            producing an associated set of output vectors.
+            </summary>
+            <param name="input">The input data to which
+            the transformation should be applied.</param>
+            <param name="result">The location to where to store the
+            result of this transformation.</param>
+            <returns>The output generated by applying this
+            transformation to the given input.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.Transform(System.String[][],Accord.Math.Sparse{System.Double}[])">
+            <summary>
+            Applies the transformation to a set of input vectors,
+            producing an associated set of output vectors.
+            </summary>
+            <param name="input">The input data to which
+            the transformation should be applied.</param>
+            <param name="result">The location to where to store the
+            result of this transformation.</param>
+            <returns>The output generated by applying this
+            transformation to the given input.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.Transform(System.String[],System.Double[])">
+            <summary>
+            Applies the transformation to an input, producing an associated output.
+            </summary>
+            <param name="input">The input data to which
+            the transformation should be applied.</param>
+            <param name="result">The location to where to store the
+            result of this transformation.</param>
+            <returns>The output generated by applying this
+            transformation to the given input.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.Transform(System.String[],Accord.Math.Sparse{System.Double})">
+            <summary>
+            Applies the transformation to an input, producing an associated output.
+            </summary>
+            <param name="input">The input data to which
+            the transformation should be applied.</param>
+            <param name="result">The location to where to store the
+            result of this transformation.</param>
+            <returns>The output generated by applying this
+            transformation to the given input.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.Transform(System.String[])">
+            <summary>
+            Applies the transformation to an input, producing an associated output.
+            </summary>
+            <param name="input">The input data to which the transformation should be applied.</param>
+            <returns>The output generated by applying this transformation to the given input.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.Transform(System.String[][])">
+            <summary>
+            Applies the transformation to a set of input vectors,
+            producing an associated set of output vectors.
+            </summary>
+            <param name="input">The input data to which
+            the transformation should be applied.</param>
+            <returns>The output generated by applying this
+            transformation to the given input.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.TFIDF.Transform(System.String[],Accord.Math.Sparse{System.Double}@)">
+            <summary>
+            Applies the transformation to an input, producing an associated output.
+            </summary>
+            <param name="input">The input data to which
+            the transformation should be applied.</param>
+            <param name="result">The location to where to store the
+            result of this transformation.</param>
+            <returns>The output generated by applying this
+            transformation to the given input.</returns>
+        </member>
         <member name="T:Accord.MachineLearning.BagOfWords">
             <summary>
               Bag of words.
@@ -2088,6 +2470,10 @@
               The bag-of-words (BoW) model can be used to extract finite
               length features from otherwise varying length representations.
             </remarks>
+            
+            <example>
+              <code source="Unit Tests\Accord.Tests.MachineLearning\BagOfWordsTest.cs" region="doc_learn"/>
+            </example>
             
         </member>
         <member name="P:Accord.MachineLearning.BagOfWords.NumberOfWords">
@@ -2180,6 +2566,17 @@
             <returns>The output generated by applying this
             transformation to the given input.</returns>
         </member>
+        <member name="M:Accord.MachineLearning.BagOfWords.Transform(System.String[],Accord.Math.Sparse{System.Double})">
+            <summary>
+            Applies the transformation to an input, producing an associated output.
+            </summary>
+            <param name="input">The input data to which
+            the transformation should be applied.</param>
+            <param name="result">The location to where to store the
+            result of this transformation.</param>
+            <returns>The output generated by applying this
+            transformation to the given input.</returns>
+        </member>
         <member name="M:Accord.MachineLearning.BagOfWords.Transform(System.String[],System.Int32[])">
             <summary>
             Applies the transformation to an input, producing an associated output.
@@ -2232,6 +2629,15 @@
             <returns>The output generated by applying this
             transformation to the given input.</returns>
         </member>
+        <member name="M:Accord.MachineLearning.BagOfWords.Learn(System.String[],System.Double[])">
+            <summary>
+            Learns a model that can map the given inputs to the desired outputs.
+            </summary>
+            <param name="x">The model inputs.</param>
+            <param name="weights">The weight of importance for each input sample.</param>
+            <returns>A model that has learned how to produce suitable outputs
+            given the input data <paramref name="x" />.</returns>
+        </member>
         <member name="M:Accord.MachineLearning.BagOfWords.Learn(System.String[][],System.Double[])">
             <summary>
             Learns a model that can map the given inputs to the desired outputs.
@@ -2240,6 +2646,18 @@
             <param name="weights">The weight of importance for each input sample.</param>
             <returns>A model that has learned how to produce suitable outputs
             given the input data <paramref name="x" />.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.BagOfWords.Transform(System.String[][],Accord.Math.Sparse{System.Double}[])">
+            <summary>
+            Applies the transformation to a set of input vectors,
+            producing an associated set of output vectors.
+            </summary>
+            <param name="input">The input data to which
+            the transformation should be applied.</param>
+            <param name="result">The location to where to store the
+            result of this transformation.</param>
+            <returns>The output generated by applying this
+            transformation to the given input.</returns>
         </member>
         <member name="T:Accord.MachineLearning.Rules.AssociationRule`1">
             <summary>
@@ -3967,6 +4385,8 @@
             <typeparam name="T">The type of the element to be 
             converted to a fixed-length vector representation.</typeparam>
             
+            <seealso cref="T:Accord.MachineLearning.BagOfWords"/> 
+            
         </member>
         <member name="P:Accord.MachineLearning.IBagOfWords`1.NumberOfWords">
             <summary>
@@ -5574,7 +5994,7 @@
               K-Nearest Neighbor (k-NN) algorithm.
             </summary>
             
-            <typeparam name="T">The type of the input data.</typeparam>
+            <typeparam name="TInput">The type of the input data.</typeparam>
             
             <remarks>
             <para> The k-nearest neighbor algorithm (k-NN) is a method for classifying objects
@@ -5597,97 +6017,82 @@
             </remarks>
             
             <example>
-            <para>The following example shows how to create
-            and use a k-Nearest Neighbor algorithm to classify
-            a set of numeric vectors.</para>
+            <para>
+             The following example shows how to create and use a k-Nearest Neighbor algorithm to classify
+              a set of numeric vectors.</para>
             
-            <code>
-            // Create some sample learning data. In this data,
-            // the first two instances belong to a class, the
-            // four next belong to another class and the last
-            // three to yet another.
+            <code source = "Unit Tests\Accord.Tests.MachineLearning\KNearestNeighbors\KNearestNeighborTest.cs" region="doc_learn" />
             
-            double[][] inputs = 
-            {
-                // The first two are from class 0
-                new double[] { -5, -2, -1 },
-                new double[] { -5, -5, -6 },
-            
-                // The next four are from class 1
-                new double[] {  2,  1,  1 },
-                new double[] {  1,  1,  2 },
-                new double[] {  1,  2,  2 },
-                new double[] {  3,  1,  2 },
-            
-                // The last three are from class 2
-                new double[] { 11,  5,  4 },
-                new double[] { 15,  5,  6 },
-                new double[] { 10,  5,  6 },
-            };
-            
-            int[] outputs =
-            {
-                0, 0,        // First two from class 0
-                1, 1, 1, 1,  // Next four from class 1
-                2, 2, 2      // Last three from class 2
-            };
+            <para>
+              The following example show how to use a different distance metric when computing k-NN:</para>
+              
+              <code source = "Unit Tests\Accord.Tests.MachineLearning\KNearestNeighbors\KNearestNeighborTest.cs" region="doc_learn_distance" />
             
             
-            // Now we will create the K-Nearest Neighbors algorithm. For this
-            // example, we will be choosing k = 4. This means that, for a given
-            // instance, its nearest 4 neighbors will be used to cast a decision.
-            KNearestNeighbors knn = new KNearestNeighbors(k: 4, classes: 3,
-                inputs: inputs, outputs: outputs);
+            <para>
+              The k-Nearest neighbor algorithm implementation in the framework can also be used with any instance 
+              data type. For such cases, the framework offers a generic version of the classifier, as shown in the 
+              example below:</para>
             
-            
-            // After the algorithm has been created, we can classify a new instance:
-            int answer = knn.Compute(new double[] { 11, 5, 4 }); // answer will be 2.
-            </code>
-            
-            
-            <para>The k-Nearest neighbor algorithm implementation in the 
-            framework can also be used with any instance data type. For
-            such cases, the framework offers a generic version of the 
-            classifier, as shown in the example below.</para>
-            
-            <code>
-            // The k-Nearest Neighbors algorithm can be used with
-            // any kind of data. In this example, we will see how
-            // it can be used to compare, for example, Strings.
-            
-            string[] inputs = 
-            {
-                "Car",    // class 0
-                "Bar",    // class 0
-                "Jar",    // class 0
-            
-                "Charm",  // class 1
-                "Chair"   // class 1
-            };
-            
-            int[] outputs =
-            {
-                0, 0, 0,  // First three are from class 0
-                1, 1,     // And next two are from class 1
-            };
-            
-            
-            // Now we will create the K-Nearest Neighbors algorithm. For this
-            // example, we will be choosing k = 1. This means that, for a given
-            // instance, only its nearest neighbor will be used to cast a new
-            // decision. 
-                        
-            // In order to compare strings, we will be using Levenshtein's string distance
-            KNearestNeighbors&lt;string> knn = new KNearestNeighbors&lt;string>(k: 1, classes: 2,
-                inputs: inputs, outputs: outputs, distance: Distance.Levenshtein);
-            
-            
-            // After the algorithm has been created, we can use it:
-            int answer = knn.Compute("Chars"); // answer should be 1.
-            </code>
+            <code source = "Unit Tests\Accord.Tests.MachineLearning\KNearestNeighbors\KNearestNeighborTest.cs" region="doc_learn_text" />
             </example>
             
             <seealso cref="T:Accord.MachineLearning.KNearestNeighbors"/>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.KNearestNeighbors`1.ParallelOptions">
+            <summary>
+              Gets or sets the parallelization options for this algorithm.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors`1.#ctor">
+            <summary>
+              Creates a new <see cref="T:Accord.MachineLearning.KNearestNeighbors"/>.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors`1.#ctor(System.Int32,Accord.Math.Distances.IDistance{`0})">
+            <summary>
+              Creates a new <see cref="T:Accord.MachineLearning.KNearestNeighbors"/>.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors`1.Scores(`0,System.Double[])">
+            <summary>
+            Computes a numerical score measuring the association between
+            the given <paramref name="input" /> vector and each class.
+            </summary>
+            <param name="input">The input vector.</param>
+            <param name="result">An array where the result will be stored,
+            avoiding unnecessary memory allocations.</param>
+            <returns>System.Double[].</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors`1.GetNearestNeighbors(`0,System.Int32[]@)">
+            <summary>
+              Gets the top <see cref="P:Accord.MachineLearning.BaseKNearestNeighbors`3.K"/> points
+              that are the closest to a given <paramref name="input"> reference point</paramref>.
+            </summary>
+            
+            <param name="input">The query point whose neighbors will be found.</param>
+            <param name="labels">The label for each neighboring point.</param>
+            
+            <returns>
+              An array containing the top <see cref="P:Accord.MachineLearning.BaseKNearestNeighbors`3.K"/> points that are 
+              at the closest possible distance to <paramref name="input"/>.
+            </returns>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors`1.Learn(`0[],System.Int32[],System.Double[])">
+            <summary>
+              Learns a model that can map the given inputs to the given outputs.
+            </summary>
+            
+            <param name="x">The model inputs.</param>
+            <param name="y">The desired outputs associated with each <paramref name="x">inputs</paramref>.</param>
+            <param name="weights">The weight of importance for each input-output pair.</param>
+            
+            <returns>A model that has learned how to produce <paramref name="y"/> given <paramref name="x"/>.</returns>
             
         </member>
         <member name="M:Accord.MachineLearning.KNearestNeighbors`1.#ctor(System.Int32,`0[],System.Int32[],Accord.Math.Distances.IDistance{`0})">
@@ -5715,43 +6120,11 @@
             <param name="distance">The distance measure to use in the decision.</param>
             
         </member>
-        <member name="P:Accord.MachineLearning.KNearestNeighbors`1.Inputs">
-            <summary>
-              Gets the set of points given
-              as input of the algorithm.
-            </summary>
-            
-            <value>The input points.</value>
-            
-        </member>
-        <member name="P:Accord.MachineLearning.KNearestNeighbors`1.Outputs">
-            <summary>
-              Gets the set of labels associated
-              with each <see cref="P:Accord.MachineLearning.KNearestNeighbors`1.Inputs"/> point.
-            </summary>
-            
-        </member>
         <member name="P:Accord.MachineLearning.KNearestNeighbors`1.ClassCount">
             <summary>
               Gets the number of class labels
               handled by this classifier.
             </summary>
-            
-        </member>
-        <member name="P:Accord.MachineLearning.KNearestNeighbors`1.Distance">
-            <summary>
-              Gets or sets the distance function used
-              as a distance metric between data points.
-            </summary>
-            
-        </member>
-        <member name="P:Accord.MachineLearning.KNearestNeighbors`1.K">
-            <summary>
-              Gets or sets the number of nearest 
-              neighbors to be used in the decision.
-            </summary>
-            
-            <value>The number of neighbors.</value>
             
         </member>
         <member name="M:Accord.MachineLearning.KNearestNeighbors`1.Compute(`0)">
@@ -5786,21 +6159,6 @@
             <param name="scores">The distance score for each possible class.</param>
             
             <returns>The most likely label for the given point.</returns>
-            
-        </member>
-        <member name="M:Accord.MachineLearning.KNearestNeighbors`1.GetNearestNeighbors(`0,System.Int32[]@)">
-            <summary>
-              Gets the top <see cref="P:Accord.MachineLearning.KNearestNeighbors`1.K"/> points that are the closest
-              to a given <paramref name="input"> reference point</paramref>.
-            </summary>
-            
-            <param name="input">The query point whose neighbors will be found.</param>
-            <param name="labels">The label for each neighboring point.</param>
-            
-            <returns>
-              An array containing the top <see cref="P:Accord.MachineLearning.KNearestNeighbors`1.K"/> points that are 
-              at the closest possible distance to <paramref name="input"/>.
-            </returns>
             
         </member>
         <member name="T:Accord.MachineLearning.ClassPair">
@@ -7140,6 +7498,540 @@
               Obsolete.
             </summary>
         </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent">
+            <summary>
+              Averaged Stochastic Gradient Descent (ASGD) for training linear support vector machines.
+            </summary>
+            
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.SequentialMinimalOptimization"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearNewtonMethod"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearDualCoordinateDescent"/>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent.Create(System.Int32,Accord.Statistics.Kernels.Linear)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent.InnerClone">
+            <summary>
+            Inheritors should implement this function to produce a new instance
+            with the same characteristics of the current object.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent`1">
+            <summary>
+              Averaged Stochastic Gradient Descent (ASGD) for training linear support vector machines.
+            </summary>
+            
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.SequentialMinimalOptimization"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearNewtonMethod"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearDualCoordinateDescent"/>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent`1.Create(System.Int32,`0)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent`1.InnerClone">
+            <summary>
+            Inheritors should implement this function to produce a new instance
+            with the same characteristics of the current object.
+            </summary>
+            <returns>BaseAveragedStochasticGradientDescent&lt;SupportVectorMachine&lt;TKernel&gt;, TKernel, System.Double[]&gt;.</returns>
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent`2">
+            <summary>
+              Averaged Stochastic Gradient Descent (ASGD) for training linear support vector machines.
+            </summary>
+            
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.SequentialMinimalOptimization"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearNewtonMethod"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearDualCoordinateDescent"/>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent`2.Create(System.Int32,`0)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent`2.InnerClone">
+            <summary>
+            Inheritors should implement this function to produce a new instance
+            with the same characteristics of the current object.
+            </summary>
+            <returns>BaseAveragedStochasticGradientDescent&lt;SupportVectorMachine&lt;TKernel, TInput&gt;, TKernel, TInput&gt;.</returns>
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent`3">
+            <summary>
+              Averaged Stochastic Gradient Descent (ASGD) for training linear support vector machines.
+            </summary>
+            
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.SequentialMinimalOptimization"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearNewtonMethod"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearDualCoordinateDescent"/>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent`3.Create(System.Int32,`0)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent`3.InnerClone">
+            <summary>
+            Inheritors should implement this function to produce a new instance
+            with the same characteristics of the current object.
+            </summary>
+            <returns>BaseAveragedStochasticGradientDescent&lt;SupportVectorMachine&lt;TKernel, TInput&gt;, TKernel, TInput&gt;.</returns>
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4">
+            <summary>
+              Base class for Averaged Stochastic Gradient Descent algorithm implementations.
+            </summary>
+            
+            <remarks>
+              The <see cref="T:Accord.Statistics.Kernels.IKernel"/> and <see cref="T:Accord.Math.Optimization.Losses.IDifferentiableLoss`3"/>
+              are passed as generic parameters (constrained to be structs) because this is the only
+              way to force the compiler to emit a separate native code for this class whose performance
+              critical sections can be inlined.
+            </remarks>
+            
+            <typeparam name="TModel">The type of the model being learned.</typeparam>
+            <typeparam name="TKernel">The type of the kernel function to use.</typeparam>
+            <typeparam name="TInput">The type of the input to consider.</typeparam>
+            <typeparam name="TLoss">The type of the loss function to use.</typeparam>
+            
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent"/>
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent"/>
+            <seealso cref="T:Accord.MachineLearning.BinaryLearningBase`2" />
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Kernel">
+            <summary>
+              Gets or sets the kernel function use to create a 
+              kernel Support Vector Machine.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Loss">
+            <summary>
+              Gets or sets the loss function to be used. 
+              Default is to use the <see cref="T:Accord.Math.Optimization.Losses.HingeLoss"/>.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.LearningRate">
+            <summary>
+              Gets or sets the learning rate for the SGD algorithm.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Iterations">
+            <summary>
+              Gets or sets the number of iterations that should be
+              performed by the algorithm when calling <see cref="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Learn(`2[],System.Boolean[],System.Double[])"/>.
+              Default is 0 (iterate until convergence).
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.CurrentEpoch">
+            <summary>
+              Gets or sets the current epoch counter.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.ParallelOptions">
+            <summary>
+              Gets or sets the parallelization options for this algorithm.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Token">
+            <summary>
+            Gets or sets a cancellation token that can be used
+            to cancel the algorithm while it is running.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Tolerance">
+            <summary>
+              Gets or sets the maximum relative change in the watched value
+              after an iteration of the algorithm used to detect convergence.
+              Default is 1e-3. If set to 0, the loss will not be computed 
+              during learning and execution will be faster.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Lambda">
+            <summary>
+              Gets or sets the lambda regularization term. Default is 0.5.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4"/> class.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Create(System.Int32,`1)">
+            <summary>
+              Creates an instance of the model to be learned. Inheritors
+              of this abstract class must define this method so new models
+              can be created from the training data.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.renorm">
+            <summary>
+              Renormalize the weights.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.wnorm">
+            <summary>
+              Compute the norm of the weights.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.anorm">
+            <summary>
+              Compute the norm of the averaged weights.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.trainOne(`2,System.Boolean,System.Double,System.Double)">
+            <summary>
+              Perform one iteration of the SGD algorithm with specified gains
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Learn(`2[],System.Boolean[],System.Double[])">
+            <summary>
+            Learns a model that can map the given inputs to the given outputs.
+            </summary>
+            <param name="x">The model inputs.</param>
+            <param name="y">The desired outputs associated with each <paramref name="x">inputs</paramref>.</param>
+            <param name="weights">The weight of importance for each input-output pair.</param>
+            <returns>
+            A model that has learned how to produce <paramref name="y" /> given <paramref name="x" />.
+            </returns>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.Clone">
+            <summary>
+            Creates a new object that is a copy of the current instance.
+            </summary>
+            <returns>A new object that is a copy of this instance.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseAveragedStochasticGradientDescent`4.InnerClone">
+            <summary>
+              Inheritors should implement this function to produce a new instance
+              with the same characteristics of the current object.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.FanChenLinSupportVectorRegression">
+            <summary>
+              Support vector regression using <see cref="T:Accord.Math.Optimization.FanChenLinQuadraticOptimization"/> (LibSVM) algorithm.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.FanChenLinSupportVectorRegression.Create(System.Int32,Accord.Statistics.Kernels.Linear)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.FanChenLinSupportVectorRegression`1">
+            <summary>
+              Support vector regression using <see cref="T:Accord.Math.Optimization.FanChenLinQuadraticOptimization"/> (LibSVM)  algorithm.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.FanChenLinSupportVectorRegression`1.Create(System.Int32,`0)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.FanChenLinSupportVectorRegression`2">
+            <summary>
+              Support vector regression using <see cref="T:Accord.Math.Optimization.FanChenLinQuadraticOptimization"/>  (LibSVM) algorithm.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.FanChenLinSupportVectorRegression`2.Create(System.Int32,`0)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.BaseFanChenLinSupportVectorRegression`3">
+            <summary>
+              Base class for Fan-Chen-Lin (LibSVM) regression algorithms.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseFanChenLinSupportVectorRegression`3.#ctor(`0)">
+            <summary>
+              Constructs a new one-class support vector learning algorithm.
+            </summary>
+            
+            <param name="machine">A support vector machine.</param>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseFanChenLinSupportVectorRegression`3.#ctor">
+            <summary>
+              Constructs a new one-class support vector learning algorithm.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseFanChenLinSupportVectorRegression`3.Lagrange">
+            <summary>
+              Gets the value for the Lagrange multipliers
+              (alpha) for every observation vector.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseFanChenLinSupportVectorRegression`3.Tolerance">
+            <summary>
+              Convergence tolerance. Default value is 1e-2.
+            </summary>
+            
+            <remarks>
+              The criterion for completing the model training process. The default is 0.01.
+            </remarks>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseFanChenLinSupportVectorRegression`3.Shrinking">
+            <summary>
+              Gets or sets a value indicating whether to use 
+              shrinking heuristics during learning. Default is true.
+            </summary>
+            
+            <value>
+              <c>true</c> to use shrinking; otherwise, <c>false</c>.
+            </value>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseFanChenLinSupportVectorRegression`3.InnerRun">
+            <summary>
+            Runs the learning algorithm.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent">
+            <summary>
+              Stochastic Gradient Descent (SGD) for training linear support vector machines.
+            </summary>
+            
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.SequentialMinimalOptimization"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearNewtonMethod"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearDualCoordinateDescent"/>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent.Create(System.Int32,Accord.Statistics.Kernels.Linear)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent.InnerClone">
+            <summary>
+            Inheritors should implement this function to produce a new instance
+            with the same characteristics of the current object.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent`1">
+            <summary>
+              Stochastic Gradient Descent (SGD) for training linear support vector machines.
+            </summary>
+            
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.SequentialMinimalOptimization"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearNewtonMethod"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearDualCoordinateDescent"/>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent`1.Create(System.Int32,`0)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent`1.InnerClone">
+            <summary>
+            Inheritors should implement this function to produce a new instance
+            with the same characteristics of the current object.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent`2">
+            <summary>
+              Stochastic Gradient Descent (SGD) for training linear support vector machines.
+            </summary>
+            
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.SequentialMinimalOptimization"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearNewtonMethod"/>
+            <see cref="T:Accord.MachineLearning.VectorMachines.Learning.LinearDualCoordinateDescent"/>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent`2.Create(System.Int32,`0)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent`2.InnerClone">
+            <summary>
+            Inheritors should implement this function to produce a new instance
+            with the same characteristics of the current object.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4">
+            <summary>
+              Base class for Averaged Stochastic Gradient Descent algorithm implementations.
+            </summary>
+            
+            <typeparam name="TModel">The type of the model being learned.</typeparam>
+            <typeparam name="TKernel">The type of the kernel function to use.</typeparam>
+            <typeparam name="TInput">The type of the input to consider.</typeparam>
+            <typeparam name="TLoss">The type of the loss function to use.</typeparam>
+            
+            <remarks>
+              The <see cref="T:Accord.Statistics.Kernels.IKernel"/> and <see cref="T:Accord.Math.Optimization.Losses.IDifferentiableLoss`3"/>
+              are passed as generic parameters (constrained to be structs) because this is the only
+              way to force the compiler to emit a separate native code for this class whose performance
+              critical sections can be inlined.
+            </remarks>
+            
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.StochasticGradientDescent"/>
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.AveragedStochasticGradientDescent"/>
+            <seealso cref="T:Accord.MachineLearning.BinaryLearningBase`2" />
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.Kernel">
+            <summary>
+              Gets or sets the kernel function use to create a 
+              kernel Support Vector Machine.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.Loss">
+            <summary>
+              Gets or sets the loss function to be used. 
+              Default is to use the <see cref="T:Accord.Math.Optimization.Losses.HingeLoss"/>.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.LearningRate">
+            <summary>
+              Gets or sets the learning rate for the SGD algorithm.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.Iterations">
+            <summary>
+              Gets or sets the number of iterations that should be
+              performed by the algorithm when calling <see cref="M:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.Learn(`2[],System.Boolean[],System.Double[])"/>.
+              Default is 0 (iterate until convergence).
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.Tolerance">
+            <summary>
+              Gets or sets the maximum relative change in the watched value
+              after an iteration of the algorithm used to detect convergence.
+              Default is 1e-5.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.Lambda">
+            <summary>
+              Gets or sets the lambda regularization term. Default is 0.5.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4"/> class.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.Create(System.Int32,`1)">
+            <summary>
+              Creates an instance of the model to be learned. Inheritors
+              of this abstract class must define this method so new models
+              can be created from the training data.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.renorm">
+            <summary>
+              Renormalize the weights
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.wnorm">
+            <summary>
+              Compute the norm of the weights
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.trainOne(`2,System.Boolean,System.Double)">
+            <summary>
+              Perform one iteration of the SGD algorithm with specified gains
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.Learn(`2[],System.Boolean[],System.Double[])">
+            <summary>
+            Learns a model that can map the given inputs to the given outputs.
+            </summary>
+            <param name="x">The model inputs.</param>
+            <param name="y">The desired outputs associated with each <paramref name="x">inputs</paramref>.</param>
+            <param name="weights">The weight of importance for each input-output pair.</param>
+            <returns>
+            A model that has learned how to produce <paramref name="y" /> given <paramref name="x" />.
+            </returns>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.Clone">
+            <summary>
+            Creates a new object that is a copy of the current instance.
+            </summary>
+            <returns>A new object that is a copy of this instance.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseStochasticGradientDescent`4.InnerClone">
+            <summary>
+            Inheritors should implement this function to produce a new 
+            instance with the same characteristics of the current object.
+            </summary>
+            
+        </member>
         <member name="T:Accord.MachineLearning.VectorMachines.Learning.LinearCoordinateDescent">
              <summary>
                L1-regularized L2-loss support vector 
@@ -8235,8 +9127,19 @@
         </member>
         <member name="T:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning">
             <summary>
-              One-class Support Vector Machine Learning Algorithm.
+              One-class Support Vector Machine learning algorithm.
             </summary>
+            
+            <example>
+              <para>The following example shows how to use an one-class SVM.</para>
+              <code source="Unit Tests\Accord.Tests.MachineLearning\VectorMachines\OneclassSupportVectorLearningTest.cs" region="doc_learn" />
+            </example>
+            
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.SupportVectorMachine"/>
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.KernelSupportVectorMachine"/>
+            
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.ProbabilisticOutputCalibration"/>
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.MulticlassSupportVectorLearning"/>
             
         </member>
         <member name="M:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning.#ctor(Accord.MachineLearning.VectorMachines.KernelSupportVectorMachine,System.Double[][])">
@@ -8249,19 +9152,90 @@
             Initializes a new instance of the <see cref="T:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning"/> class.
             </summary>
         </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning.Create(System.Int32,Accord.Statistics.Kernels.IKernel{System.Double[]})">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`1">
+            <summary>
+              One-class Support Vector Machine learning algorithm.
+            </summary>
+            
+            <example>
+              <para>The following example shows how to use an one-class SVM.</para>
+              <code source="Unit Tests\Accord.Tests.MachineLearning\VectorMachines\OneclassSupportVectorLearningTest.cs" region="doc_learn" />
+            </example>
+            
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.SupportVectorMachine"/>
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.KernelSupportVectorMachine"/>
+            
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.ProbabilisticOutputCalibration"/>
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.MulticlassSupportVectorLearning"/>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`1.Create(System.Int32,`0)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
         <member name="T:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`2">
             <summary>
-              One-class Support Vector Machine Learning Algorithm.
+              One-class Support Vector Machine learning algorithm.
             </summary>
             
+            <example>
+              <para>The following example shows how to use an one-class SVM.</para>
+              <code source="Unit Tests\Accord.Tests.MachineLearning\VectorMachines\OneclassSupportVectorLearningTest.cs" region="doc_learn" />
+            </example>
+            
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.SupportVectorMachine"/>
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.KernelSupportVectorMachine"/>
+            
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.ProbabilisticOutputCalibration"/>
+            <seealso cref="T:Accord.MachineLearning.VectorMachines.Learning.MulticlassSupportVectorLearning"/>
+            
         </member>
-        <member name="T:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3">
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`2.Create(System.Int32,`0)">
+            <summary>
+            Creates an instance of the model to be learned. Inheritors
+            of this abstract class must define this method so new models
+            can be created from the training data.
+            </summary>
+        </member>
+        <member name="T:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3">
             <summary>
               One-class Support Vector Machine Learning Algorithm.
             </summary>
             
         </member>
-        <member name="M:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.#ctor(`0)">
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Model">
+            <summary>
+              Gets or sets the classifier being learned.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Kernel">
+            <summary>
+              Gets or sets the kernel function use to create a 
+              kernel Support Vector Machine. If this property
+              is set, <see cref="P:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.UseKernelEstimation"/> will be
+              set to false.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.UseKernelEstimation">
+            <summary>
+              Gets or sets whether initial values for some kernel parameters
+              should be estimated from the data, if possible. Default is true.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.#ctor(`0)">
             <summary>
               Constructs a new one-class support vector learning algorithm.
             </summary>
@@ -8269,27 +9243,27 @@
             <param name="machine">A support vector machine.</param>
             
         </member>
-        <member name="M:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.#ctor">
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.#ctor">
             <summary>
               Constructs a new one-class support vector learning algorithm.
             </summary>
             
         </member>
-        <member name="P:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.Lagrange">
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Lagrange">
             <summary>
               Gets the value for the Lagrange multipliers
               (alpha) for every observation vector.
             </summary>
             
         </member>
-        <member name="P:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.Token">
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Token">
             <summary>
               Gets or sets a cancellation token that can be used to
               stop the learning algorithm while it is running.
             </summary>
             
         </member>
-        <member name="P:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.Tolerance">
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Tolerance">
             <summary>
               Convergence tolerance. Default value is 1e-2.
             </summary>
@@ -8299,7 +9273,7 @@
             </remarks>
             
         </member>
-        <member name="P:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.Shrinking">
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Shrinking">
             <summary>
               Gets or sets a value indicating whether to use 
               shrinking heuristics during learning. Default is true.
@@ -8310,7 +9284,7 @@
             </value>
             
         </member>
-        <member name="P:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.Nu">
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Nu">
             <summary>
               Controls the number of outliers accepted by the algorithm. This
               value provides an upper bound on the fraction of training errors
@@ -8323,7 +9297,15 @@
             </remarks>
             
         </member>
-        <member name="M:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.Learn(`2[],System.Double[])">
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Create(System.Int32,`1)">
+            <summary>
+              Creates an instance of the model to be learned. Inheritors
+              of this abstract class must define this method so new models
+              can be created from the training data.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Learn(`2[],System.Double[])">
             <summary>
             Learns a model that can map the given inputs to the desired outputs.
             </summary>
@@ -8334,13 +9316,13 @@
             given the input data <paramref name="x" />.
             </returns>
         </member>
-        <member name="M:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.#ctor(`0,`2[])">
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.#ctor(Accord.MachineLearning.VectorMachines.ISupportVectorMachine{`2},`2[])">
             <summary>
               Obsolete.
             </summary>
             
         </member>
-        <member name="M:Accord.MachineLearning.VectorMachines.Learning.OneclassSupportVectorLearning`3.Run">
+        <member name="M:Accord.MachineLearning.VectorMachines.Learning.BaseOneclassSupportVectorLearning`3.Run">
             <summary>
               Obsolete.
             </summary>
@@ -9539,7 +10521,7 @@
         <member name="F:Accord.MachineLearning.VectorMachines.Learning.SelectionStrategy.Sequential">
             <summary>
               Uses the sequential selection strategy as
-               suggested by Keerthi et al's algorithm 1.
+              suggested by Keerthi et al's algorithm 1.
             </summary>
             
         </member>
@@ -9548,6 +10530,13 @@
               Always select the worst violation pair
               to be optimized first, as suggested in
               Keerthi et al's algorithm 2.
+            </summary>
+            
+        </member>
+        <member name="F:Accord.MachineLearning.VectorMachines.Learning.SelectionStrategy.SecondOrder">
+            <summary>
+              Use a second order selection algorithm, using
+              the same algorithm as LibSVM's implementation.
             </summary>
             
         </member>
@@ -9882,6 +10871,17 @@
               to zero, the cache will be disabled and all operations will
               be computed as needed.
             </summary>
+            
+        </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseSequentialMinimalOptimization`3.Shrinking">
+            <summary>
+              Gets or sets a value indicating whether shrinking heuristics should be used. Note: 
+              this property can only be used when <see cref="P:Accord.MachineLearning.VectorMachines.Learning.BaseSequentialMinimalOptimization`3.Strategy"/> is set to <see cref="F:Accord.MachineLearning.VectorMachines.Learning.SelectionStrategy.SecondOrder"/>.
+            </summary>
+            
+            <value>
+              <c>true</c> to use shrinking heuristics; otherwise, <c>false</c>.
+            </value>
             
         </member>
         <member name="P:Accord.MachineLearning.VectorMachines.Learning.BaseSequentialMinimalOptimization`3.Lagrange">
@@ -10488,6 +11488,16 @@
             </summary>
             
         </member>
+        <member name="P:Accord.MachineLearning.VectorMachines.MulticlassSupportVectorMachine`3.SupportVectorCache">
+            <summary>
+            Gets or sets the minimum number of shared support vectors that a
+            machine should have for kernel evaluation caching to be enabled.
+            Default is 64.
+            </summary>
+            
+            <value>The cache threshold.</value>
+            
+        </member>
         <member name="M:Accord.MachineLearning.VectorMachines.MulticlassSupportVectorMachine`3.Compress">
             <summary>
               If the inner machines have a linear kernel, compresses
@@ -10540,6 +11550,16 @@
             A class-label that best described <paramref name="input" /> according
             to this classifier.
             </returns>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.MulticlassSupportVectorMachine`3.Decide(`2[],System.Int32[])">
+            <summary>
+            Computes a class-label decision for a given <paramref name="input" />.
+            </summary>
+            <param name="input">The input vector that should be classified into
+            one of the <see cref="P:Accord.MachineLearning.ITransform.NumberOfOutputs" /> possible classes.</param>
+            <param name="result">The location where to store the class-labels.</param>
+            <returns>A class-label that best described <paramref name="input" /> according
+            to this classifier.</returns>
         </member>
         <member name="M:Accord.MachineLearning.VectorMachines.MulticlassSupportVectorMachine`3.Scores(`2,System.Double[])">
             <summary>
@@ -11048,6 +12068,27 @@
             <param name="result">An array where the scores will be stored,
             avoiding unnecessary memory allocations.</param>
             <returns></returns>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.MultilabelSupportVectorMachine`3.Score(`2,System.Int32)">
+            <summary>
+            Computes a numerical score measuring the association between
+            the given <paramref name="input" /> vector and a given
+            <paramref name="classIndex" />.
+            </summary>
+            <param name="input">The input vector.</param>
+            <param name="classIndex">The index of the class whose score will be computed.</param>
+            <returns>System.Double.</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.VectorMachines.MultilabelSupportVectorMachine`3.Decide(`2[],System.Int32[])">
+            <summary>
+            Computes a class-label decision for a given <paramref name="input" />.
+            </summary>
+            <param name="input">The input vector that should be classified into
+            one of the <see cref="P:Accord.MachineLearning.ITransform.NumberOfOutputs" /> possible classes.</param>
+            <param name="result">An array where the scores will be stored,
+            avoiding unnecessary memory allocations.</param>
+            <returns>A class-label that best described <paramref name="input" /> according
+            to this classifier.</returns>
         </member>
         <member name="M:Accord.MachineLearning.VectorMachines.MultilabelSupportVectorMachine`3.Dispose">
              <summary>
@@ -11656,6 +12697,16 @@
             A class-label that best described <paramref name="input" /> according
             to this classifier.
             </returns>
+        </member>
+        <member name="M:Accord.MachineLearning.OneVsOne`2.Decide(`1[],System.Int32[])">
+            <summary>
+            Computes a class-label decision for a given <paramref name="input" />.
+            </summary>
+            <param name="input">The input vector that should be classified into
+            one of the <see cref="P:Accord.MachineLearning.ITransform.NumberOfOutputs" /> possible classes.</param>
+            <param name="result">The location where to store the class-labels.</param>
+            <returns>A class-label that best described <paramref name="input" /> according
+            to this classifier.</returns>
         </member>
         <member name="M:Accord.MachineLearning.OneVsOne`2.Scores(`1,System.Double[])">
             <summary>
@@ -13558,6 +14609,77 @@
             <seealso cref="T:Accord.MachineLearning.KNearestNeighbors`1"/>
             
         </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors.#ctor">
+            <summary>
+              Creates a new <see cref="T:Accord.MachineLearning.KNearestNeighbors"/>.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors.#ctor(System.Int32)">
+            <summary>
+              Creates a new <see cref="T:Accord.MachineLearning.KNearestNeighbors"/>.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors.#ctor(System.Int32,Accord.Math.Distances.IMetric{System.Double[]})">
+            <summary>
+              Creates a new <see cref="T:Accord.MachineLearning.KNearestNeighbors"/>.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors.Scores(System.Double[],System.Double[])">
+            <summary>
+            Computes a numerical score measuring the association between
+            the given <paramref name="input" /> vector and each class.
+            </summary>
+            <param name="input">The input vector.</param>
+            <param name="result">An array where the result will be stored,
+            avoiding unnecessary memory allocations.</param>
+            <returns>System.Double[].</returns>
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors.GetNearestNeighbors(System.Double[],System.Int32[]@)">
+            <summary>
+              Gets the top <see cref="P:Accord.MachineLearning.BaseKNearestNeighbors`3.K"/> points that are the closest
+              to a given <paramref name="input">reference point</paramref>.
+            </summary>
+            
+            <param name="input">The query point whose neighbors will be found.</param>
+            <param name="labels">The label for each neighboring point.</param>
+            
+            <returns>
+              An array containing the top <see cref="P:Accord.MachineLearning.BaseKNearestNeighbors`3.K"/> points that are 
+              at the closest possible distance to <paramref name="input"/>.
+            </returns>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors.FromTree(Accord.Collections.KDTree{System.Int32},System.Int32,System.Int32,System.Double[][],System.Int32[])">
+            <summary>
+              Creates a new <see cref="T:Accord.MachineLearning.KNearestNeighbors"/> algorithm from an existing
+              <see cref="T:Accord.Collections.KDTree`1"/>. The tree must have been created using the input
+              points and the point's class labels as the associated node information.
+            </summary>
+            
+            <param name="tree">The <see cref="T:Accord.Collections.KDTree`1"/> containing the input points and their integer labels.</param>
+            <param name="k">The number of nearest neighbors to be used in the decision.</param>
+            <param name="classes">The number of classes in the classification problem.</param>
+            <param name="inputs">The input data points.</param>
+            <param name="outputs">The associated labels for the input points.</param>
+            
+            <returns>A <see cref="T:Accord.MachineLearning.KNearestNeighbors"/> algorithm initialized from the tree.</returns>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors.Learn(System.Double[][],System.Int32[],System.Double[])">
+            <summary>
+              Learns a model that can map the given inputs to the given outputs.
+            </summary>
+            
+            <param name="x">The model inputs.</param>
+            <param name="y">The desired outputs associated with each <paramref name="x">inputs</paramref>.</param>
+            <param name="weights">The weight of importance for each input-output pair.</param>
+            
+            <returns>A model that has learned how to produce <paramref name="y"/> given <paramref name="x"/>.</returns>
+            
+        </member>
         <member name="M:Accord.MachineLearning.KNearestNeighbors.#ctor(System.Int32,System.Double[][],System.Int32[])">
             <summary>
               Creates a new <see cref="T:Accord.MachineLearning.KNearestNeighbors"/>.
@@ -13593,6 +14715,36 @@
             <param name="distance">The distance measure to use.</param>
             
         </member>
+        <member name="P:Accord.MachineLearning.KNearestNeighbors.ClassCount">
+            <summary>
+              Gets the number of class labels
+              handled by this classifier.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors.Compute(System.Double[])">
+            <summary>
+              Computes the most likely label of a new given point.
+            </summary>
+            
+            <param name="input">A point to be classified.</param>
+            
+            <returns>The most likely label for the given point.</returns>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KNearestNeighbors.Compute(System.Double[],System.Double@)">
+            <summary>
+              Computes the most likely label of a new given point.
+            </summary>
+            
+            <param name="input">A point to be classified.</param>
+            <param name="response">A value between 0 and 1 giving 
+            the strength of the classification in relation to the
+            other classes.</param>
+            
+            <returns>The most likely label for the given point.</returns>
+            
+        </member>
         <member name="M:Accord.MachineLearning.KNearestNeighbors.Compute(System.Double[],System.Double[]@)">
             <summary>
               Computes the most likely label of a new given point.
@@ -13602,37 +14754,6 @@
             <param name="scores">The distance score for each possible class.</param>
             
             <returns>The most likely label for the given point.</returns>
-            
-        </member>
-        <member name="M:Accord.MachineLearning.KNearestNeighbors.GetNearestNeighbors(System.Double[],System.Int32[]@)">
-            <summary>
-              Gets the top <see cref="P:Accord.MachineLearning.KNearestNeighbors`1.K"/> points that are the closest
-              to a given <paramref name="input">reference point</paramref>.
-            </summary>
-            
-            <param name="input">The query point whose neighbors will be found.</param>
-            <param name="labels">The label for each neighboring point.</param>
-            
-            <returns>
-              An array containing the top <see cref="P:Accord.MachineLearning.KNearestNeighbors`1.K"/> points that are 
-              at the closest possible distance to <paramref name="input"/>.
-            </returns>
-            
-        </member>
-        <member name="M:Accord.MachineLearning.KNearestNeighbors.FromTree(Accord.Collections.KDTree{System.Int32},System.Int32,System.Int32,System.Double[][],System.Int32[])">
-            <summary>
-              Creates a new <see cref="T:Accord.MachineLearning.KNearestNeighbors"/> algorithm from an existing
-              <see cref="T:Accord.Collections.KDTree`1"/>. The tree must have been created using the input
-              points and the point's class labels as the associated node information.
-            </summary>
-            
-            <param name="tree">The <see cref="T:Accord.Collections.KDTree`1"/> containing the input points and their integer labels.</param>
-            <param name="k">The number of nearest neighbors to be used in the decision.</param>
-            <param name="classes">The number of classes in the classification problem.</param>
-            <param name="inputs">The input data points.</param>
-            <param name="outputs">The associated labels for the input points.</param>
-            
-            <returns>A <see cref="T:Accord.MachineLearning.KNearestNeighbors"/> algorithm initialized from the tree.</returns>
             
         </member>
         <member name="T:Accord.MachineLearning.SplitSetValidation">
@@ -14252,6 +15373,14 @@
             </summary>
             
         </member>
+        <member name="P:Accord.MachineLearning.KMeans.Centroids">
+            <summary>
+              Gets or sets the cluster centroids. Setting this property is equivalent
+              to setting <see cref="P:Accord.MachineLearning.ClusterCollection`3.Centroids">
+              KMeans.Clusters.Centroids</see>.
+            </summary>
+            
+        </member>
         <member name="P:Accord.MachineLearning.KMeans.K">
             <summary>
               Gets the number of clusters.
@@ -14386,7 +15515,16 @@
             <param name="weights">The weight associated with each data point.</param>
               
         </member>
-        <member name="M:Accord.MachineLearning.KMeans.Compute(System.Double[][],System.Double[],System.Double)">
+        <member name="M:Accord.MachineLearning.KMeans.ComputeInformation(System.Double[][],System.Int32[])">
+            <summary>
+            Computes the information about each cluster (covariance, proportions and error).
+            </summary>
+            
+            <param name="data">The data points.</param>
+            <param name="labels">The assigned labels.</param>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.KMeans.compute(System.Double[][],System.Double[],System.Double)">
             <summary>
               Divides the input data into K clusters. 
             </summary>
@@ -14809,6 +15947,26 @@
             
             <remarks>Updates Q-function's value for the previous state-action pair in
             the case if the next state is terminal.</remarks>
+            
+        </member>
+        <member name="T:Accord.MachineLearning.Tools">
+            <summary>
+              Set of machine learning tools.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.Tools.Tokenize(System.String[])">
+            <summary>
+              Splits the given text into individual atomic words, 
+              irrespective of punctuation and other marks.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.MachineLearning.Tools.Tokenize(System.String)">
+            <summary>
+              Splits the given text into individual atomic words, 
+              irrespective of punctuation and other marks.
+            </summary>
             
         </member>
         <member name="T:Accord.Collections.VPTree`1">

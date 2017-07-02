@@ -19,6 +19,7 @@
  * California. For more information, publications, and related projects, 
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
+
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;

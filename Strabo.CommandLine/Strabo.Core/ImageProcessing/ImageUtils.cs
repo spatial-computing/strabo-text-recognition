@@ -22,39 +22,15 @@
 
 using Emgu.CV;
 using Emgu.CV.Structure;
-using Strabo.Core.Utility;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 
 namespace Strabo.Core.ImageProcessing
 {
     public static class ImageUtils
     {
-        public static Bitmap ImageResize(string intermediatePath, string output_filename)
-        {
-            string path = intermediatePath + output_filename;
-            int resize = MapServerParameters.Resize;
-
-            Bitmap img = new Bitmap(path);
-            Size size = new Size(img.Width * resize, img.Height * resize);
-            Bitmap newImage = new Bitmap(img, size);
-            img.Dispose();
-
-            using (MemoryStream memory = new MemoryStream())
-            {
-                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite))
-                {
-                    newImage.Save(memory, ImageFormat.Png);
-                    byte[] bytes = memory.ToArray();
-                    fs.Write(bytes, 0, bytes.Length);
-                }
-            }
-            return newImage;
-        }
-
         public static Bitmap InvertColors(Bitmap srcimg)
         {
             using (Image<Gray, byte> img = new Image<Gray, byte>(srcimg))

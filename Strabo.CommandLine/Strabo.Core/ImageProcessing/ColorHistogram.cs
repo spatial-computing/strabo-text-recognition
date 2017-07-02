@@ -19,6 +19,7 @@
  * California. For more information, publications, and related projects, 
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -40,8 +41,8 @@ namespace Strabo.Core.ImageProcessing
             public const short G = 1;
             public const short R = 2;
         }
-        ~ColorHistogram() 
-        { 
+        ~ColorHistogram()
+        {
             //Console.WriteLine("close histogram"); 
         }
         public bool CheckImageColors(Bitmap srcimg, int min_number_color)
@@ -90,7 +91,7 @@ namespace Strabo.Core.ImageProcessing
         }
         public HashSet<int> GetColorHashSet(Bitmap srcimg)
         {
-            srcimg=ImageUtils.AnyToFormat24bppRgb(srcimg);
+            srcimg = ImageUtils.AnyToFormat24bppRgb(srcimg);
             HashSet<int> color24bppRgb = new HashSet<int>();
             // get source image size
             int width = srcimg.Width;
@@ -106,7 +107,7 @@ namespace Strabo.Core.ImageProcessing
 
             int srcOffset = srcData.Stride - ((srcFmt == PixelFormat.Format8bppIndexed) ? width : width * 3);
 
-      
+
             // do the job
             unsafe
             {
@@ -117,7 +118,7 @@ namespace Strabo.Core.ImageProcessing
                     for (int y = 0; y < height; y++)
                     {
                         for (int x = 0; x < width; x++, src += 3)
-                            color24bppRgb.Add( src[RGB.R] * 256 * 256 + src[RGB.G] * 256 + src[RGB.B]);
+                            color24bppRgb.Add(src[RGB.R] * 256 * 256 + src[RGB.G] * 256 + src[RGB.B]);
                         src += srcOffset;
                     }
                 }
@@ -128,7 +129,7 @@ namespace Strabo.Core.ImageProcessing
         public ColorHistogram(int[] pixelsOrig)
         {
             int N = pixelsOrig.Length;
-            int[] pixelsCpy = (int[])pixelsOrig.Clone() ;// new int[N];
+            int[] pixelsCpy = (int[])pixelsOrig.Clone();// new int[N];
             Array.Sort(pixelsCpy);
 
             // count unique colors:

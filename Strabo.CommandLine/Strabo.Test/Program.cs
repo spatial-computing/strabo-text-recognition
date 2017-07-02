@@ -20,22 +20,14 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using System;
-using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Configuration;
-
+using SpellChecker.Net.Search.Spell;
 using Strabo.Core.TextRecognition;
 using Strabo.Core.Utility;
-
-using SpellChecker.Net.Search.Spell;
-using System.Drawing;
-
-using Emgu.CV;
-using Emgu.CV.Structure;
-using Emgu.CV.UI;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Strabo.Test
 {
@@ -43,86 +35,44 @@ namespace Strabo.Test
     {
         public static void Main(string[] args)
         {
-            //TestHoughCircle thc = new TestHoughCircle();
-            //thc.ApplyEmguCV();
-            //**************************************************************************************************************
-            // Use TestGetMapFromServiceWorker to get maps from WMS
-            //**************************************************************************************************************
-            //TestGetMapFromServiceWorker testGMFSWorker = new TestGetMapFromServiceWorker();
-            //testGMFSWorker.Apply();
             //**************************************************************************************************************
             // Before you commit and push your code, you need to make sure both tcl.Test() and tcl.TestLocalFiles() run correctly
             //**************************************************************************************************************
             try
             {
                 TestCommandLineWorker tcl = new TestCommandLineWorker();
-                tcl.testBlockMaps();
-
-                //PointF[] points = new PointF[]
-                //{
-                //    new PointF(561.629f, 168.07f),
-                //    new PointF(317.392f, 129.095f),
-                //    new PointF(323.532f, 88.8367f),
-                //    new PointF(567.769f, 136.812f)
-                //};
-
-                //Rectangle rect = new Rectangle(250, 150, 71, 141);
-
-                //MCvBox2D bbx = PointCollection.MinAreaRect(points);
-                //Console.WriteLine("Angle: " + bbx.angle);
-                //string vertex = "";
-                //foreach(PointF pts in bbx.GetVertices())
-                //{
-                //    vertex += "(" + pts.X + ", " + pts.Y + ") ";
-                //}
-                //Console.WriteLine("vertices: " + vertex);
-                //Console.WriteLine("Width: " + bbx.size.Width + " Height: " + bbx.size.Height);
-
-                //Image<Bgr, byte> img = new Image<Bgr, byte>(600, 600, new Bgr(Color.White));
-                //img.Draw(bbx, new Bgr(Color.Red), 1);
-
-                //foreach (PointF p in points)
-                //    img.Draw(new CircleF(p, 2), new Bgr(Color.Green), 1);
-
-                //img.Draw(rect, new Bgr(Color.Black), 1);
-
-                //ImageViewer.Show(img, String.Format("Time used: {0} milliseconds", 200000));
-
-                //tcl.TestLocalTianditu_evaFiles();
-                // tcl.TestLocalFiles();
-                // tcl.testLocalWMWholeFile();
-                // tcl.Test();
-
-                // TestWorkers test_object = new TestWorkers();
-                // TestUSGSMaps obj = new TestUSGSMaps();
-                // obj.testMaps();
-                // test_object.testCommandLineWorker();
-                // test_object.testUSGSMaps();
-                // test_object.testColorSegmentationWorker();
-                //  test_object.testTextLayerExtractionWorker();
+                tcl.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961_msmc_te.png", "uscdl-usgs");
+                //tcl.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961.jpg", "uscdl-usgs");
             }
             catch (Exception e)
             { Log.WriteLine(e.Message); }
-            //**************************************************************************************************************
+        }
+        public static void generateDictionary(string srcpathfn, string dstpathfn)
+        {
+            StreamReader sr = new StreamReader(srcpathfn);
+            StreamWriter sw = new StreamWriter(dstpathfn);
+            string line = sr.ReadLine();
+            HashSet<String> dict = new HashSet<string>();
+            while (line != null)
+            {
+                char[] split = { ' ', '-' };
+                line = Regex.Replace(line, @"[^a-zA-Z\s]", " ").Trim();
+                string[] tokens = line.Split(split);
+                for (int i = 0; i < tokens.Length; i++)
+                {
+                    string token = tokens[i];
+                    if (token.ToUpper() != token && token.ToLower() != token)
+                        dict.Add(token.ToLower());
+                }
+                line = sr.ReadLine();
+            }
 
-            //TestTesseract.Test();
-            //CleanDictionary();
-            //BuildDictionary();
-            //TestJaccard();
-            //TestQGram();
-
-            //SampleImageSVM SVM = new SampleImageSVM();
-            //SVM.cropImage();
-
-            //BoundingBoxDetection bbx = new BoundingBoxDetection();
-            //bbx.Rotation();
-
-            //ScalingImage scaling = new ScalingImage(@"C:\Users\nhonarva\Documents\MachineLearning\sampleTraintData\");
-            //scaling.Scaling();
-
-
-            //TestSymbolRecognition test = new TestSymbolRecognition();
-            //Console.WriteLine("Hello World!");
+            foreach (String val in dict)
+            {
+                sw.WriteLine(val);
+            }
+            sr.Close();
+            sw.Close();
         }
         public static void TestJaccard()
         {

@@ -48,7 +48,7 @@ namespace Strabo.Core.TextRecognition
         public static void AddFeature(TessResult tr, int geo_Ref, List<KeyValuePair<string, string>> items)
         {
 
-            AddCordinationFeature(tr, items);
+            //AddCordinationFeature(tr, items);
 
             _streamPixel += "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[" +
                 tr.x.ToString() + "," + (geo_Ref * tr.y).ToString() + "],[" +
@@ -75,7 +75,7 @@ namespace Strabo.Core.TextRecognition
             _streamRef = _streamRef.Replace(",]", "]");
             _streamRef = _streamRef.Replace("\n", "\\n");
 
-            System.IO.File.WriteAllText(path + "\\" + filename + "ByRef.txt", _streamRef);
+            //System.IO.File.WriteAllText(path + "\\" + filename + "ByRef.txt", _streamRef);
             System.IO.File.WriteAllText(path + "\\" + filename + "ByPixels.txt", _streamPixel);
 
         }
@@ -103,7 +103,6 @@ namespace Strabo.Core.TextRecognition
                 _streamRef += ",\"" + items[i].Key + "\":\"" + items[i].Value + "\"";
             }
             _streamRef += ",},";
-
         }
     }
 }

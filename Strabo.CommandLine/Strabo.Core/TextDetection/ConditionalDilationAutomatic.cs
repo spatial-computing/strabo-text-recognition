@@ -30,7 +30,7 @@ using System.Linq;
 using System.Threading;
 using Strabo.Core.Utility;
 
-namespace Strabo.Core.Worker
+namespace Strabo.Core.TextDetection
 {
     public class ConditionalDilationAutomatic
     {
@@ -46,7 +46,7 @@ namespace Strabo.Core.Worker
         short[] char_labels_tmp;
         bool[] char_labels_confirmation;
 
-        List<MyConnectedComponentsAnalysisFast.MyBlob> char_blobs;
+        List<MyConnectedComponentsAnalysisFGFast.MyBlob> char_blobs;
         Hashtable char_blob_idx_max_size_table;
         HashSet<int> short_char_blob_idx_set;
         HashSet<int> expendable_char_blob_idx_set;
@@ -58,9 +58,9 @@ namespace Strabo.Core.Worker
 
         public ConditionalDilationAutomatic()
         {
-            this.sizeRatio = StraboParameters.sizeRatio;
-            this.angleThreshold = StraboParameters.angleThreshold;
-            this.iterationThreshold = StraboParameters.iterationThreshold;
+            this.sizeRatio = StraboParameters.cdaSizeRatio;
+            this.angleThreshold = StraboParameters.cdaAngleThreshold;
+            this.iterationThreshold = StraboParameters.cdaIterationThreshold;
             this.minimum_distance_between_CCs_in_string = StraboParameters.minimumDistBetweenCC;
             this.char_blob_idx_max_size_table = new Hashtable();
             this.short_char_blob_idx_set = new HashSet<int>();
@@ -299,13 +299,13 @@ namespace Strabo.Core.Worker
                 srcimg = cg.Apply(srcimg);
             }
 
-            srcimg = ImageUtils.InvertColors(srcimg);
-            Log.WriteBitmap(srcimg, "InvertedImage.png");
+            //srcimg = ImageUtils.InvertColors(srcimg);
+            //Log.WriteBitmap(srcimg, "InvertedImage.png");
             minimum_distance_between_CCs_in_string = iteration;
 
-            MyConnectedComponentsAnalysisFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFast.MyBlobCounter();
+            MyConnectedComponentsAnalysisFGFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
 
-            this.char_blobs = char_bc.GetBlobs(srcimg);
+            this.char_blobs = char_bc.GetBlobs(srcimg,0);
             this.charLabels = new short[width * height];
 
             for (int i = 0; i < width * height; i++)
@@ -337,16 +337,16 @@ namespace Strabo.Core.Worker
         {
             short_char_blob_idx_set.Clear();
             Bitmap resultimg = Print();
-            resultimg = ImageUtils.InvertColors(resultimg);
+            //resultimg = ImageUtils.InvertColors(resultimg);
 
-            MyConnectedComponentsAnalysisFast.MyBlobCounter string_bc = new MyConnectedComponentsAnalysisFast.MyBlobCounter();
-            List<MyConnectedComponentsAnalysisFast.MyBlob> string_blobs = string_bc.GetBlobs(resultimg);
+            MyConnectedComponentsAnalysisFGFast.MyBlobCounter string_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
+            List<MyConnectedComponentsAnalysisFGFast.MyBlob> string_blobs = string_bc.GetBlobs(resultimg,0);
             ushort[] string_labels = string_bc.objectLabels;
             int string_count = string_blobs.Count;
 
-            List<List<MyConnectedComponentsAnalysisFast.MyBlob>> string_list = new List<List<MyConnectedComponentsAnalysisFast.MyBlob>>();
+            List<List<MyConnectedComponentsAnalysisFGFast.MyBlob>> string_list = new List<List<MyConnectedComponentsAnalysisFGFast.MyBlob>>();
             for (int i = 0; i < string_count; i++)
-                string_list.Add(new List<MyConnectedComponentsAnalysisFast.MyBlob>());
+                string_list.Add(new List<MyConnectedComponentsAnalysisFGFast.MyBlob>());
 
             for (int i = 0; i < char_blobs.Count; i++)
             {

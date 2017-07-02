@@ -25,54 +25,38 @@ using Strabo.Core.TextRecognition;
 using Strabo.Core.Utility;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Text.RegularExpressions;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Strabo.Core.Worker
 {
-    public class TextRecognitionWorker
+    public class TextRecognitionWorker : IStraboWorker
     {
         public TextRecognitionWorker() { }
-        public void Apply( string inputPath, string outputPath,
-            string TesseractResultsJSONFileName, double top, double left,
-            double bottom, double right )
+        public string Apply(string inputDir, string interDir, string outputDir, string srcfileName, int threadNumber)
         {
-            Apply( inputPath, outputPath, StraboParameters.oTDResultFolder,
-                TesseractResultsJSONFileName, StraboParameters.language,
+            return Apply(inputDir, outputDir, StraboParameters.oTDResultFolder,
+                Path.GetFileNameWithoutExtension(srcfileName), StraboParameters.language,
                 StraboParameters.dictionaryFilePath,
                 StraboParameters.dictionaryExactMatchStringLength,
-                Double.Parse(MapServerParameters.BBOXW),
-                Double.Parse(MapServerParameters.BBOXN),
-                MapServerParameters.xscale, MapServerParameters.yscale,
-                MapServerParameters.srid, top, left, bottom, right,
-                StraboParameters.elasticsearch, StraboParameters.otd );
+                StraboParameters.elasticsearch, StraboParameters.otd, threadNumber);
         }
-        public void Apply( string inputPath, string outputPath, string OTDPath,
+        public string Apply(string inputPath, string outputPath, string OTDPath,
             string TesseractResultsJSONFileName, string lng,
             string dictionaryFilePath, int dictionaryExactMatchStringLength,
-            double bbxW, double bbxN, double xscale, double yscale,
-            string srid, double top, double left, double bottom,
-            double right, bool elasticsearch, bool otd )
+            bool elasticsearch, bool otd, int threadNumber)
         {
             try
             {
-                string tessPath = "";
-                // Zhiyuan Wang: use Tesseract data of English for numbers.
-                // string tesslng = (lng == "num") ? "eng" : lng;
-                // WrapperTesseract wt = new WrapperTesseract(tessPath, tesslng);
-                // ^^ Introduces ambiguity: @ialok
+                WrapperTesseract wt = new WrapperTesseract();
+                List<TessResult> tessOcrResultList = wt.Apply(inputPath, outputPath, lng, threadNumber);
 
+                //foreach (TessResult tr in tessOcrResultList)
+                //{
+                //    Log.WriteLine("Raw Text: " + tr.tess_raw3 + " Stripped Text:" + tr.tess_word3);
+                //}
 
-                WrapperTesseract wt = new WrapperTesseract(tessPath, lng);
-                List<TessResult> tessOcrResultList = wt.Apply(inputPath, outputPath);
-
-                foreach(TessResult tr in tessOcrResultList)
-                {
-                    Log.WriteLine("Raw Text: " + tr.tess_raw3 + " Stripped Text:" + tr.tess_word3);
-                }
-
-                int georef = -1;
+                //int georef = -1;
                 //if (elasticsearch)
                 //{
                 //    CheckType ct = new CheckType();
@@ -80,59 +64,20 @@ namespace Strabo.Core.Worker
                 //}
 
                 CleanTesseractResult ctr = new CleanTesseractResult();
-                if (!otd)
-                {
-                    tessOcrResultList = ctr.Apply(tessOcrResultList, dictionaryFilePath, dictionaryExactMatchStringLength, lng, top, left, bottom, right, elasticsearch);
+                tessOcrResultList = ctr.Apply(tessOcrResultList, dictionaryFilePath, dictionaryExactMatchStringLength, lng, false, threadNumber);
 
-                    foreach (TessResult tr in tessOcrResultList)
-                    {
-                       
-                        
-                        Log.WriteLine("Raw Text before GeoJSON: " + tr.tess_raw3 + " Text before GeoJSON: " + tr.tess_word3);
-                        // Log.WriteLine("HOCR: " + tr.hocr);
-                    }
-
-                    NumberCorrection nc = new NumberCorrection(tessOcrResultList);
-                    tessOcrResultList = nc.mergeFeatures();
-
-                    WriteToJsonFile(tessOcrResultList, outputPath, OTDPath, TesseractResultsJSONFileName, lng, dictionaryFilePath, dictionaryExactMatchStringLength, bbxW, bbxN, xscale, yscale, srid, georef);
-                }
-                if (otd)
-                {
-                    ////////   create a new folder for OTD results///////////
-                    if (!Directory.Exists(inputPath + OTDPath))
-                        Directory.CreateDirectory(inputPath + OTDPath);
-                    DirectoryInfo TheFolder = new DirectoryInfo(inputPath + OTDPath);
-                    if (TheFolder.GetFiles() != null)
-                        foreach (FileInfo NextFile in TheFolder.GetFiles())
-                        {
-                            try
-                            {
-                                File.Delete(NextFile.FullName);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.WriteLine(e.ToString());
-                            }
-                        }
-                    ////////   create a new folder for OTD results///////////
-
-                    ///// OTD //////////
-                    Strabo.Core.TextRecognition.AddNeighborhood Neighbors = new Strabo.Core.TextRecognition.AddNeighborhood();
-                    Neighbors.Apply(tessOcrResultList, OTDPath, inputPath);
-                    tessOcrResultList = wt.Apply(inputPath + OTDPath, outputPath);
-
-                    if (elasticsearch)
-                    {
-                        CheckType ct = new CheckType();
-                        tessOcrResultList = ct.Apply(tessOcrResultList, georef, lng);
-                    }
+                //foreach (TessResult tr in tessOcrResultList)
+                //{
 
 
-                    tessOcrResultList = ctr.Apply(tessOcrResultList, dictionaryFilePath, dictionaryExactMatchStringLength, lng, top, left, bottom, right, elasticsearch);
+                //    Log.WriteLine("Raw Text before GeoJSON: " + tr.tess_raw3 + " Text before GeoJSON: " + tr.tess_word3);
+                //    // Log.WriteLine("HOCR: " + tr.hocr);
+                //}
 
-                    WriteToJsonFile(tessOcrResultList, outputPath, OTDPath, TesseractResultsJSONFileName, lng, dictionaryFilePath, dictionaryExactMatchStringLength, bbxW, bbxN, xscale, yscale, srid, georef);
-                }
+                //NumberCorrection nc = new NumberCorrection(tessOcrResultList);
+                //tessOcrResultList = nc.mergeFeatures();
+
+                WriteToJsonFile(tessOcrResultList, outputPath, OTDPath, TesseractResultsJSONFileName, lng, dictionaryFilePath, dictionaryExactMatchStringLength, -1);
             }
             catch (Exception e)
             {
@@ -141,26 +86,21 @@ namespace Strabo.Core.Worker
                 Log.WriteLine(e.StackTrace);
                 throw;
             }
-
+            return TesseractResultsJSONFileName;
         }
 
-        void WriteToJsonFile(List<TessResult> tessOcrResultList, string outputPath, string OTDPath, string TesseractResultsJSONFileName, string lng, string dictionaryFilePath, int dictionaryExactMatchStringLength, double bbxW, double bbxN, double xscale, double yscale, string srid, int georef)
+        void WriteToJsonFile(List<TessResult> tessOcrResultList, string outputPath, string OTDPath, string TesseractResultsJSONFileName, string lng, string dictionaryFilePath, int dictionaryExactMatchStringLength, int georef)
         {
             Log.WriteLine("Writing results to GeoJSON...");
             QGISJson.path = outputPath;
-            QGISJson.Wx = bbxW;
-            QGISJson.Ny = bbxN;
-            QGISJson.yscale = yscale;
-            QGISJson.xscale = xscale;
-            QGISJson.srid = srid;
             QGISJson.Start();
-            QGISJson.filename = TesseractResultsJSONFileName ;
+            QGISJson.filename = TesseractResultsJSONFileName;
             for (int i = 0; i < tessOcrResultList.Count; i++)
             {
                 List<KeyValuePair<string, string>> items = new List<KeyValuePair<string, string>>();
                 if (tessOcrResultList[i].dict_word3 != null && tessOcrResultList[i].dict_word3.Length > 0)
                     tessOcrResultList[i].dict_word3 = Regex.Replace(tessOcrResultList[i].dict_word3, "\n\n", "");
-                
+
                 //if (tessOcrResultList[i].dict_word3 != null && tessOcrResultList[i].dict_word3.Length > 0) tessOcrResultList[i].dict_word3 = Regex.Replace(tessOcrResultList[i].dict_word3, "\n", "");
                 items.Add(new KeyValuePair<string, string>("NameAfterDictionary", tessOcrResultList[i].dict_word3));
 

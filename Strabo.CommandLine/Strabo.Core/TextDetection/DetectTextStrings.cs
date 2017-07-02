@@ -21,14 +21,12 @@
  ******************************************************************************/
 
 using Strabo.Core.ImageProcessing;
-using Strabo.Core.TextDetection;
+using Strabo.Core.Utility;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using Strabo.Core.Utility;
-using System;
 
-namespace Strabo.Core.Worker
+namespace Strabo.Core.TextDetection
 {
     /// <summary>
     /// Sima
@@ -49,23 +47,26 @@ namespace Strabo.Core.Worker
             width = srcimg.Width;
             height = srcimg.Height;
 
-            srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, threshold: 128);
-            srcimg = ImageUtils.InvertColors(srcimg);
-            dilatedimg = ImageUtils.ConvertGrayScaleToBinary(dilatedimg, threshold: 128);
-            dilatedimg = ImageUtils.InvertColors(dilatedimg);
-
             // Get string labels of the source image which is inverted
-            MyConnectedComponentsAnalysisFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFast.MyBlobCounter();
-            List<MyConnectedComponentsAnalysisFast.MyBlob> char_blobs = char_bc.GetBlobs(srcimg);
+            MyConnectedComponentsAnalysisFGFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
+            List<MyConnectedComponentsAnalysisFGFast.MyBlob> char_blobs = char_bc.GetBlobs(srcimg,0);
             ushort[] char_labels = char_bc.objectLabels;
-            
+
             // Get string labels of the dilated image
-            MyConnectedComponentsAnalysisFast.MyBlobCounter string_bc = new MyConnectedComponentsAnalysisFast.MyBlobCounter();
-            List<MyConnectedComponentsAnalysisFast.MyBlob> string_blobs = string_bc.GetBlobs(dilatedimg);
+            MyConnectedComponentsAnalysisFGFast.MyBlobCounter string_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
+            List<MyConnectedComponentsAnalysisFGFast.MyBlob> string_blobs = string_bc.GetBlobs(dilatedimg,0);
             ushort[] string_labels = string_bc.objectLabels;
 
             List<TextString> initial_string_list = new List<TextString>();
-            
+            HashSet<ushort> dict = new HashSet<ushort>();
+
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
+                {
+                    dict.Add(char_labels[y * width + x]);
+                    //Console.WriteLine(char_labels[y * width + x]);
+                }
+
             // Dilated Image
             for (int i = 0; i < string_blobs.Count; i++)
             {
@@ -79,7 +80,8 @@ namespace Strabo.Core.Worker
                 if (char_blobs[i].bbx.width() > 1 && char_blobs[i].bbx.height() > 1)
                 {
                     char_blobs[i].string_id = string_labels[char_blobs[i].sample_y * width + char_blobs[i].sample_x] - 1;
-                    initial_string_list[char_blobs[i].string_id].AddChar(char_blobs[i]);
+                    if(char_blobs[i].string_id>-1)
+                        initial_string_list[char_blobs[i].string_id].AddChar(char_blobs[i]);
                 }
             }
 

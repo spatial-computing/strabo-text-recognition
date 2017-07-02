@@ -1,5 +1,4 @@
-﻿using Strabo.Core.Utility;
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright 2010 University of Southern California
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +19,9 @@
  * California. For more information, publications, and related projects, 
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
+
+using Strabo.Core.ImageProcessing;
+using Strabo.Core.Utility;
 using System;
 using System.Collections;
 using System.Drawing;
@@ -52,7 +54,7 @@ namespace Strabo.Core.ColorSegmentation
             public const short R = 2;
         }
         public MeanShiftMultiThreads() { }
-        ~MeanShiftMultiThreads() {}
+        ~MeanShiftMultiThreads() { }
         public float[] RGB2YIQ(int pos)
         {
             float Rc = rgbpixel[pos + RGB.R];
@@ -164,9 +166,12 @@ namespace Strabo.Core.ColorSegmentation
                     }
                 }
         }
-        public string ApplyYIQMT(string fn, int tnum, int spatial_distance, int color_distance, string outImagePath)
+        public string ApplyYIQMT(string srcpathfn, int tnum, int spatial_distance, int color_distance, string dstpathfn)
         {
-            return ApplyYIQMT(new Bitmap(fn), tnum, spatial_distance, color_distance, outImagePath);
+            using (Bitmap srcimg = new Bitmap(srcpathfn))
+            { 
+                return ApplyYIQMT(srcimg, tnum, spatial_distance, color_distance, dstpathfn);
+            }
         }
         public string ApplyYIQMT(Bitmap srcimg, int tnum, int spatial_distance, int color_distance, string outImagePath)
         {
@@ -175,6 +180,7 @@ namespace Strabo.Core.ColorSegmentation
                 this.tnum = tnum;
                 width = srcimg.Width;
                 height = srcimg.Height;
+                srcimg = ImageUtils.AnyToFormat24bppRgb(srcimg);
                 BitmapToArray1DRGB(srcimg);
                 BitmapData srcData = srcimg.LockBits(
                                 new Rectangle(0, 0, width, height),

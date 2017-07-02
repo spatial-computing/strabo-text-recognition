@@ -20,10 +20,8 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Strabo.Core.ImageProcessing;
 using Strabo.Core.Utility;
 using System;
-using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -91,21 +89,21 @@ namespace Strabo.Core.Worker
                     }
                 }
         }
-        public void Apply(InputArgs inputArgs, bool processLocalFiles, double top, double left, double bottom, double right)
+        public void Apply(InputArgs inputArgs, string path)
         {
-            ExtractTextLayerFromMapWorker _textLayerExtractionWorker = new ExtractTextLayerFromMapWorker();
+            ColorSegmentationWorker _colorSegmentationWorker = new ColorSegmentationWorker();
+            TextExtractionWorker _textExtractionWorker = new TextExtractionWorker();
+            TextCleaningWorker _textCleaningWorker = new TextCleaningWorker();
             TextDetectionWorker _textDetectionWorker = new TextDetectionWorker();
             TextRecognitionWorker _textRecognitionWorker = new TextRecognitionWorker();
-            ColorSegmentationWorker _colorSegmentationWorker = new ColorSegmentationWorker();
 
             //set log folders
             Log.SetLogDir(inputArgs.intermediatePath);
             Log.SetOutputDir(inputArgs.intermediatePath);
             Log.WriteLine("************Strabo Starts************");
             Log.WriteLine("CommandLineWorker in progress...");
-            
-
             Log.SetStartTime();
+
             //read settings
             try
             {
@@ -119,45 +117,25 @@ namespace Strabo.Core.Worker
 
             Log.WriteLine("Strabo release version:" + StraboParameters.straboReleaseVersion);
             Log.WriteLine("Process map: " + inputArgs.mapLayerName);
+
             //set and clear folders
             SetFolder(inputArgs.intermediatePath);
             SetFolder(inputArgs.outputPath);
-            
+
             if (!inputArgs.intermediatePath.EndsWith("\\"))
                 inputArgs.intermediatePath = inputArgs.intermediatePath + "\\";
             if (!inputArgs.outputPath.EndsWith("\\"))
                 inputArgs.outputPath = inputArgs.outputPath + "\\";
+
             Log.WriteLine("Initialization finished. Folders checked and cleaned.");
 
-            try
-            {
-                MapServerParameters.BBOXW = inputArgs.bbx.BBW;
-                MapServerParameters.BBOXN = inputArgs.bbx.BBN;
-                MapServerParameters.layer = inputArgs.mapLayerName;
-                MapServerParameters.URLBuilder();
-
-                if (!processLocalFiles)
-                {
-                    GetMapFromServiceWorker gmfsWoker = new GetMapFromServiceWorker();
-                    gmfsWoker.Apply(inputArgs);
-                }
-                else
-                    File.Copy(inputArgs.outputPath + StraboParameters.sourceMapFileName, inputArgs.intermediatePath + StraboParameters.sourceMapFileName, true);
-                File.Copy(inputArgs.intermediatePath+StraboParameters.sourceMapFileName, inputArgs.outputPath+StraboParameters.sourceMapFileName, true);
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine("ApplyWMSWorker/ApplyWMTSWorker: " + e.Message);
-                throw;
-            }
-
-            string color_segmentation_result_fn;
+            string intermediate_result_pathfn=path;
             if (StraboParameters.numberOfSegmentationColor > 0)
             {
                 try
                 {
                     Log.WriteLine("ColorSegmentationWorker in progress...");
-                    color_segmentation_result_fn = _colorSegmentationWorker.Apply(inputArgs.intermediatePath, inputArgs.threadNumber);
+                    intermediate_result_pathfn = _colorSegmentationWorker.Apply(Path.GetDirectoryName(path), inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(path), inputArgs.threadNumber);
                     Log.WriteLine("ColorSegmentationWorker finished");
                 }
                 catch (Exception e)
@@ -166,55 +144,45 @@ namespace Strabo.Core.Worker
                     throw;
                 }
             }
-            else
-                color_segmentation_result_fn = inputArgs.intermediatePath + StraboParameters.sourceMapFileName;
 
-               try
-               {
-                   Log.WriteLine("TextExtractionWorker in progress...");
-                   _textLayerExtractionWorker.Apply(color_segmentation_result_fn, inputArgs.intermediatePath, inputArgs.threadNumber);
-                   Log.WriteLine("TextExtractionWorker finished");
-               }
-               catch (Exception e)
-               {
-                   Log.WriteLine("ApplyTextExtractionWorker: " + e.Message);
-                   throw;
-               }
+            try
+            {
+                Log.WriteLine("TextExtractionWorker in progress...");
+                intermediate_result_pathfn = _textExtractionWorker.Apply(Path.GetDirectoryName(intermediate_result_pathfn), inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(intermediate_result_pathfn), inputArgs.threadNumber);
+                Log.WriteLine("TextExtractionWorker finished");
+            }
+            catch (Exception e)
+            {
+                Log.WriteLine("ApplyTextExtractionWorker: " + e.Message);
+                throw;
+            }
 
-               try
-               {
+            try
+            {
+                Log.WriteLine("TextDetectionWorker in progress...");
+                intermediate_result_pathfn = _textDetectionWorker.Apply(Path.GetDirectoryName(intermediate_result_pathfn), inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(intermediate_result_pathfn), inputArgs.threadNumber);
+                Log.WriteLine("ApplyTextDetection finished");
 
-                   Log.WriteLine("TextDetectionWorker in progress...");
-                   _textDetectionWorker.Apply(
-                       inputArgs.intermediatePath, StraboParameters.cmdLineWorkerSizeRatio,
-                       StraboParameters.preProcessing, inputArgs.threadNumber
-                       );
-                   Log.WriteLine("ApplyTextDetection finished");
+            }
+            catch (Exception e)
+            {
+                Log.WriteLine("ApplyTextDetectionWorker: " + e.Message);
+                Log.WriteLine(e.StackTrace);
+                throw;
+            }
 
-               }
-               catch (Exception e)
-               {
-                   Log.WriteLine("ApplyTextDetectionWorker: " + e.Message);
-                   Log.WriteLine(e.StackTrace);
-                   throw;
-               }
+            try
+            {
+                Log.WriteLine("TextRecognition in progress...");
+                intermediate_result_pathfn = _textRecognitionWorker.Apply(Path.GetDirectoryName(intermediate_result_pathfn) + "\\", inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(path), inputArgs.threadNumber);
+                Log.WriteLine("TextRecognitionWorker finished");
 
-               try
-               {
-
-                   Log.WriteLine("TextRecognition in progress...");
-                   _textRecognitionWorker.Apply(
-                       inputArgs.intermediatePath, inputArgs.outputPath,
-                       inputArgs.outputFileName, top, left, bottom, right
-                       );
-                   Log.WriteLine("TextRecognitionWorker finished");
-
-               }
-               catch (Exception e)
-               {
-                   Log.WriteLine("ApplyTextRecognition: " + e.Message);
-                   throw;
-               }
+            }
+            catch (Exception e)
+            {
+                Log.WriteLine("ApplyTextRecognition: " + e.Message);
+                throw;
+            }
 
             Log.WriteLine("Execution time: " + Log.GetDurationInSeconds().ToString());
         }

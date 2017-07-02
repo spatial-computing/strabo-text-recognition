@@ -19,6 +19,7 @@
  * California. For more information, publications, and related projects, 
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
+
 using System;
 using System.Configuration;
 
@@ -30,10 +31,11 @@ namespace Strabo.Core.Utility
         public int upperGreenColorThd;
         public int upperBlueColorThd;
 
-
         public int lowerRedColorThd;
         public int lowerGreenColorThd;
         public int lowerBlueColorThd;
+
+        public bool useAutomaticThresholding;
     }
     public static class StraboParameters
     {
@@ -62,9 +64,8 @@ namespace Strabo.Core.Utility
         private static int _colorDistance;
         private static int _medianCutColors;
 
-        private static int _sizeRatio;
-        private static double _angleThreshold;
-        private static int _iterationThreshold;
+        private static double _cdaAngleThreshold;
+        private static int _cdaIterationThreshold;
         private static int _minimumDistBetweenCC;
 
         private static double _angleRatio;
@@ -78,8 +79,8 @@ namespace Strabo.Core.Utility
         private static int _bbxMinHeight;
         private static int _bbxMaxHeight;
 
-        private static Boolean _preProcessing;
-        private static double _cmdLineWorkerSizeRatio;
+        private static Boolean _cdaPreProcessing;
+        private static double _cdaSizeRatio;
 
         private static int _bbxMultiplier;
 
@@ -88,14 +89,11 @@ namespace Strabo.Core.Utility
             try
             {
                 Log.WriteLine("Reading application settings...");
-
-                if (ReadString(layer + ":URL", "") != "")
+                ReadConfigFile.init();
+                if (ReadString(layer + ":Name", "") != "")
                     layer += ":";   //setting found
                 else
                     layer = "";     //use the default setting
-                /*the above setting is false when it's processing local files, 
-                where "layer:URL" is usually ""(empty) */
-
 
                 _rgbThreshold = new RGBThreshold();
                 _rgbThreshold.upperBlueColorThd = ReadInt(layer + "UpperBlueColorThreshold", 0);
@@ -104,6 +102,14 @@ namespace Strabo.Core.Utility
                 _rgbThreshold.lowerBlueColorThd = ReadInt(layer + "LowerBlueColorThreshold", 0);
                 _rgbThreshold.lowerRedColorThd = ReadInt(layer + "LowerRedColorThreshold", 0);
                 _rgbThreshold.lowerGreenColorThd = ReadInt(layer + "LowerGreenColorThreshold", 0);
+
+                if (_rgbThreshold.upperBlueColorThd == _rgbThreshold.lowerBlueColorThd
+                   || _rgbThreshold.upperGreenColorThd == _rgbThreshold.lowerGreenColorThd
+                   || _rgbThreshold.upperRedColorThd == _rgbThreshold.lowerRedColorThd)
+                    _rgbThreshold.useAutomaticThresholding = true;
+                else
+                    _rgbThreshold.useAutomaticThresholding = false;
+
                 _numberOfSegmentationColor = ReadInt(layer + "NumberOfSegmentationColor", 0);
                 _char_size = ReadInt(layer + "CharSize", 12);
                 _language = ReadString(layer + "Language", "en");
@@ -129,9 +135,7 @@ namespace Strabo.Core.Utility
                 _colorDistance = ReadInt(layer + "ColorDistance", 3);
                 _medianCutColors = ReadInt(layer + "MedianCutColors", 256);
 
-                _sizeRatio = ReadInt(layer + "SizeRatio", 2);
-                _angleThreshold = ReadDouble(layer + "AngleThreshold", 0.3);
-                _iterationThreshold = ReadInt(layer + "IterationThreshold", 15);
+                
                 _minimumDistBetweenCC = ReadInt(layer + "MinimumDistanceBetweenCC", 2);
 
                 _angleRatio = ReadDouble(layer + "AngleRatio", 0.3);
@@ -145,8 +149,10 @@ namespace Strabo.Core.Utility
                 _bbxMaxHeight = ReadInt(layer + "BbxMaxHeight", 500);
                 _bbxMaxWidth = ReadInt(layer + "BbxMaxWidth", 500);
 
-                _preProcessing = ReadBool(layer + "preProcessing", false);
-                _cmdLineWorkerSizeRatio = ReadDouble(layer + "cmdLineWorkerSizeRatio", 2.5);
+                _cdaAngleThreshold = ReadDouble(layer + "cdaAngleThreshold", 0.3);
+                _cdaPreProcessing = ReadBool(layer + "cdaPreProcessing", false);
+                _cdaSizeRatio = ReadDouble(layer + "cdaSizeRatio", 2.5);
+                _cdaIterationThreshold = ReadInt(layer + "cdaIterationThreshold", 15);
 
                 _bbxMultiplier = ReadInt(layer + "bbxMultiplier", 3);
             }
@@ -157,23 +163,22 @@ namespace Strabo.Core.Utility
                 Log.WriteLine(e.StackTrace);
                 throw;
             }
-
         }
         private static string ReadString(string key, string default_value)
         {
-            return ConfigurationManager.AppSettings[key] != null ? ConfigurationManager.AppSettings[key].ToString() : default_value;
+            return ReadConfigFile.ReadModelConfiguration(key).ToString() != "" ? ReadConfigFile.ReadModelConfiguration(key).ToString() : default_value;
         }
         private static int ReadInt(string key, int default_value)
         {
-            return ConfigurationManager.AppSettings[key] != null ? Convert.ToInt16(ConfigurationManager.AppSettings[key].ToString()) : default_value;
+            return ReadConfigFile.ReadModelConfiguration(key).ToString() != "" ? Convert.ToInt16(ReadConfigFile.ReadModelConfiguration(key).ToString()) : default_value;
         }
         private static double ReadDouble(string key, double default_value)
         {
-            return ConfigurationManager.AppSettings[key] != null ? Convert.ToDouble(ConfigurationManager.AppSettings[key].ToString()) : default_value;
+            return ReadConfigFile.ReadModelConfiguration(key).ToString() != "" ? Convert.ToDouble(ReadConfigFile.ReadModelConfiguration(key).ToString()) : default_value;
         }
         private static bool ReadBool(string key, bool default_value)
         {
-            return ConfigurationManager.AppSettings[key] != null ? Convert.ToBoolean(ConfigurationManager.AppSettings[key].ToString()) : default_value;
+            return ReadConfigFile.ReadModelConfiguration(key).ToString() != "" ? Convert.ToBoolean(ReadConfigFile.ReadModelConfiguration(key).ToString()) : default_value;
         }
         public static int numberOfSegmentationColor
         {
@@ -333,25 +338,18 @@ namespace Strabo.Core.Utility
                 return _medianCutColors;
             }
         }
-        public static int sizeRatio
+        public static double cdaAngleThreshold
         {
             get
             {
-                return _sizeRatio;
+                return _cdaAngleThreshold;
             }
         }
-        public static double angleThreshold
+        public static int cdaIterationThreshold
         {
             get
             {
-                return _angleThreshold;
-            }
-        }
-        public static int iterationThreshold
-        {
-            get
-            {
-                return _iterationThreshold;
+                return _cdaIterationThreshold;
             }
         }
         public static int minimumDistBetweenCC
@@ -361,7 +359,7 @@ namespace Strabo.Core.Utility
                 return _minimumDistBetweenCC;
             }
         }
-        public static double angleRatio
+        public static double cdaAngleRatio
         {
             get
             {
@@ -424,18 +422,18 @@ namespace Strabo.Core.Utility
                 return _bbxMaxWidth;
             }
         }
-        public static bool preProcessing
+        public static bool cdaPreProcessing
         {
             get
             {
-                return _preProcessing;
+                return _cdaPreProcessing;
             }
         }
-        public static double cmdLineWorkerSizeRatio
+        public static double cdaSizeRatio
         {
             get
             {
-                return _cmdLineWorkerSizeRatio;
+                return _cdaSizeRatio;
             }
         }
         public static int bbxMultiplier

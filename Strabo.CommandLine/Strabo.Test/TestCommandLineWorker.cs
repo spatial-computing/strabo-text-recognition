@@ -10,7 +10,6 @@ namespace Strabo.Test
         public TestCommandLineWorker() { }
         public void Test()//do not change this function, write your own test function instead
         {
-
             //try
             //{
             //    Test("nls-sixinch");
@@ -75,7 +74,7 @@ namespace Strabo.Test
             inputArgs.threadNumber = 8;
 
             CommandLineWorker cmdWorker = new CommandLineWorker();
-            cmdWorker.Apply(inputArgs, false, 0,0,0,0);
+            //cmdWorker.Apply(inputArgs, false, 0,0,0,0);
             //cmdWorker.Apply(inputArgs, true);
             File.Copy(inputArgs.outputPath + "SourceMapImage.png", dataPath + layer + ".png", true);
             File.Copy(inputArgs.outputPath + layer + "ByPixels.txt", dataPath + layer + "geojsonByPixels.txt", true);
@@ -119,15 +118,15 @@ namespace Strabo.Test
                 for (int i = 1; i < 10; i++)
                 {
                     //if (i <5) continue;
-                    System.IO.StreamReader coordinateReader = new System.IO.StreamReader(dataPath + "1920-" + i + "-coordinates.txt");
-                    string coordText = coordinateReader.ReadLine();
-                    double[] coordinates = new double[4];
-                    string[] coordTextSplit = coordText.Split(' ');
-                    for (int j = 0; j < 4; j++)
-                        coordinates[j] = double.Parse(coordTextSplit[j]);
+                    //system.io.streamreader coordinatereader = new system.io.streamreader(datapath + "1920-" + i + "-coordinates.txt");
+                    //string coordtext = coordinatereader.readline();
+                    //double[] coordinates = new double[4];
+                    //string[] coordtextsplit = coordtext.split(' ');
+                    //for (int j = 0; j < 4; j++)
+                    //    coordinates[j] = double.parse(coordtextsplit[j]);
                     File.Copy(dataPath + "1920-" + i + ".png", inputArgs.outputPath + "SourceMapImage.png", true);
                     inputArgs.outputFileName = "1920-" + i + ".png";
-                    cmdWorker.Apply(inputArgs, true, coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
+                    cmdWorker.Apply(inputArgs, dataPath + "1920-" + i + ".png");
                     //cmdWorker.Apply(inputArgs, true, 51, 0.7, 51, 0.7);
                     File.Copy(inputArgs.outputPath + "1920-" + i + ".pngByPixels.txt", dataPath + "1920-" + i + ".pngByPixels.txt", true);
 
@@ -136,262 +135,27 @@ namespace Strabo.Test
             catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
             Log.WriteLine("Process finished");
         }
-        public void TestLocalTianditu_evaFiles()//do not change this function, write your own test function instead
+        public void TestLocalFile(string filename, string mapLayerName)//do not change this function, write your own test function instead
         {
-            BoundingBox bbx = new BoundingBox();
-            bbx.BBW = "2977681";
-            bbx.BBN = "5248978";
+
 
             InputArgs inputArgs = new InputArgs();
-            inputArgs.outputFileName = "Geojson";
+            inputArgs.outputFileName = Path.GetFileNameWithoutExtension(filename);
 
-            inputArgs.bbx = bbx;
-            inputArgs.mapLayerName = "Tianditu_eva";
+            inputArgs.mapLayerName = mapLayerName;
             inputArgs.threadNumber = 8;
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            string dataPath = Directory.GetParent(appPath).Parent.Parent.FullName + "\\data\\";
+            string dataPath = Path.Combine(Directory.GetParent(appPath).Parent.Parent.FullName , "data");
 
-            inputArgs.bbx = bbx;
-
-            inputArgs.intermediatePath = dataPath + "intermediate\\";
-            inputArgs.outputPath = dataPath + "output\\";
-            try
-            {
-                CommandLineWorker cmdWorker = new CommandLineWorker();
-                //for (int i = 1; i < 11; i++)
-                {
-                    //if (i != 10) continue;
-                    File.Copy(dataPath + "Tianditu_eva.png", inputArgs.outputPath + "SourceMapImage.png", true);
-                    inputArgs.outputFileName = "Tianditu_eva.png";
-                    cmdWorker.Apply(inputArgs, true,0,0,0,0);
-                    File.Copy(inputArgs.outputPath + "Tianditu_eva.pngByPixels.txt", dataPath + "Tianditu_eva.pngByPixels.txt", true);
-                }
-            }
-            catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
-            Log.WriteLine("Process finished");
-
-        }
-        public void testLocalUSGSFiles()
-        {
-            //InputArgs inputArgs = new InputArgs();
-            BoundingBox bbx = new BoundingBox();
-            bbx.BBW = "2977681";
-            bbx.BBN = "5248978";
-
-            InputArgs inputArgs = new InputArgs();
-            inputArgs.outputFileName = "Geojson";
-
-            inputArgs.bbx = bbx;
-            //inputArgs.mapLayerName = "usgs-vol3-test";
-            inputArgs.mapLayerName = "usgs-vol4-test1";
-            inputArgs.threadNumber = 8;
-
-            string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            string dataPath = Directory.GetParent(appPath).Parent.Parent.FullName + "\\data\\";
-
-            inputArgs.bbx = bbx;
-
-            inputArgs.intermediatePath = dataPath + "intermediate\\";
-            inputArgs.outputPath = dataPath + "output\\";
+            inputArgs.intermediatePath = Path.Combine(dataPath, "intermediate\\");
+            inputArgs.outputPath = Path.Combine(dataPath, "output\\");
             try
             {
                 Log.SetLogDir(inputArgs.intermediatePath);
                 CommandLineWorker cmdWorker = new CommandLineWorker();
-                
-                //File.Copy(dataPath + "usgs-vol3-test.png", inputArgs.outputPath + "SourceMapImage.png", true);
-                //inputArgs.outputFileName = "usgs-vol3-test-output.png";
-                File.Copy(dataPath + "usgs-vol4-test1.png", inputArgs.outputPath + "SourceMapImage.png", true);
-                inputArgs.outputFileName = "usgs-vol4-test1-output.png";
-                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
-                //File.Copy(inputArgs.outputPath + "usgs-vol3-test.pngByPixels.txt", dataPath + "usgs-vol3-test.pngByPixels.txt", true);
-                File.Copy(inputArgs.outputPath + "usgs-vol4-test1.pngByPixels.txt", dataPath + "usgs-vol4-test1.pngByPixels.txt", true);
-            }
-            catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
-            Log.WriteLine("Process finished");
-        }
-
-        public void testLocalUSCDLFiles()
-        {
-            //InputArgs inputArgs = new InputArgs();
-            BoundingBox bbx = new BoundingBox();
-            bbx.BBW = "0";
-            bbx.BBN = "0";
-
-            InputArgs inputArgs = new InputArgs();
-            inputArgs.outputFileName = "Geojson";
-
-            inputArgs.bbx = bbx;
-            //inputArgs.mapLayerName = "usgs-vol3-test";
-            inputArgs.mapLayerName = "usgs-vol3-test";
-            inputArgs.threadNumber = 8;
-
-            string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            string dataPath = Directory.GetParent(appPath).Parent.Parent.FullName + "\\data\\";
-
-            inputArgs.bbx = bbx;
-
-            inputArgs.intermediatePath = dataPath + "intermediate\\";
-            inputArgs.outputPath = dataPath + "output\\";
-            try
-            {
-                Log.SetLogDir(inputArgs.intermediatePath);
-                CommandLineWorker cmdWorker = new CommandLineWorker();
-
-                File.Copy(dataPath + "usgs-vol3-test.png", inputArgs.outputPath + "SourceMapImage.png", true);
-                inputArgs.outputFileName = "usgs-vol3-test-output.png";
-                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
-                File.Copy(inputArgs.outputPath + "usgs-vol3-test-output.pngByPixels.txt", dataPath + "usgs-vol3-test-output.pngByPixels.txt", true);
-            }
-            catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
-            Log.WriteLine("Process finished");
-        }
-
-        public void testLocalWMFiles()
-        {
-            //InputArgs inputArgs = new InputArgs();
-            BoundingBox bbx = new BoundingBox();
-            bbx.BBW = "0";
-            bbx.BBN = "0";
-
-            InputArgs inputArgs = new InputArgs();
-            inputArgs.outputFileName = "Geojson";
-
-            inputArgs.bbx = bbx;
-            inputArgs.mapLayerName = "wm-test2";
-            inputArgs.threadNumber = 8;
-
-            string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            string dataPath = Directory.GetParent(appPath).Parent.Parent.FullName + "\\data\\";
-
-            inputArgs.bbx = bbx;
-
-            inputArgs.intermediatePath = dataPath + "intermediate\\";
-            inputArgs.outputPath = dataPath + "output\\";
-            try
-            {
-                Log.SetLogDir(inputArgs.intermediatePath);
-                CommandLineWorker cmdWorker = new CommandLineWorker();
-
-                File.Copy(dataPath + "wm-test2.png", inputArgs.outputPath + "SourceMapImage.png", true);
-                inputArgs.outputFileName = "wm-test2-output.png";
-                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
-                File.Copy(inputArgs.outputPath + "wm-test2-output.pngByPixels.txt", dataPath + "wm-test2-output.pngByPixels.txt", true);
-            }
-            catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
-            Log.WriteLine("Process finished");
-        }
-
-        public void testLocalWMNumFiles()
-        {
-            //InputArgs inputArgs = new InputArgs();
-            BoundingBox bbx = new BoundingBox();
-            bbx.BBW = "0";
-            bbx.BBN = "0";
-
-            InputArgs inputArgs = new InputArgs();
-            inputArgs.outputFileName = "Geojson";
-
-            inputArgs.bbx = bbx;
-            inputArgs.mapLayerName = "wm-test3";
-            inputArgs.threadNumber = 8;
-
-            string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            string dataPath = Directory.GetParent(appPath).Parent.Parent.FullName + "\\data\\";
-
-            inputArgs.bbx = bbx;
-
-            inputArgs.intermediatePath = dataPath + "intermediate\\";
-            inputArgs.outputPath = dataPath + "output\\";
-            try
-            {
-                Log.SetLogDir(inputArgs.intermediatePath);
-                CommandLineWorker cmdWorker = new CommandLineWorker();
-
-                File.Copy(dataPath + "wm-test3.png", inputArgs.outputPath + "SourceMapImage.png", true);
-                inputArgs.outputFileName = "wm-test3-output.png";
-                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
-                File.Copy(inputArgs.outputPath + "wm-test3-output.pngByPixels.txt", dataPath + "wm-test3-output.pngByPixels.txt", true);
-            }
-            catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
-            Log.WriteLine("Process finished");
-        }
-
-        public void testBlockMaps()
-        {
-            BoundingBox bbx = new BoundingBox();
-            bbx.BBW = "0";
-            bbx.BBN = "0";
-
-            InputArgs inputArgs = new InputArgs();
-            inputArgs.outputFileName = "Geojson";
-
-            inputArgs.bbx = bbx;
-            inputArgs.mapLayerName = "block-map";
-            inputArgs.threadNumber = 1;
-
-            string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            string dataPath = Directory.GetParent(appPath).Parent.Parent.FullName + "\\data\\";
-
-            inputArgs.bbx = bbx;
-
-            inputArgs.intermediatePath = dataPath + "intermediate\\";
-            inputArgs.outputPath = dataPath + "output\\";
-            try
-            {
-                Log.SetLogDir(inputArgs.intermediatePath);
-                CommandLineWorker cmdWorker = new CommandLineWorker();
-
-                File.Copy(dataPath + "InputImage.tif", inputArgs.outputPath + "InputImage.tif", true);
-                inputArgs.outputFileName = "InputImage.tif";
-                cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
-                // File.Copy(inputArgs.outputPath + "block-map-output.pngByPixels.txt", dataPath + "block-map-output.pngByPixels.txt", true);
-            }
-            catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
-            Log.WriteLine("Process finished");
-
-        }
-
-        public void testLocalWMWholeFile()
-        {
-            //InputArgs inputArgs = new InputArgs();
-            BoundingBox bbx = new BoundingBox();
-            bbx.BBW = "0";
-            bbx.BBN = "0";
-
-            InputArgs inputArgs = new InputArgs();
-            inputArgs.outputFileName = "Geojson";
-
-            inputArgs.bbx = bbx;
-            inputArgs.mapLayerName = "wm-whole";
-            inputArgs.threadNumber = 8;
-
-            string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            string dataPath = Directory.GetParent(appPath).Parent.Parent.FullName + "\\data\\";
-
-            inputArgs.bbx = bbx;
-
-            inputArgs.intermediatePath = dataPath + "intermediate\\";
-            inputArgs.outputPath = dataPath + "output\\";
-            try
-            {
-                Log.SetLogDir(inputArgs.intermediatePath);
-                CommandLineWorker cmdWorker = new CommandLineWorker();
-
-                //Added by Zhiyuan Wang
-                StraboParameters.readConfigFile(inputArgs.mapLayerName);
-                LargeImageHandler handler = new LargeImageHandler();
-                string[] scratchList = handler.splitWholeImage(dataPath, "D2_CA_test.png", 1500, 1500);
-
-                for (int i = 0; i < scratchList.Length; i++)
-                {
-                    //File.Copy(dataPath + scratchList[i], inputArgs.outputPath + "SourceMapImage" + i + ".png", true);
-                    File.Copy(dataPath + scratchList[i], inputArgs.outputPath + "SourceMapImage.png", true);
-                    inputArgs.outputFileName = "D2_CA_test" + i + ".png";
-                    cmdWorker.Apply(inputArgs, true, 0, 0, 0, 0);
-                    File.Copy(inputArgs.outputPath + "D2_CA_test" + i + ".pngByPixels.txt", dataPath + scratchList[i] + "ByPixels.txt", true);
-                }
-
+                cmdWorker.Apply(inputArgs, Path.Combine(dataPath , filename));
+                File.Copy(Path.Combine(inputArgs.outputPath, inputArgs.outputFileName + "ByPixels.txt"), Path.Combine(dataPath , inputArgs.outputFileName + ".pngByPixels.txt"), true);
             }
             catch (Exception e) { Log.WriteLine(e.Message); Log.WriteLine(e.StackTrace); };
             Log.WriteLine("Process finished");

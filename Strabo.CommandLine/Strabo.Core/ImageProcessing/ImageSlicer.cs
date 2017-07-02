@@ -28,9 +28,6 @@ using System.IO;
 
 namespace Strabo.Core.ImageProcessing
 {
-    /// <summary>
-    /// Narges
-    /// </summary>
     public class ImageSlicer
     {
         public List<int[]> xy_offset_list;

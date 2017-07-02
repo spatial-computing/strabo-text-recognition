@@ -32,11 +32,8 @@ namespace Strabo.Core.ImageProcessing
 
         public Bitmap Apply(Bitmap srcimg, int char_size, double min_pixel_area_size)
         {
-            srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
-            srcimg = ImageUtils.InvertColors(srcimg);
-
-            MyConnectedComponentsAnalysisFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFast.MyBlobCounter();
-            List<MyConnectedComponentsAnalysisFast.MyBlob> char_blobs = char_bc.GetBlobs(srcimg);
+            MyConnectedComponentsAnalysisFGFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
+            List<MyConnectedComponentsAnalysisFGFast.MyBlob> char_blobs = char_bc.GetBlobs(srcimg, 0);
             ushort[] char_labels = char_bc.objectLabels;
 
             HashSet<int> boarder_char_idx_set = new HashSet<int>();

@@ -20,32 +20,34 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-/// Narges is using this macro to run her own tests. It's not needed for general use.
-#define NARGES_TEST
-
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Strabo.Core.Utility;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Tesseract;
 
 namespace Strabo.Core.TextRecognition
 {
-
     /// <summary>
     /// Wrapper class for Tesseract OSC Engine
     /// </summary>
-    /// 
     public class WrapperTesseract
     {
-        private TesseractEngine _engine;
+        private List<TesseractEngine> _engine = new List<TesseractEngine>();
         public int _short_word_length = 2;
+        List<string> filepathfn = new List<string>();
+        List<TessResult> tessOcrResultList = new List<TessResult>();
+        int num_engine = 2;
+        public WrapperTesseract()
+        {
+            
+        }
 
-        public WrapperTesseract(string path, string lng)
+        private TesseractEngine setTessEngine(string lng)
         {
             //Path should be same as TESSDATA folder
             //This path should always end with a "/" or "\", e.g., TESSDATA_PREFIX="/usr/share/tesseract-ocr/"
@@ -57,14 +59,14 @@ namespace Strabo.Core.TextRecognition
             //  _ocr.SetVariable("chop_enable", "1");
             //  _ocr.SetVariable("tessedit_char_blacklist", "¢§+~»~`!@#$%^&*()_+-={}[]|\\:\";\'<>?,./");
             ////// Emgu Tesseract(Tesseract3.1)///////
-
+            TesseractEngine engine = null;
             Log.WriteLine("Setting Tesseract traindata and language");
             //////  Tesseract 3.2 ////////
-            if (lng=="eng")
+            if (lng == "eng")
             {
-                _engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.TesseractAndCube);
+                engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.TesseractAndCube);
             }
-            else if(lng=="num")
+            else if (lng == "num")
             {
                 // NUMBER DETECTION IS DUBIOUS
                 // Just detect numbers
@@ -76,104 +78,125 @@ namespace Strabo.Core.TextRecognition
                 // _engine.SetVariable("tessedit_char_whitelist", "0123456789");
 
                 lng = "eng";
-                _engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
+                engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
             }
             else
             {
-                _engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
+                engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
             }
-            Log.WriteLine("Tesseract Version: " + _engine.Version);
+            Log.WriteLine("Tesseract Version: " + engine.Version);
+            return engine;
             //_engine.SetVariable("tessedit_char_whitelist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
             //_engine.SetVariable("tessedit_char_blacklist", "¢§+~»~`!@#$%^&*()_+-={}[]|\\:\";\'<>?,./");
             //////  Tesseract 3.2 ////////
         }
-
-
-        public List<TessResult> Apply(string inputPath, string outputPath)
+        public List<TessResult> Apply(string inputPath, string outputPath, string lng, int threadNumber)
         {
             string[] filePaths = Directory.GetFiles(inputPath, "*.png");
             if (filePaths.Length == 0)
                 return null;
+            for (int i = 0; i < filePaths.Length; i++)
+            {
+                // if (i == 176)
+                //Console.WriteLine("debug");
+                string filename = Path.GetFileNameWithoutExtension(filePaths[i]);
+                String[] splitTokens = filename.Split('_');
 
-            List<TessResult> tessOcrResultList = new List<TessResult>();
+                if (splitTokens.Length == 17)
+                {
+                    filepathfn.Add(filePaths[i]);
+                    
+                } 
+            }
+            for(int i=0;i<num_engine;i++)
+                _engine.Add(setTessEngine(lng));
+
             try
             {
                 Log.WriteLine("Tessearct in progress...");
-                Page page;
-                for (int i = 0; i < filePaths.Length; i++)
+
+                Thread[] thread_array = new Thread[num_engine];
+                for (int i = 0; i < num_engine; i++)
                 {
-                   // if (i == 176)
-                        //Console.WriteLine("debug");
-                    string filename = Path.GetFileNameWithoutExtension(filePaths[i]);
-                    String[] splitTokens = filename.Split('_');
-
-                    if (splitTokens.Length != 17)
-                        continue;
-
-                    using (Image<Gray, Byte> image = new Image<Gray, byte>(filePaths[i]))
-                    {
-                        string text = "";
-                        float conf = 0;
-                        var img = Pix.LoadFromFile(filePaths[i]);
-                        page = _engine.Process(img, PageSegMode.SingleBlock);
-                        text = page.GetText();
-                        
-                        string HOCR = page.GetHOCRText(1);
-
-                        // PageIteratorLevel a = new PageIteratorLevel();
-                        //Rect boundingbox;
-                        //page.AnalyseLayout().TryGetBoundingBox(a, out boundingbox);
-                        string h = page.GetHOCRText(1);                                        
-                        conf = page.GetMeanConfidence();
-                        page.Dispose();
-
-                        TessResult tr = new TessResult();
-
-                        if (text.Length > 0 && RemoveNoiseText.NotTooManyNoiseCharacters(text))
-                        {
-                            // Console.WriteLine(text);
-                            tr.id = splitTokens[0];
-                            
-                            tr.tess_word3 = Regex.Replace(text, "\n\n", "");
-                            tr.tess_word3 = Regex.Replace(tr.tess_word3, "\nn", "");
-                            tr.tess_raw3 = text;
-                            tr.tess_cost3 = (-1 * conf) + 1;
-                            tr.hocr = HOCR;
-                            
-
-                            tr.fileName = Path.GetFileName(filename);
-
-                            tr.mcX = (int)Convert.ToDouble(splitTokens[3]);
-                            tr.mcY = (int)Convert.ToDouble(splitTokens[4]);
-
-                            tr.x = (int)Convert.ToDouble(splitTokens[7]);
-                            tr.y = (int)Convert.ToDouble(splitTokens[8]);
-
-                            tr.x2 = (int)Convert.ToDouble(splitTokens[9]);
-                            tr.y2 = (int)Convert.ToDouble(splitTokens[10]);
-                            tr.x3 = (int)Convert.ToDouble(splitTokens[11]);
-                            tr.y3 = (int)Convert.ToDouble(splitTokens[12]);
-                            tr.x4 = (int)Convert.ToDouble(splitTokens[13]);
-                            tr.y4 = (int)Convert.ToDouble(splitTokens[14]);
-
-                            tr.w = (int)Convert.ToDouble(splitTokens[15]);
-                            tr.h = (int)Convert.ToDouble(splitTokens[16]);
-                            tessOcrResultList.Add(tr);
-
-                        }
-                    }
+                    thread_array[i] = new Thread(new ParameterizedThreadStart(recognize));
+                    thread_array[i].Start(i);
                 }
+                for (int i = 0; i < num_engine; i++)
+                    thread_array[i].Join();
                 Log.WriteLine("Tessearct finished");
                 return tessOcrResultList;
             }
             catch (Exception e)
             {
-
                 Log.WriteLine(e.Message);
                 Log.WriteLine(e.Source);
                 Log.WriteLine(e.StackTrace);
                 throw;
+            }
+        }
 
+        public void recognize(object s)
+        {
+            int x = (int)s;
+
+            for (int i = 0; i < filepathfn.Count; i++)
+            {
+                if (i % num_engine != x) continue;
+                string filename = Path.GetFileNameWithoutExtension(filepathfn[i]);
+                String[] splitTokens = filename.Split('_');
+
+                using (Image<Gray, Byte> image = new Image<Gray, byte>(filepathfn[i]))
+                {
+                    string text = "";
+                    float conf = 0;
+                    var img = Pix.LoadFromFile(filepathfn[i]);
+                    Page page;
+                    page = _engine[i % num_engine].Process(img, PageSegMode.SingleBlock);
+                    text = page.GetText();
+
+                    string HOCR = page.GetHOCRText(1);
+
+                    // PageIteratorLevel a = new PageIteratorLevel();
+                    //Rect boundingbox;
+                    //page.AnalyseLayout().TryGetBoundingBox(a, out boundingbox);
+                    string h = page.GetHOCRText(1);
+                    conf = page.GetMeanConfidence();
+                    page.Dispose();
+
+                    TessResult tr = new TessResult();
+
+                    if (text.Length > 0 && RemoveNoiseText.NotTooManyNoiseCharacters(text))
+                    {
+                        // Console.WriteLine(text);
+                        tr.id = splitTokens[0];
+
+                        tr.tess_word3 = Regex.Replace(text, "\n\n", "");
+                        tr.tess_word3 = Regex.Replace(tr.tess_word3, "\nn", "");
+                        tr.tess_raw3 = text;
+                        tr.tess_cost3 = (-1 * conf) + 1;
+                        tr.hocr = HOCR;
+
+
+                        tr.fileName = Path.GetFileName(filename);
+
+                        tr.mcX = (int)Convert.ToDouble(splitTokens[3]);
+                        tr.mcY = (int)Convert.ToDouble(splitTokens[4]);
+
+                        tr.x = (int)Convert.ToDouble(splitTokens[7]);
+                        tr.y = (int)Convert.ToDouble(splitTokens[8]);
+
+                        tr.x2 = (int)Convert.ToDouble(splitTokens[9]);
+                        tr.y2 = (int)Convert.ToDouble(splitTokens[10]);
+                        tr.x3 = (int)Convert.ToDouble(splitTokens[11]);
+                        tr.y3 = (int)Convert.ToDouble(splitTokens[12]);
+                        tr.x4 = (int)Convert.ToDouble(splitTokens[13]);
+                        tr.y4 = (int)Convert.ToDouble(splitTokens[14]);
+
+                        tr.w = (int)Convert.ToDouble(splitTokens[15]);
+                        tr.h = (int)Convert.ToDouble(splitTokens[16]);
+                        tessOcrResultList.Add(tr);
+                    }
+                }
             }
         }
     }

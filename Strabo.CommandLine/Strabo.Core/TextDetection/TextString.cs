@@ -37,18 +37,15 @@ namespace Strabo.Core.TextDetection
     /// </summary>
     public class TextString
     {
-        private bool _debug = true;
         private MinimumBoundingBox _bbx = new MinimumBoundingBox();
         private Rectangle _maxBbx = new Rectangle(0, 0, 0, 0);
 
         private double _mean_width = 0;
         private double _mean_height = 0;
         // private bool _net = false;
-        private List<MyConnectedComponentsAnalysisFast.MyBlob> _char_list = new List<MyConnectedComponentsAnalysisFast.MyBlob>();
+        private List<MyConnectedComponentsAnalysisFGFast.MyBlob> _char_list = new List<MyConnectedComponentsAnalysisFGFast.MyBlob>();
         private List<TextString> _final_string_list = new List<TextString>();
         // private bool _needsplit = false;
-        private int _smaller_angle_threshold;
-        private int _larger_angle_threshold;
         private Bitmap _srcimg;
         private List<Bitmap> _rotated_img_list = new List<Bitmap>();
         private List<double> _orientation_list = new List<double>();
@@ -56,11 +53,10 @@ namespace Strabo.Core.TextDetection
         private int _x_offset = 0;
         private int _y_offset = 0;
         private PointF _mass_center;
-        private Point _maxBbxMassCenter;
 
         public TextString() { }
 
-        private double ShortestDistance(MyConnectedComponentsAnalysisFast.MyBlob char_blob)
+        private double ShortestDistance(MyConnectedComponentsAnalysisFGFast.MyBlob char_blob)
         {
             double min_distance = Double.MaxValue;
             PointF a = char_blob.bbx.massCenter();
@@ -79,7 +75,7 @@ namespace Strabo.Core.TextDetection
             return Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
         }
 
-        public  void AddChar(MyConnectedComponentsAnalysisFast.MyBlob char_blob)
+        public  void AddChar(MyConnectedComponentsAnalysisFGFast.MyBlob char_blob)
         {
             if (_char_list.Contains(char_blob))
                 return;
@@ -125,7 +121,7 @@ namespace Strabo.Core.TextDetection
                 // Instead of finding orientation and points separately
                 // Find the vertices and treat them like points
                 // Create a bounding box using those points
-                // Update the bounding box using this newlyx created BoundingBox
+                // Update the bounding box using this newlyx created IBoundingBox
 
                 MCvBox2D toBeMergedBbx = _bbx.Bbx();
                 MCvBox2D toMergeBbx = char_blob.bbx.Bbx();
@@ -638,7 +634,7 @@ namespace Strabo.Core.TextDetection
             set { _maxBbx = value; }
         }
 
-        public List<MyConnectedComponentsAnalysisFast.MyBlob> char_list
+        public List<MyConnectedComponentsAnalysisFGFast.MyBlob> char_list
         {
             get { return _char_list; }
             set { _char_list = value; }
