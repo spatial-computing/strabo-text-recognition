@@ -45,9 +45,9 @@ build/
 intermediate/*.png
 intermediate/*.txt
 output/*.txt
-*.png
-*.jpg
-*.jpeg
+# *.png
+# *.jpg
+# *.jpeg
 *_i.c
 *_p.c
 *.ilk
@@ -185,5 +185,3 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 
-# Narges data files
-Strabo.CommandLine/data/InputImages
