@@ -1,6 +1,6 @@
 # strabo: text recognition in scanned maps
 
-## note for devolopmers
+## note for devolopers
 1. The opencv dlls need to be in the same version of the emgucv library. Strabo works with opencv 2.410.
 
 2. The opencv dlls need to be compiled on the same platform as Strabo.
