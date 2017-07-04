@@ -12,7 +12,7 @@
          <Members>
           <Member Name="#Finalize()" Kind="Method" Static="False" Accessibility="Family" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="RemoveEmptyFinalizers" Category="Microsoft.Performance" CheckId="CA1821" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="NonBreaking">
+            <Message TypeName="RemoveEmptyFinalizers" Category="Microsoft.Performance" CheckId="CA1821" Status="Active" Created="2017-07-04 05:30:54Z" FixCategory="NonBreaking">
              <Issue Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ColorSegmentation" File="MeanShiftMultiThreads.cs" Line="57">'MeanShiftMultiThreads' implements a finalizer that only calls conditionally emitted methods or the base type finalizer. Remove the finalizer or ensure that it is only conditionally compiled into the assembly. If this violation occurs against a finalizer that is entirely wrapped in a conditionally-emitted block of code, suppress this message.</Issue>
             </Message>
            </Messages>
@@ -21,7 +21,7 @@
         </Type>
         <Type Name="MedianCutMultiThreads" Kind="Class" Accessibility="Public" ExternallyVisible="True">
          <Messages>
-          <Message TypeName="TypesThatOwnDisposableFieldsShouldBeDisposable" Category="Microsoft.Design" CheckId="CA1001" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="DependsOnFix">
+          <Message TypeName="TypesThatOwnDisposableFieldsShouldBeDisposable" Category="Microsoft.Design" CheckId="CA1001" Status="Active" Created="2017-07-04 05:30:54Z" FixCategory="DependsOnFix">
            <Issue Name="DependsOnFix" Certainty="95" Level="CriticalError">Implement IDisposable on 'MedianCutMultiThreads' because it creates members of the following IDisposable types: 'Bitmap'. If 'MedianCutMultiThreads' has previously shipped, adding new members that implement IDisposable to this type is considered a breaking change to existing consumers.</Issue>
           </Message>
          </Messages>
@@ -30,7 +30,7 @@
          <Members>
           <Member Name="#System.IComparable.CompareTo(System.Object)" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="InterfaceMethodsShouldBeCallableByChildTypes" Category="Microsoft.Design" CheckId="CA1033" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="NonBreaking">
+            <Message TypeName="InterfaceMethodsShouldBeCallableByChildTypes" Category="Microsoft.Design" CheckId="CA1033" Status="Active" Created="2017-07-04 05:30:54Z" FixCategory="NonBreaking">
              <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ColorSegmentation" File="MedianCutMultiThreads.cs" Line="306">Make 'MedianCutMultiThreads.ColorBox' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of 'IComparable.CompareTo(object)' and is visible to derived classes.</Issue>
             </Message>
            </Messages>
@@ -41,7 +41,7 @@
          <Members>
           <Member Name="#System.IComparable.CompareTo(System.Object)" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="InterfaceMethodsShouldBeCallableByChildTypes" Category="Microsoft.Design" CheckId="CA1033" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="NonBreaking">
+            <Message TypeName="InterfaceMethodsShouldBeCallableByChildTypes" Category="Microsoft.Design" CheckId="CA1033" Status="Active" Created="2017-07-04 05:30:54Z" FixCategory="NonBreaking">
              <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ColorSegmentation" File="MedianCutMultiThreads.cs" Line="201">Make 'MedianCutMultiThreads.ColorNode' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of 'IComparable.CompareTo(object)' and is visible to derived classes.</Issue>
             </Message>
            </Messages>
@@ -56,7 +56,7 @@
          <Members>
           <Member Name="#Finalize()" Kind="Method" Static="False" Accessibility="Family" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="RemoveEmptyFinalizers" Category="Microsoft.Performance" CheckId="CA1821" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="NonBreaking">
+            <Message TypeName="RemoveEmptyFinalizers" Category="Microsoft.Performance" CheckId="CA1821" Status="Active" Created="2017-07-04 05:30:54Z" FixCategory="NonBreaking">
              <Issue Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ImageProcessing" File="ColorHistogram.cs" Line="45">'ColorHistogram' implements a finalizer that only calls conditionally emitted methods or the base type finalizer. Remove the finalizer or ensure that it is only conditionally compiled into the assembly. If this violation occurs against a finalizer that is entirely wrapped in a conditionally-emitted block of code, suppress this message.</Issue>
             </Message>
            </Messages>
@@ -67,7 +67,7 @@
          <Members>
           <Member Name="#Apply(System.Int32,System.Int32,System.Int32,System.String,System.String)" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="Do not dispose objects multiple times" Category="Microsoft.Usage" CheckId="CA2202" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="DependsOnFix">
+            <Message TypeName="Do not dispose objects multiple times" Category="Microsoft.Usage" CheckId="CA2202" Status="Active" Created="2017-07-04 05:30:54Z" FixCategory="DependsOnFix">
              <Issue Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ImageProcessing" File="ImageSlicer.cs" Line="83">Object 'srcimg' can be disposed more than once in method 'ImageSlicer.Apply(int, int, int, string, string)'. To avoid generating a System.ObjectDisposedException you should not call Dispose more than one time on an object.: Lines: 83</Issue>
              <Issue Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ImageProcessing" File="ImageSlicer.cs" Line="80">Object 'tile' can be disposed more than once in method 'ImageSlicer.Apply(int, int, int, string, string)'. To avoid generating a System.ObjectDisposedException you should not call Dispose more than one time on an object.: Lines: 80</Issue>
             </Message>
@@ -83,27 +83,8 @@
          <Members>
           <Member Name="#getDictionaryWord(Strabo.Core.TextRecognition.TessResult,System.Int32)" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="NonBreaking">
+            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2017-07-04 05:30:54Z" FixCategory="NonBreaking">
              <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\TextRecognition" File="CheckDictionary.cs" Line="231">'CheckDictionary.getDictionaryWord(TessResult, int)' rethrows a caught exception and specifies it explicitly as an argument. Use 'throw' without an argument instead, in order to preserve the stack location where the exception was initially raised.</Issue>
-            </Message>
-           </Messages>
-          </Member>
-         </Members>
-        </Type>
-        <Type Name="CheckDictionaryElasticSearch" Kind="Class" Accessibility="Public" ExternallyVisible="True">
-         <Members>
-          <Member Name="#getDictionaryWord(Strabo.Core.TextRecognition.TessResult,System.Int32)" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="True">
-           <Messages>
-            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="NonBreaking">
-             <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\TextRecognition" File="CheckDictionaryElasticSearch.cs" Line="476">'CheckDictionaryElasticSearch.getDictionaryWord(TessResult, int)' rethrows a caught exception and specifies it explicitly as an argument. Use 'throw' without an argument instead, in order to preserve the stack location where the exception was initially raised.</Issue>
-            </Message>
-           </Messages>
-          </Member>
-          <Member Name="#readDictionary(System.Double,System.Double,System.Double,System.Double)" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="True">
-           <Messages>
-            <Message TypeName="Review SQL queries for security vulnerabilities" Category="Microsoft.Security" CheckId="CA2100" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="DependsOnFix">
-             <Issue Name="WithNonLiterals" Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\TextRecognition" File="CheckDictionaryElasticSearch.cs" Line="189">The query string passed to 'NpgsqlCommand.NpgsqlCommand(string, NpgsqlConnection)' in 'CheckDictionaryElasticSearch.readDictionary(double, double, double, double)' could contain the following variables 'item'. If any of these variables could come from user input, consider using a stored procedure or a parameterized SQL query instead of building the query with string concatenations.</Issue>
-             <Issue Name="WithNonLiterals" Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\TextRecognition" File="CheckDictionaryElasticSearch.cs" Line="178">The query string passed to 'NpgsqlCommand.NpgsqlCommand(string, NpgsqlConnection)' in 'CheckDictionaryElasticSearch.readDictionary(double, double, double, double)' could contain the following variables 'left', 'top', 'right', 'bottom'. If any of these variables could come from user input, consider using a stored procedure or a parameterized SQL query instead of building the query with string concatenations.</Issue>
             </Message>
            </Messages>
           </Member>
@@ -113,7 +94,7 @@
          <Members>
           <Member Name="#findSimScore(System.String,System.String)" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="False">
            <Messages>
-            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2017-07-02 21:56:55Z" FixCategory="NonBreaking">
+            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2017-07-04 05:30:54Z" FixCategory="NonBreaking">
              <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\TextRecognition" File="NeedlemanWunsch.cs" Line="127">'NeedlemanWunsch.findSimScore(string, string)' rethrows a caught exception and specifies it explicitly as an argument. Use 'throw' without an argument instead, in order to preserve the stack location where the exception was initially raised.</Issue>
             </Message>
            </Messages>
@@ -167,16 +148,6 @@
    <Email>[none]</Email>
    <MessageLevel Certainty="95">Error</MessageLevel>
    <File Name="usagerules.dll" Version="15.0.0.0" />
-  </Rule>
-  <Rule TypeName="Review SQL queries for security vulnerabilities" Category="Microsoft.Security" CheckId="CA2100">
-   <Name>Review SQL queries for security vulnerabilities</Name>
-   <Description>A SQL command string built from user input is vulnerable to SQL injection attacks. Microsoft SQL Server and other database servers support stored procedures and parameterized SQL queries, which reduce the risk of injection attacks.</Description>
-   <Resolution Name="WithNonLiterals">The query string passed to {0} in {1} could contain the following variables {2}. If any of these variables could come from user input, consider using a stored procedure or a parameterized SQL query instead of building the query with string concatenations.</Resolution>
-   <Owner>RuleOwner</Owner>
-   <Url>http://msdn.microsoft.com/library/ms182310.aspx</Url>
-   <Email />
-   <MessageLevel Certainty="75">Warning</MessageLevel>
-   <File Name="dataflowrules.dll" Version="15.0.0.0" />
   </Rule>
   <Rule TypeName="TypesThatOwnDisposableFieldsShouldBeDisposable" Category="Microsoft.Design" CheckId="CA1001">
    <Name>Types that own disposable fields should be disposable</Name>
