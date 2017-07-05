@@ -18,6 +18,7 @@
 *.suo
 *.user
 *.sln.docstates
+*.so
 intermediate/
 output/
 
@@ -45,6 +46,7 @@ build/
 intermediate/*.png
 intermediate/*.txt
 output/*.txt
+
 # *.png
 # *.jpg
 # *.jpeg
