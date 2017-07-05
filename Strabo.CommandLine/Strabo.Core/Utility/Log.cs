@@ -29,116 +29,129 @@ namespace Strabo.Core.Utility
 {
     public class Log
     {
-        static public bool write_console_only = false;
-        static public bool write_log_and_console = true;
-        static public int image_counter =0;
-        static public DateTime start;
-        static public DateTime[] start_timer = new DateTime[10]; 
-        static private string _output_dir="";
-        static private string _debug_dir = "";
-        static private string _log_dir = "";
-        public Log() { }
-        static public void SetOutputDir(string dir)
+        public static bool write_console_only = false;
+        public static bool write_log_and_console = true;
+        public static int image_counter;
+        public static DateTime start;
+        public static DateTime[] start_timer = new DateTime[10];
+        private static string _output_dir = "";
+        private static string _debug_dir = "";
+        private static string _log_dir = "";
+
+        public static void SetOutputDir(string dir)
         {
             _output_dir = dir;
         }
-        static public void SetDebugDir(string dir)
+
+        public static void SetDebugDir(string dir)
         {
             _debug_dir = dir;
         }
-        static public void SetLogDir(string dir)
+
+        public static void SetLogDir(string dir)
         {
             _log_dir = dir;
         }
-        static public void SetStartTime()
+
+        public static void SetStartTime()
         {
             start = DateTime.Now;
         }
-        static public void SetStartTime(int i)
+
+        public static void SetStartTime(int i)
         {
             start_timer[i] = DateTime.Now;
         }
-        static public double GetDurationInSeconds()
+
+        public static double GetDurationInSeconds()
         {
-            DateTime stop = DateTime.Now;
-            TimeSpan elapsedTime = stop - start;
+            var stop = DateTime.Now;
+            var elapsedTime = stop - start;
             return elapsedTime.TotalSeconds;
         }
-        static public double GetDurationInSeconds(int i)
+
+        public static double GetDurationInSeconds(int i)
         {
-            DateTime stop = DateTime.Now;
-            TimeSpan elapsedTime = stop - start_timer[i];
+            var stop = DateTime.Now;
+            var elapsedTime = stop - start_timer[i];
             return elapsedTime.TotalSeconds;
         }
-        static public void ArchiveLog()
+
+        public static void ArchiveLog()
         {
-            DateTime now = DateTime.Now;
-            string date = now.ToString(); 
-            date = date.Replace('/', '-'); date = date.Replace(':', '-');
+            var now = DateTime.Now;
+            var date = now.ToString();
+            date = date.Replace('/', '-');
+            date = date.Replace(':', '-');
             if (File.Exists(_output_dir + "log.txt"))
                 File.Move(_output_dir + "log.txt", _log_dir + "log" + date + ".txt");
         }
-        static public void DeleteAll()
+
+        public static void DeleteAll()
         {
-            DirectoryInfo TheFolder = new DirectoryInfo(_log_dir);
+            var TheFolder = new DirectoryInfo(_log_dir);
             if (TheFolder.GetFiles() != null)
-                foreach (FileInfo NextFile in TheFolder.GetFiles())
+                foreach (var NextFile in TheFolder.GetFiles())
                     File.Delete(NextFile.FullName);
             TheFolder = new DirectoryInfo(_debug_dir);
             if (TheFolder.GetFiles() != null)
-                foreach (FileInfo NextFile in TheFolder.GetFiles())
+                foreach (var NextFile in TheFolder.GetFiles())
                     File.Delete(NextFile.FullName);
             TheFolder = new DirectoryInfo(_output_dir);
             if (TheFolder.GetFiles() != null)
-                foreach (FileInfo NextFile in TheFolder.GetFiles())
+                foreach (var NextFile in TheFolder.GetFiles())
                     File.Delete(NextFile.FullName);
         }
-        static public void DeleteAll(string dir)
+
+        public static void DeleteAll(string dir)
         {
             try
             {
-                DirectoryInfo TheFolder = new DirectoryInfo(dir);
+                var TheFolder = new DirectoryInfo(dir);
                 if (TheFolder.GetFiles() != null)
-                    foreach (FileInfo NextFile in TheFolder.GetFiles())
+                    foreach (var NextFile in TheFolder.GetFiles())
                         File.Delete(NextFile.FullName);
             }
             catch (Exception e)
             {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
             }
         }
-        static public void DeleteAllDebug()
+
+        public static void DeleteAllDebug()
         {
             try
             {
-                DirectoryInfo TheFolder = new DirectoryInfo(_debug_dir);
+                var TheFolder = new DirectoryInfo(_debug_dir);
                 if (TheFolder.GetFiles() != null)
-                    foreach (FileInfo NextFile in TheFolder.GetFiles())
+                    foreach (var NextFile in TheFolder.GetFiles())
                         File.Delete(NextFile.FullName);
             }
             catch (Exception e)
             {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
             }
         }
-        static public void DeleteAllOutput()
+
+        public static void DeleteAllOutput()
         {
             try
             {
-                DirectoryInfo TheFolder = new DirectoryInfo(_output_dir);
+                var TheFolder = new DirectoryInfo(_output_dir);
                 if (TheFolder.GetFiles() != null)
-                    foreach (FileInfo NextFile in TheFolder.GetFiles())
+                    foreach (var NextFile in TheFolder.GetFiles())
                         File.Delete(NextFile.FullName);
             }
             catch (Exception e)
             {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
             }
         }
-        static public void WriteBitmap(Bitmap srcimg, string fn)
+
+        public static void WriteBitmap(Bitmap srcimg, string fn)
         {
             try
             {
@@ -147,95 +160,107 @@ namespace Strabo.Core.Utility
             }
             catch (Exception e)
             {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
             }
         }
-        static public void Write(string input)
+
+        public static void Write(string input)
         {
             if (write_console_only)
+            {
                 Console.Write(input);
+            }
             else
             {
-                StreamWriter sw = new StreamWriter(_log_dir + "\\" + "log.txt", true);
+                var sw = new StreamWriter(_log_dir + "\\" + "log.txt", true);
                 sw.Write(" " + DateTime.Now + " " + input);
                 if (write_log_and_console) Console.Write(" " + DateTime.Now + " " + input);
                 sw.Close();
             }
         }
-        static public void WriteLine(string input)
+
+        public static void WriteLine(string input)
         {
             if (write_console_only)
+            {
                 Console.WriteLine(input);
+            }
             else
             {
-                StreamWriter sw = new StreamWriter(_log_dir + "\\" + "log.txt", true);
+                var sw = new StreamWriter(_log_dir + "\\" + "log.txt", true);
 
-                sw.WriteLine(DateTime.Now+" "+input);
+                sw.WriteLine(DateTime.Now + " " + input);
                 if (write_log_and_console) Console.WriteLine(DateTime.Now + " " + input);
                 sw.Close();
             }
         }
-        static public void WriteBitmap2Debug(Bitmap srcimg, string fn)
+
+        public static void WriteBitmap2Debug(Bitmap srcimg, string fn)
         {
             try
             {
                 //string test = "skip write";
-                srcimg.Save(_debug_dir + image_counter.ToString("0000")+Path.GetFileNameWithoutExtension(fn) + ".png", ImageFormat.Png);
+                srcimg.Save(_debug_dir + image_counter.ToString("0000") + Path.GetFileNameWithoutExtension(fn) + ".png",
+                    ImageFormat.Png);
                 image_counter++;
             }
             catch (Exception e)
             {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
-            }
-        }
-        static public void WriteBitmap2Debug(string path , string fn)
-        {
-            Bitmap srcimg = new Bitmap(path);
-            try
-            {
-                //string test = "skip write";
-                srcimg.Save(_debug_dir + image_counter.ToString("0000") + Path.GetFileNameWithoutExtension(fn) + ".png", ImageFormat.Png);
-                image_counter++;
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
-            }
-        }
-        static public void WriteBitmap2DebugExactFileName(Bitmap srcimg, string fn)
-        {
-            try
-            {
-                //string test = "skip write";
-                srcimg.Save(_debug_dir + Path.GetFileNameWithoutExtension(fn) + ".png", ImageFormat.Png);
-                image_counter++;
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
-            }
-        }
-        static public void WriteBitmap2DebugExactFileName(string path, string fn)
-        {
-            Bitmap srcimg = new Bitmap(path);
-            try
-            {
-                //string test = "skip write";
-                srcimg.Save(_debug_dir + Path.GetFileNameWithoutExtension(fn) + ".png", ImageFormat.Png);
-                image_counter++;
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
             }
         }
 
-        static public void WriteBitmap2FolderExactFileName(string folder,Bitmap srcimg, string fn)
+        public static void WriteBitmap2Debug(string path, string fn)
+        {
+            var srcimg = new Bitmap(path);
+            try
+            {
+                //string test = "skip write";
+                srcimg.Save(_debug_dir + image_counter.ToString("0000") + Path.GetFileNameWithoutExtension(fn) + ".png",
+                    ImageFormat.Png);
+                image_counter++;
+            }
+            catch (Exception e)
+            {
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
+            }
+        }
+
+        public static void WriteBitmap2DebugExactFileName(Bitmap srcimg, string fn)
+        {
+            try
+            {
+                //string test = "skip write";
+                srcimg.Save(_debug_dir + Path.GetFileNameWithoutExtension(fn) + ".png", ImageFormat.Png);
+                image_counter++;
+            }
+            catch (Exception e)
+            {
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
+            }
+        }
+
+        public static void WriteBitmap2DebugExactFileName(string path, string fn)
+        {
+            var srcimg = new Bitmap(path);
+            try
+            {
+                //string test = "skip write";
+                srcimg.Save(_debug_dir + Path.GetFileNameWithoutExtension(fn) + ".png", ImageFormat.Png);
+                image_counter++;
+            }
+            catch (Exception e)
+            {
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
+            }
+        }
+
+        public static void WriteBitmap2FolderExactFileName(string folder, Bitmap srcimg, string fn)
         {
             try
             {
@@ -246,13 +271,14 @@ namespace Strabo.Core.Utility
             }
             catch (Exception e)
             {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
             }
         }
-        static public void WriteBitmap2FolderExactFileName(string folder, string path , string fn)
+
+        public static void WriteBitmap2FolderExactFileName(string folder, string path, string fn)
         {
-            Bitmap srcimg = new Bitmap(path);
+            var srcimg = new Bitmap(path);
             try
             {
                 //string test = "skip write";
@@ -262,30 +288,17 @@ namespace Strabo.Core.Utility
             }
             catch (Exception e)
             {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
             }
         }
+
         //static public void WriteBitmap(Bitmap srcimg, string fn)
         //{
         //    WriteBitmap2Debug(srcimg, fn);
         //}
-        static public void WriteBitmap2Output(Bitmap srcimg, string fn)
+        public static void WriteBitmap2Output(Bitmap srcimg, string fn)
         {
-            try
-            {
-                srcimg.Save(_output_dir +fn + ".png", ImageFormat.Png);
-                image_counter++;
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
-            }
-        }
-        static public void WriteBitmap2Output(string path, string fn)
-        {
-            Bitmap srcimg = new Bitmap(path);
             try
             {
                 srcimg.Save(_output_dir + fn + ".png", ImageFormat.Png);
@@ -293,8 +306,23 @@ namespace Strabo.Core.Utility
             }
             catch (Exception e)
             {
-                Log.WriteLine(e.Message);
-                Log.WriteLine(e.ToString());
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
+            }
+        }
+
+        public static void WriteBitmap2Output(string path, string fn)
+        {
+            var srcimg = new Bitmap(path);
+            try
+            {
+                srcimg.Save(_output_dir + fn + ".png", ImageFormat.Png);
+                image_counter++;
+            }
+            catch (Exception e)
+            {
+                WriteLine(e.Message);
+                WriteLine(e.ToString());
             }
         }
     }

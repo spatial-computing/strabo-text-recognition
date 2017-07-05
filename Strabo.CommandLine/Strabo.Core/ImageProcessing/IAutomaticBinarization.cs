@@ -20,12 +20,10 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using System;
-
 namespace Strabo.Core.ImageProcessing
 {
     public interface IAutomaticBinarization
     {
-        bool Process(String srcpathfn, String dstpathfn);
+        bool Process(string srcpathfn, string dstpathfn);
     }
 }

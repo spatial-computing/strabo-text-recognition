@@ -20,24 +20,22 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Strabo.Core.Utility;
 using System;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.Worker
 {
     public class TextCleaningWorker : IStraboWorker
     {
-        public TextCleaningWorker()
-        { }
         public string Apply(string inputDir, string interDir, string outputDir, string fileName, int threadNumber)
         {
             //Get user parameters
-            RGBThreshold threshold = StraboParameters.rgbThreshold;
+            var threshold = StraboParameters.rgbThreshold;
 
             return Apply(inputDir, interDir, threshold, threadNumber);
         }
+
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="inputPath">Source Image path</param>
         /// <param name="outputPath">Output Image path</param>
@@ -47,7 +45,7 @@ namespace Strabo.Core.Worker
         public string Apply(
             string inputPath, string outputPath,
             RGBThreshold threshold, int threadNumber
-            )
+        )
         {
             try
             {

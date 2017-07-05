@@ -20,65 +20,66 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Strabo.Core.Utility;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.ImageProcessing
 {
     public class ImageSlicer
     {
         public List<int[]> xy_offset_list;
-        public ImageSlicer() { }
+
         public List<string> Apply(int row, int col, int overlap, string inputPath, string outDirPath)
         {
             try
             {
-                List<string> results = new List<string>();
-                this.xy_offset_list = new List<int[]>();
-                using (Bitmap srcimg = new Bitmap(inputPath))
+                var results = new List<string>();
+                xy_offset_list = new List<int[]>();
+                using (var srcimg = new Bitmap(inputPath))
                 {
-                    int num = row * col;
-                    int width = srcimg.Width;
-                    int height = srcimg.Height;
+                    var num = row * col;
+                    var width = srcimg.Width;
+                    var height = srcimg.Height;
 
-                    int twidth = width / col + overlap * 2;
-                    int theight = height / row + overlap * 2;
-                    for (int j = 0; j < row; j++)
-                        for (int i = 0; i < col; i++)
+                    var twidth = width / col + overlap * 2;
+                    var theight = height / row + overlap * 2;
+                    for (var j = 0; j < row; j++)
+                    for (var i = 0; i < col; i++)
+                    {
+                        var row_step = height / row;
+                        var col_step = width / col;
+
+                        var x = col_step * i;
+                        var y = row_step * j;
+                        var xwidth = twidth;
+                        var yheight = theight;
+                        if (i == col - 1)
+                            xwidth = width - x;
+                        if (j == row - 1)
+                            yheight = height - y;
+                        var xy_offset = new int[2];
+                        xy_offset[0] = x;
+                        xy_offset[1] = y;
+                        xy_offset_list.Add(xy_offset);
+                        var rect = new Rectangle(x, y, xwidth, yheight);
+                        using (var tile =
+                            new Bitmap(xwidth, yheight))
                         {
-                            int row_step = height / row;
-                            int col_step = width / col;
-
-                            int x = col_step * i;
-                            int y = row_step * j;
-                            int xwidth = twidth;
-                            int yheight = theight;
-                            if (i == col - 1)
-                                xwidth = width - x;
-                            if (j == row - 1)
-                                yheight = height - y;
-                            int[] xy_offset = new int[2];
-                            xy_offset[0] = x; xy_offset[1] = y;
-                            xy_offset_list.Add(xy_offset);
-                            Rectangle rect = new Rectangle(x, y, xwidth, yheight);
-                            using (Bitmap tile =
-                                new Bitmap(xwidth, yheight))
+                            using (var g = Graphics.FromImage(tile))
                             {
-                                using (Graphics g = Graphics.FromImage(tile))
-                                {
-                                    g.DrawImage(srcimg, new Rectangle(0, 0, tile.Width, tile.Height),
-                                                     rect,
-                                                     GraphicsUnit.Pixel);
-                                }
-                                string imagePath = Path.Combine(outDirPath, "tile_" + j + "_" + i + ".png");
-                                tile.Save(imagePath);
-                                results.Add(imagePath);
-                                tile.Dispose();
+                                g.DrawImage(srcimg, new Rectangle(0, 0, tile.Width, tile.Height),
+                                    rect,
+                                    GraphicsUnit.Pixel);
                             }
+                            var imagePath = Path.Combine(outDirPath, "tile_" + j + "_" + i + ".png");
+                            tile.Save(imagePath);
+                            results.Add(imagePath);
+                            tile.Dispose();
                         }
+                    }
                     srcimg.Dispose();
                 }
                 return results;

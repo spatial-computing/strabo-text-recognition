@@ -20,10 +20,9 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Strabo.Core.Utility;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+using System.IO;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.TextRecognition
 {
@@ -42,25 +41,24 @@ namespace Strabo.Core.TextRecognition
         public static void Start()
         {
             _streamPixel = "{\"type\":\"FeatureCollection\",\"features\":[";
-            _streamRef = "{\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"" + srid + "\"}},\"type\":\"FeatureCollection\",\"features\":[";
-
+            _streamRef = "{\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"" + srid +
+                         "\"}},\"type\":\"FeatureCollection\",\"features\":[";
         }
+
         public static void AddFeature(TessResult tr, int geo_Ref, List<KeyValuePair<string, string>> items)
         {
-
             //AddCordinationFeature(tr, items);
 
             _streamPixel += "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[" +
-                tr.x.ToString() + "," + (geo_Ref * tr.y).ToString() + "],[" +
-                tr.x2.ToString() + "," + (geo_Ref * tr.y2).ToString() + "],[" +
-                (tr.x3).ToString() + "," + (geo_Ref * (tr.y3)).ToString() + "],[" +
-                tr.x4.ToString() + "," + (geo_Ref * (tr.y4)).ToString() + "]," +
-                "[" + tr.x.ToString() + ", " + (geo_Ref * tr.y).ToString() + "]]]}";
+                            tr.x + "," + geo_Ref * tr.y + "],[" +
+                            tr.x2 + "," + geo_Ref * tr.y2 + "],[" +
+                            tr.x3 + "," + geo_Ref * tr.y3 + "],[" +
+                            tr.x4 + "," + geo_Ref * tr.y4 + "]," +
+                            "[" + tr.x + ", " + geo_Ref * tr.y + "]]]}";
 
-            for (int i = 0; i < items.Count; i++)
+            for (var i = 0; i < items.Count; i++)
                 _streamPixel += ",\"" + items[i].Key + "\":\"" + items[i].Value + "\"";
             _streamPixel += ",},";
-
         }
 
         public static void WriteGeojsonFiles()
@@ -76,9 +74,9 @@ namespace Strabo.Core.TextRecognition
             _streamRef = _streamRef.Replace("\n", "\\n");
 
             //System.IO.File.WriteAllText(path + "\\" + filename + "ByRef.txt", _streamRef);
-            System.IO.File.WriteAllText(path + "\\" + filename + "ByPixels.txt", _streamPixel);
-
+            File.WriteAllText(path + "\\" + filename + "ByPixels.txt", _streamPixel);
         }
+
         private static void AddCordinationFeature(TessResult tr, List<KeyValuePair<string, string>> items)
         {
             //double refx, refy, refh, refw;
@@ -88,20 +86,18 @@ namespace Strabo.Core.TextRecognition
             //refw = w * xscale;// / (double)(MapServerParameters.Resize);
 
             _streamRef += "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[" +
-                    (Wx + xscale * tr.x).ToString() + "," + (Ny - tr.y * yscale).ToString() + "],[" +
-                    (Wx + xscale * tr.x2).ToString() + "," + (Ny - tr.y2 * yscale).ToString() + "],[" +
-                    (Wx + xscale * tr.x3).ToString() + "," + (Ny - tr.y3 * yscale).ToString() + "],[" +
-                    (Wx + xscale * tr.x4).ToString() + "," + (Ny - tr.y4 * yscale).ToString() + "]," +
-                    "[" + (Wx + xscale * tr.x).ToString() + ", " + (Ny - tr.y * yscale).ToString() + "]]]}";
+                          (Wx + xscale * tr.x) + "," + (Ny - tr.y * yscale) + "],[" +
+                          (Wx + xscale * tr.x2) + "," + (Ny - tr.y2 * yscale) + "],[" +
+                          (Wx + xscale * tr.x3) + "," + (Ny - tr.y3 * yscale) + "],[" +
+                          (Wx + xscale * tr.x4) + "," + (Ny - tr.y4 * yscale) + "]," +
+                          "[" + (Wx + xscale * tr.x) + ", " + (Ny - tr.y * yscale) + "]]]}";
 
             //_streamRef += "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[" + refx.ToString() + "," + (refy).ToString() + "],[" +
             //(refx + refw).ToString() + "," + (refy).ToString() + "],[" + (refx + refw).ToString() + "," + ((refy - refh)).ToString() + "],[" + refx.ToString() + "," + ((refy - refh)).ToString() + "],[" +
             //refx.ToString() + "," + (refy).ToString() + "]]]}";
 
-            for (int i = 0; i < items.Count; i++)
-            {
+            for (var i = 0; i < items.Count; i++)
                 _streamRef += ",\"" + items[i].Key + "\":\"" + items[i].Value + "\"";
-            }
             _streamRef += ",},";
         }
     }

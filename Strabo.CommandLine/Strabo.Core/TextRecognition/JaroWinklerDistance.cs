@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
     2  * Licensed to the Apache Software Foundation (ASF) under one or more
     3  * contributor license agreements.  See the NOTICE file distributed with
     4  * this work for additional information regarding copyright ownership.
@@ -23,11 +22,28 @@ namespace Strabo.Core.TextRecognition
 {
     public class JaroWinklerDistance : StringDistance
     {
-        private float threshold = 0.7f;
+        /// <summary>
+        ///     Gets or sets the current value of the threshold used for adding the Winkler bonus.
+        ///     Set to a negative value to get the Jaro distance. The default value is 0.7.
+        /// </summary>
+        public float Threshold { get; set; } = 0.7f;
 
-        private static int[] Matches(String s1, String s2)
+        public float GetDistance(string s1, string s2)
         {
-            String Max, Min;
+            var mtp = Matches(s1, s2);
+            var m = (float) mtp[0];
+
+            if (m == 0)
+                return 0f;
+
+            var j = (m / s1.Length + m / s2.Length + (m - mtp[1]) / m) / 3;
+            var jw = j < Threshold ? j : j + Math.Min(0.1f, 1f / mtp[3]) * mtp[2] * (1 - j);
+            return jw;
+        }
+
+        private static int[] Matches(string s1, string s2)
+        {
+            string Max, Min;
 
             if (s1.Length > s2.Length)
             {
@@ -53,7 +69,9 @@ namespace Strabo.Core.TextRecognition
             {
                 var c1 = Min[mi];
                 for (int xi = Math.Max(mi - range, 0),
-                    xn = Math.Min(mi + range + 1, Max.Length); xi < xn; xi++)
+                        xn = Math.Min(mi + range + 1, Max.Length);
+                    xi < xn;
+                    xi++)
                 {
                     if (matchFlags[xi] || c1 != Max[xi]) continue;
 
@@ -68,79 +86,43 @@ namespace Strabo.Core.TextRecognition
             var ms2 = new char[matches];
 
             for (int i = 0, si = 0; i < Min.Length; i++)
-            {
                 if (matchIndexes[i] != -1)
                 {
                     ms1[si] = Min[i];
                     si++;
                 }
-            }
 
             for (int i = 0, si = 0; i < Max.Length; i++)
-            {
                 if (matchFlags[i])
                 {
                     ms2[si] = Max[i];
                     si++;
                 }
-            }
 
             var transpositions = ms1.Where((t, mi) => t != ms2[mi]).Count();
 
             var prefix = 0;
             for (var mi = 0; mi < Min.Length; mi++)
-            {
                 if (s1[mi] == s2[mi])
-                {
                     prefix++;
-                }
                 else
-                {
                     break;
-                }
-            }
 
-            return new int[] { matches, transpositions / 2, prefix, Max.Length };
-        }
-
-        public float GetDistance(String s1, String s2)
-        {
-            var mtp = Matches(s1, s2);
-            var m = (float)mtp[0];
-
-            if (m == 0)
-                return 0f;
-
-            float j = ((m / s1.Length + m / s2.Length + (m - mtp[1]) / m)) / 3;
-            float jw = j < Threshold ? j : j + Math.Min(0.1f, 1f / mtp[3]) * mtp[2] * (1 - j);
-            return jw;
-        }
-
-        /// <summary>
-        /// Gets or sets the current value of the threshold used for adding the Winkler bonus.
-        /// Set to a negative value to get the Jaro distance. The default value is 0.7.
-        /// </summary>
-        public float Threshold
-        {
-            get { return threshold; }
-            set { this.threshold = value; }
+            return new[] {matches, transpositions / 2, prefix, Max.Length};
         }
     }
-
-
 
 
     public interface StringDistance
     {
         /// <summary>
-        /// Returns a float between 0 and 1 based on how similar the specified strings are to one another.  
-        /// Returning a value of 1 means the specified strings are identical and 0 means the
-        /// string are maximally different.
+        ///     Returns a float between 0 and 1 based on how similar the specified strings are to one another.
+        ///     Returning a value of 1 means the specified strings are identical and 0 means the
+        ///     string are maximally different.
         /// </summary>
         /// <param name="s1">The first string.</param>
         /// <param name="s2">The second string.</param>
         /// <returns>a float between 0 and 1 based on how similar the specified strings are to one another.</returns>
         float GetDistance(string s1, string s2);
-
     }
 }

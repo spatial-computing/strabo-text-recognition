@@ -21,118 +21,30 @@
  ******************************************************************************/
 
 
-using Emgu.CV;
-using Emgu.CV.Structure;
-using Strabo.Core.ImageProcessing;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using Strabo.Core.BoundingBox;
 using System.Linq;
+using Emgu.CV;
+using Strabo.Core.BoundingBox;
+using Strabo.Core.ImageProcessing;
 
 namespace Strabo.Core.TextDetection
 {
     /// <summary>
-    /// Sima
+    ///     Sima
     /// </summary>
     public class TextString
     {
-        private MinimumBoundingBox _bbx = new MinimumBoundingBox();
-        private Rectangle _maxBbx = new Rectangle(0, 0, 0, 0);
-
-        private double _mean_width = 0;
-        private double _mean_height = 0;
         // private bool _net = false;
-        private List<MyConnectedComponentsAnalysisFGFast.MyBlob> _char_list = new List<MyConnectedComponentsAnalysisFGFast.MyBlob>();
-        private List<TextString> _final_string_list = new List<TextString>();
-        // private bool _needsplit = false;
-        private Bitmap _srcimg;
-        private List<Bitmap> _rotated_img_list = new List<Bitmap>();
-        private List<double> _orientation_list = new List<double>();
+
+        private Rectangle _maxBbx = new Rectangle(0, 0, 0, 0);
+        private double _mean_height;
+
+        private double _mean_width;
         private List<string> _recognized_text_list = new List<string>();
-        private int _x_offset = 0;
-        private int _y_offset = 0;
-        private PointF _mass_center;
 
-        public TextString() { }
-
-        private double ShortestDistance(MyConnectedComponentsAnalysisFGFast.MyBlob char_blob)
-        {
-            double min_distance = Double.MaxValue;
-            PointF a = char_blob.bbx.massCenter();
-            for (int i = 0; i < _char_list.Count; i++)
-            {
-                PointF b = _char_list[i].bbx.massCenter();
-                double distance = Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
-                if (distance < min_distance)
-                    min_distance = distance;
-            }
-            return min_distance;
-        }
-
-        private double Distance(PointF a, PointF b)
-        {
-            return Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
-        }
-
-        public  void AddChar(MyConnectedComponentsAnalysisFGFast.MyBlob char_blob)
-        {
-            if (_char_list.Contains(char_blob))
-                return;
-
-            for (int i = 0; i < _char_list.Count; i++)
-                if (Distance(_char_list[i].bbx.massCenter(), char_blob.bbx.massCenter()) < 3)
-                    return;
-
-            _mean_height = (_mean_height * _char_list.Count + (int) char_blob.bbx.height());
-            _mean_width = (_mean_width * _char_list.Count + (int) char_blob.bbx.width());
-
-            _char_list.Add(char_blob);
-            _mean_height /= (double)_char_list.Count;
-            _mean_width /= (double)_char_list.Count;
-            
-            // Extend bbx
-            if (_bbx.width() == 0)
-            {
-                _bbx = char_blob.bbx;
-                _maxBbx = char_blob.maxBbx;
-            }
-            else
-            {
-                int x = _maxBbx.X, y = _maxBbx.Y, xx = _maxBbx.X + _maxBbx.Width - 1, yy = _maxBbx.Y + _maxBbx.Height - 1;
-                int x1 = char_blob.maxBbx.X, y1 = char_blob.maxBbx.Y, xx1 = char_blob.maxBbx.X + char_blob.maxBbx.Width - 1, yy1 = char_blob.maxBbx.Y + char_blob.maxBbx.Height - 1;
-
-                int x2, y2, xx2, yy2;
-
-                if (x < x1) x2 = x;
-                else x2 = x1;
-                if (y < y1) y2 = y;
-                else y2 = y1;
-
-                if (xx < xx1) xx2 = xx1;
-                else xx2 = xx;
-                if (yy < yy1) yy2 = yy1;
-                else yy2 = yy;
-
-                _maxBbx.X = x2; _maxBbx.Y = y2;
-                _maxBbx.Width = xx2 - x2 + 1;
-                _maxBbx.Height = yy2 - y2 + 1;
-
-                // Instead of finding orientation and points separately
-                // Find the vertices and treat them like points
-                // Create a bounding box using those points
-                // Update the bounding box using this newlyx created IBoundingBox
-
-                RotatedRect toBeMergedBbx = _bbx.Bbx();
-                RotatedRect toMergeBbx = char_blob.bbx.Bbx();
-                PointF[] toBeMergedBbxVertex = toBeMergedBbx.GetVertices();
-                PointF[] toMergeBbxVertex = toMergeBbx.GetVertices();
-                PointF[] points = toBeMergedBbxVertex.Concat(toMergeBbxVertex).ToArray();
-
-                ///from this webpage: http://www.emgu.com/wiki/index.php/Minimum_Area_Rectangle_in_CSharp
-                _bbx.updateBbx(CvInvoke.MinAreaRect(points));
-            }
-        }
+        // private bool _needsplit = false;
 
         //private int GetLargeCharCount()
         //{
@@ -622,58 +534,114 @@ namespace Strabo.Core.TextDetection
         //    else return angel;
         //}
 
-        public MinimumBoundingBox bbx
-        {
-            get { return _bbx; }
-            set { _bbx = value; }
-        }
+        public MinimumBoundingBox bbx { get; set; } = new MinimumBoundingBox();
 
         public Rectangle maxBbx
         {
-            get { return _maxBbx; }
-            set { _maxBbx = value; }
+            get => _maxBbx;
+            set => _maxBbx = value;
         }
 
-        public List<MyConnectedComponentsAnalysisFGFast.MyBlob> char_list
+        public List<MyConnectedComponentsAnalysisFGFast.MyBlob> char_list { get; set; } =
+            new List<MyConnectedComponentsAnalysisFGFast.MyBlob>();
+
+        public List<TextString> final_string_list { get; set; } = new List<TextString>();
+
+        public Bitmap srcimg { get; set; }
+
+        public List<Bitmap> rotated_img_list { get; set; } = new List<Bitmap>();
+
+        public PointF mass_center { get; set; }
+
+        public List<double> orientation_list { get; set; } = new List<double>();
+
+        public int x_offset { get; set; } = 0;
+
+        public int y_offset { get; set; } = 0;
+
+        private double ShortestDistance(MyConnectedComponentsAnalysisFGFast.MyBlob char_blob)
         {
-            get { return _char_list; }
-            set { _char_list = value; }
-        }
-        public List<TextString> final_string_list
-        {
-            get { return _final_string_list; }
-            set { _final_string_list = value; }
-        }
-        public Bitmap srcimg
-        {
-            get { return _srcimg; }
-            set { _srcimg = value; }
-        }
-        public List<Bitmap> rotated_img_list
-        {
-            get { return _rotated_img_list; }
-            set { _rotated_img_list = value; }
-        }
-        public PointF mass_center
-        {
-            get { return _mass_center; }
-            set { _mass_center = value; }
-        }
-        public List<double> orientation_list
-        {
-            get { return _orientation_list; }
-            set { _orientation_list = value; }
-        }
-        public int x_offset
-        {
-            get { return _x_offset; }
-            set { _x_offset = value; }
-        }
-        public int y_offset
-        {
-            get { return _y_offset; }
-            set { _y_offset = value; }
+            var min_distance = double.MaxValue;
+            var a = char_blob.bbx.massCenter();
+            for (var i = 0; i < char_list.Count; i++)
+            {
+                var b = char_list[i].bbx.massCenter();
+                var distance = Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
+                if (distance < min_distance)
+                    min_distance = distance;
+            }
+            return min_distance;
         }
 
+        private double Distance(PointF a, PointF b)
+        {
+            return Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
+        }
+
+        public void AddChar(MyConnectedComponentsAnalysisFGFast.MyBlob char_blob)
+        {
+            if (char_list.Contains(char_blob))
+                return;
+
+            for (var i = 0; i < char_list.Count; i++)
+                if (Distance(char_list[i].bbx.massCenter(), char_blob.bbx.massCenter()) < 3)
+                    return;
+
+            _mean_height = _mean_height * char_list.Count + (int) char_blob.bbx.height();
+            _mean_width = _mean_width * char_list.Count + (int) char_blob.bbx.width();
+
+            char_list.Add(char_blob);
+            _mean_height /= char_list.Count;
+            _mean_width /= char_list.Count;
+
+            // Extend bbx
+            if (bbx.width() == 0)
+            {
+                bbx = char_blob.bbx;
+                _maxBbx = char_blob.maxBbx;
+            }
+            else
+            {
+                int x = _maxBbx.X,
+                    y = _maxBbx.Y,
+                    xx = _maxBbx.X + _maxBbx.Width - 1,
+                    yy = _maxBbx.Y + _maxBbx.Height - 1;
+                int x1 = char_blob.maxBbx.X,
+                    y1 = char_blob.maxBbx.Y,
+                    xx1 = char_blob.maxBbx.X + char_blob.maxBbx.Width - 1,
+                    yy1 = char_blob.maxBbx.Y + char_blob.maxBbx.Height - 1;
+
+                int x2, y2, xx2, yy2;
+
+                if (x < x1) x2 = x;
+                else x2 = x1;
+                if (y < y1) y2 = y;
+                else y2 = y1;
+
+                if (xx < xx1) xx2 = xx1;
+                else xx2 = xx;
+                if (yy < yy1) yy2 = yy1;
+                else yy2 = yy;
+
+                _maxBbx.X = x2;
+                _maxBbx.Y = y2;
+                _maxBbx.Width = xx2 - x2 + 1;
+                _maxBbx.Height = yy2 - y2 + 1;
+
+                // Instead of finding orientation and points separately
+                // Find the vertices and treat them like points
+                // Create a bounding box using those points
+                // Update the bounding box using this newlyx created IBoundingBox
+
+                var toBeMergedBbx = bbx.Bbx();
+                var toMergeBbx = char_blob.bbx.Bbx();
+                var toBeMergedBbxVertex = toBeMergedBbx.GetVertices();
+                var toMergeBbxVertex = toMergeBbx.GetVertices();
+                var points = toBeMergedBbxVertex.Concat(toMergeBbxVertex).ToArray();
+
+                ///from this webpage: http://www.emgu.com/wiki/index.php/Minimum_Area_Rectangle_in_CSharp
+                bbx.updateBbx(CvInvoke.MinAreaRect(points));
+            }
+        }
     }
 }

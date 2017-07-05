@@ -1,4 +1,8 @@
-﻿using Strabo.Core.Utility;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading;
+using Strabo.Core.Utility;
 /*******************************************************************************
  * Copyright 2010 University of Southern California
  * 
@@ -21,63 +25,61 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Threading;
-
 namespace Strabo.Core.TextRecognition
 {
     public class CleanTesseractResult
     {
-        List<TessResult> tessOcrResultList = null;
-        int threadNumber = 1;
-        string dictionaryPath; int dictionaryExactMatchStringLength; string lng; bool elasticsearch;
-        public CleanTesseractResult() { }
+        private int dictionaryExactMatchStringLength;
+        private string dictionaryPath;
+        private bool elasticsearch;
+        private string lng;
+        private List<TessResult> tessOcrResultList;
+        private int threadNumber = 1;
+
         public List<TessResult> RemoveMergeMultiLineResults(List<TessResult> tessOcrResultList, int maxLineLimit)
         {
             // compare cost
-            char[] delimiter = { '\n' };
+            char[] delimiter = {'\n'};
 
-            for (int i = 0; i < tessOcrResultList.Count; i++)
+            for (var i = 0; i < tessOcrResultList.Count; i++)
             {
-                string firsttempword = tessOcrResultList[i].tess_word3;
-                string[] firstsplit = firsttempword.Split(delimiter);
+                var firsttempword = tessOcrResultList[i].tess_word3;
+                var firstsplit = firsttempword.Split(delimiter);
                 if (firstsplit.Length > maxLineLimit)
                 {
                     tessOcrResultList[i].id = "-1";
                     continue;
                 }
 
-                for (int j = i + 1; j < tessOcrResultList.Count; j++)
-                {
+                for (var j = i + 1; j < tessOcrResultList.Count; j++)
                     if (tessOcrResultList[i].id == tessOcrResultList[j].id)
                     {
-
-                        string secondtempword = tessOcrResultList[j].tess_word3;
-                        string[] secondsplit = secondtempword.Split(delimiter);
+                        var secondtempword = tessOcrResultList[j].tess_word3;
+                        var secondsplit = secondtempword.Split(delimiter);
                         if (firstsplit.Length < secondsplit.Length) //j has more lines
                         {
                             tessOcrResultList[j].id = "-1";
                             continue;
                         }
-                        else if (firstsplit.Length > secondsplit.Length)
+                        if (firstsplit.Length > secondsplit.Length)
                         {
                             tessOcrResultList[i].id = "-1";
                             break;
                         }
                         if (tessOcrResultList[i].tess_cost3 < tessOcrResultList[j].tess_cost3)
+                        {
                             tessOcrResultList[j].id = "-1";
+                        }
                         else
                         {
                             tessOcrResultList[i].id = "-1";
                             break;
                         }
                     }
-                }
             }
             return tessOcrResultList;
         }
+
         public TessResult CleanEnglish(TessResult tessOcrResult)
         {
             //if (!RemoveNoiseText.NotTooManyNoiseCharacters(tessOcrResult.tess_word3))
@@ -86,16 +88,18 @@ namespace Strabo.Core.TextRecognition
             tessOcrResult.tess_word3 = Regex.Replace(tessOcrResult.tess_word3, @"[^a-zA-Z0-9\s]", "");
             return tessOcrResult;
         }
+
         public TessResult CleanChinese(TessResult tessOcrResult)
         {
-
-            tessOcrResult.tess_word3 = Regex.Replace(tessOcrResult.tess_word3, @"[^\u4E00-\u9FFF\u6300-\u77FF\u7800-\u8CFF\u8D00-\u9FFF]", "");
+            tessOcrResult.tess_word3 = Regex.Replace(tessOcrResult.tess_word3,
+                @"[^\u4E00-\u9FFF\u6300-\u77FF\u7800-\u8CFF\u8D00-\u9FFF]", "");
             return tessOcrResult;
         }
+
         public TessResult CleanNumber(TessResult tessOcrResult)
         {
             // °
-            string raw_result = tessOcrResult.tess_word3;
+            var raw_result = tessOcrResult.tess_word3;
 
             Log.WriteLine("Raw CleanNumber: " + raw_result);
 
@@ -112,11 +116,11 @@ namespace Strabo.Core.TextRecognition
         {
             // Two types of degrees exists
             // ASCII 0176, 0186
-            const char degree_1 = (char)176;
-            string degreestr = degree_1.ToString();
+            const char degree_1 = (char) 176;
+            var degreestr = degree_1.ToString();
             raw_result = raw_result.Replace(degreestr, "0");
 
-            const char degree_2 = (char)186;
+            const char degree_2 = (char) 186;
             degreestr = degree_2.ToString();
             raw_result = raw_result.Replace(degreestr, "0");
 
@@ -142,7 +146,8 @@ namespace Strabo.Core.TextRecognition
             return raw_result;
         }
 
-        public List<TessResult> Apply(List<TessResult> tessOcrResultList, string dictionaryPath, int dictionaryExactMatchStringLength, string lng, bool elasticsearch, int threadNumber)
+        public List<TessResult> Apply(List<TessResult> tessOcrResultList, string dictionaryPath,
+            int dictionaryExactMatchStringLength, string lng, bool elasticsearch, int threadNumber)
         {
             try
             {
@@ -162,33 +167,27 @@ namespace Strabo.Core.TextRecognition
                         CheckDictionary.readDictionary(dictionaryPath);
                     }
 
-                Thread[] thread_array = new Thread[threadNumber];
-                for (int i = 0; i < threadNumber; i++)
+                var thread_array = new Thread[threadNumber];
+                for (var i = 0; i < threadNumber; i++)
                 {
-                    thread_array[i] = new Thread(new ParameterizedThreadStart(check));
+                    thread_array[i] = new Thread(check);
                     thread_array[i].Start(i);
                 }
-                for (int i = 0; i < threadNumber; i++)
+                for (var i = 0; i < threadNumber; i++)
                     thread_array[i].Join();
 
-               
+
                 //else ElasticSearch needs a geo bounding box
                 //CheckDictionaryElasticSearch.readDictionary(top, left, bottom, right);
 
 
-                for (int i = 0; i < tessOcrResultList.Count; i++)
-                {
+                for (var i = 0; i < tessOcrResultList.Count; i++)
                     if (tessOcrResultList[i].id == "-1")
                     {
                         //Log.WriteLine("Removed Word: " + tessOcrResultList[i].tess_word3);
                         tessOcrResultList.RemoveAt(i);
                         i--;
                     }
-                    else
-                    {
-                        // Log.WriteLine("Final Word: " + tessOcrResultList[i].tess_word3);
-                    }
-                }
                 return tessOcrResultList;
             }
             catch (Exception e)
@@ -202,9 +201,9 @@ namespace Strabo.Core.TextRecognition
 
         private void check(object s)
         {
-            int x = (int)s;
+            var x = (int) s;
 
-            for (int i = 0; i < tessOcrResultList.Count; i++)
+            for (var i = 0; i < tessOcrResultList.Count; i++)
             {
                 //if (tessOcrResultList[i].id == "16" || tessOcrResultList[i].id == "25" || tessOcrResultList[i].id == "48")
                 //    Console.WriteLine("debug");
@@ -212,32 +211,25 @@ namespace Strabo.Core.TextRecognition
                 //if (!elasticsearch)
                 {
                     if (tessOcrResultList[i].id != "-1" && lng == "eng")
-                    {
                         tessOcrResultList[i] = CleanEnglish(tessOcrResultList[i]);
-                    }
                     if (tessOcrResultList[i].id != "-1" && lng == "chi_sim")
-                    {
                         tessOcrResultList[i] = CleanChinese(tessOcrResultList[i]);
-                    }
                     if (tessOcrResultList[i].id != "-1" && lng == "num")
-                    {
                         tessOcrResultList[i] = CleanNumber(tessOcrResultList[i]);
-                    }
                 }
                 if (tessOcrResultList[i].id != "-1")
                 {
                     //if (tessOcrResultList[i].tess_word3.Length < dictionaryExactMatchStringLength)
                     //    tessOcrResultList[i].id = "-1";
-                    if (dictionaryPath != "" && tessOcrResultList[i].tess_word3.Length >= dictionaryExactMatchStringLength)
-                    {
-                        //Log.WriteLine("Post Processing using dictionary");
-                        //if (elasticsearch)
-                        //   tessOcrResultList[i] = CheckDictionaryElasticSearch.getDictionaryWord(tessOcrResultList[i], dictionaryExactMatchStringLength);
-                        //else
-                        tessOcrResultList[i] = CheckDictionary.getDictionaryWord(tessOcrResultList[i], dictionaryExactMatchStringLength);
-                    }
+                    if (dictionaryPath != "" && tessOcrResultList[i].tess_word3.Length >=
+                        dictionaryExactMatchStringLength)
+                        tessOcrResultList[i] =
+                            CheckDictionary.getDictionaryWord(tessOcrResultList[i], dictionaryExactMatchStringLength);
                 }
-                else tessOcrResultList[i].id = "-1";
+                else
+                {
+                    tessOcrResultList[i].id = "-1";
+                }
             }
         }
     }

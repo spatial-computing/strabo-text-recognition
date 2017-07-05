@@ -25,51 +25,49 @@ using System.Drawing;
 namespace Strabo.Core.ImageProcessing
 {
     /// <summary>
-    /// To do: remove the dependency of BitmapToBoolArray2D to save memory usage
+    ///     To do: remove the dependency of BitmapToBoolArray2D to save memory usage
     /// </summary>
     public class ConnectLinesWithOnePixelGap
     {
-        public ConnectLinesWithOnePixelGap() { }
         public Bitmap Apply(Bitmap srcimg)
         {
-            bool[,] image = ImageUtils.BitmapToBoolArray2D(srcimg, 0);
-            bool[,] tmp = new bool[srcimg.Height,srcimg.Width];
-            for (int i = 1; i < srcimg.Width - 1; i++)
-                for (int j = 1; j < srcimg.Height - 1; j++)
+            var image = ImageUtils.BitmapToBoolArray2D(srcimg, 0);
+            var tmp = new bool[srcimg.Height, srcimg.Width];
+            for (var i = 1; i < srcimg.Width - 1; i++)
+            for (var j = 1; j < srcimg.Height - 1; j++)
+                if (image[j, i] == false) //background pixel
                 {
-                    if (image[j, i] == false) //background pixel
+                    tmp[j, i] = image[j, i];
+                    var marks = new bool[8];
+                    var nei_count = 0;
+                    // 0 1 2
+                    // 3 x 4
+                    // 5 6 7
+                    var count = 0;
+                    for (var r = -1; r < 2; r++) //scan neighbors
+                    for (var c = -1; c < 2; c++)
                     {
-                        tmp[j,i]=image[j,i];
-                        bool[] marks = new bool[8];
-                        int nei_count = 0;
-                        // 0 1 2
-                        // 3 x 4
-                        // 5 6 7
-                        int count = 0;
-                        for (int r = -1; r < 2; r++) //scan neighbors
-                            for (int c = -1; c < 2; c++)
-                            {
-                                if (r == 0 && c == 0) 
-                                    continue;
-                                if (image[j + r, i + c]) 
-                                    count++;
-                                marks[nei_count] = image[j + r, i + c];
-                                nei_count++;
-                            }
-                        //convert one pixel gaps between lines
-                        {
-                            if ((marks[0] && marks[7]) || (marks[1] && marks[6]) ||
-                                (marks[2] && marks[5]) || (marks[3] && marks[4]))
-                                tmp[j, i] = true;
-                        }
-                      
+                        if (r == 0 && c == 0)
+                            continue;
+                        if (image[j + r, i + c])
+                            count++;
+                        marks[nei_count] = image[j + r, i + c];
+                        nei_count++;
                     }
-                        else 
-                            tmp[j,i]=image[j,i];
+                    //convert one pixel gaps between lines
+                    {
+                        if (marks[0] && marks[7] || marks[1] && marks[6] ||
+                            marks[2] && marks[5] || marks[3] && marks[4])
+                            tmp[j, i] = true;
+                    }
                 }
-            for (int i = 1; i < srcimg.Width - 1; i++)
-                for (int j = 1; j < srcimg.Height - 1; j++)
-                    image[j, i] = tmp[j, i];
+                else
+                {
+                    tmp[j, i] = image[j, i];
+                }
+            for (var i = 1; i < srcimg.Width - 1; i++)
+            for (var j = 1; j < srcimg.Height - 1; j++)
+                image[j, i] = tmp[j, i];
             return ImageUtils.ArrayBool2DToBitmap(image);
         }
     }

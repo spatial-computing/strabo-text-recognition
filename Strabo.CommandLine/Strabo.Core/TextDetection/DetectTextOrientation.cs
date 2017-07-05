@@ -20,45 +20,42 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using AForge.Imaging.Filters;
-using Strabo.Core.Worker;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
+using AForge.Imaging.Filters;
 
 namespace Strabo.Core.TextDetection
 {
     public class DetectTextOrientation
     {
-        private List<TextString> textStringList = null;
         private int _tnum;
-        public DetectTextOrientation() { }
+        private List<TextString> textStringList;
 
         public void Apply(List<TextString> textStringList, int tnum)
         {
             _tnum = tnum;
             this.textStringList = textStringList;
-            Thread[] thread_array = new Thread[_tnum];
-            for (int i = 0; i < tnum; i++)
+            var thread_array = new Thread[_tnum];
+            for (var i = 0; i < tnum; i++)
             {
-                thread_array[i] = new Thread(new ParameterizedThreadStart(returnOrientationThread));
+                thread_array[i] = new Thread(returnOrientationThread);
                 thread_array[i].Start(i);
             }
-            for (int i = 0; i < tnum; i++)
+            for (var i = 0; i < tnum; i++)
                 thread_array[i].Join();
         }
 
         public void returnOrientationThread(object s)
         {
-            int start = (int)s;
-            for (int i = start; i < textStringList.Count; i += _tnum)
-            {
+            var start = (int) s;
+            for (var i = start; i < textStringList.Count; i += _tnum)
                 if (textStringList[i].char_list.Count > 2)
                 {
                     double angle = textStringList[i].bbx.returnCalculatedAngle();
                     // 360 - angle == -angle (counterclockwise equivalent of negative clockwise angle)
-                    RotateBilinear clockwiseRotation = new RotateBilinear(0 - angle, false);
-                    RotateBilinear counterClockwiseRotation = new RotateBilinear(180 - angle, false);
+                    var clockwiseRotation = new RotateBilinear(0 - angle, false);
+                    var counterClockwiseRotation = new RotateBilinear(180 - angle, false);
                     counterClockwiseRotation.FillColor = Color.White;
                     clockwiseRotation.FillColor = Color.White;
 
@@ -70,7 +67,6 @@ namespace Strabo.Core.TextDetection
                     textStringList[i].rotated_img_list.Add(
                         counterClockwiseRotation.Apply(textStringList[i].srcimg));
                 }
-            }
         }
     }
 }

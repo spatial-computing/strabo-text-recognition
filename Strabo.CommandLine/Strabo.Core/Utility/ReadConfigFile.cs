@@ -27,25 +27,24 @@ using System.IO;
 namespace Strabo.Core.Utility
 {
     /// <summary>
-    /// Sima
+    ///     Sima
     /// </summary>
     public static class ReadConfigFile
     {
-        static Hashtable config = new Hashtable();
+        private static readonly Hashtable config = new Hashtable();
+
         public static void init()
         {
             try
             {
-                StreamReader sr = new StreamReader(@".\config.txt");
-                string line = sr.ReadLine();
+                var sr = new StreamReader(@".\config.txt");
+                var line = sr.ReadLine();
                 while (line != null)
                 {
-                    char[] s = { ':' };
-                    string[] tokens = line.Split(s);
+                    char[] s = {':'};
+                    var tokens = line.Split(s);
                     if (!config.ContainsKey(tokens[0] + ":" + tokens[1]))
-                    {
                         config.Add(tokens[0] + ":" + tokens[1], tokens[2]);
-                    }
                     line = sr.ReadLine();
                 }
                 sr.Close();
@@ -58,14 +57,14 @@ namespace Strabo.Core.Utility
                 throw;
             }
         }
+
         public static string ReadModelConfiguration(string key)
         {
             try
             {
                 if (config.ContainsKey(key))
                     return config[key].ToString();
-                else
-                    return "";
+                return "";
             }
             catch (Exception e)
             {
@@ -77,4 +76,3 @@ namespace Strabo.Core.Utility
         }
     }
 }
-

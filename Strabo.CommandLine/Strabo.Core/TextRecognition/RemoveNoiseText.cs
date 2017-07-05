@@ -20,7 +20,6 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -28,46 +27,44 @@ namespace Strabo.Core.TextRecognition
 {
     public class RemoveNoiseText
     {
-        public RemoveNoiseText() { }
         public static bool NotUpperCaseInTheMiddle(string word)
         {
-            string testword = Regex.Replace(word, @"\n", " ");
-            string[] token = word.Split(' ');
+            var testword = Regex.Replace(word, @"\n", " ");
+            var token = word.Split(' ');
             //Check case
             //Get the culture property of the thread.
-            CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
+            var cultureInfo = Thread.CurrentThread.CurrentCulture;
             //Create TextInfo object.
-            TextInfo textInfo = cultureInfo.TextInfo;
-            for (int i = 0; i < token.Length; i++)
-            {
+            var textInfo = cultureInfo.TextInfo;
+            for (var i = 0; i < token.Length; i++)
                 // remove anything with an upper-case letter in the middle of the string e.g., xxXxx 
-                if ((textInfo.ToTitleCase(token[i]) == token[i] || textInfo.ToUpper(token[i]) == token[i] || textInfo.ToLower(token[i]) == token[i]))
+                if (textInfo.ToTitleCase(token[i]) == token[i] || textInfo.ToUpper(token[i]) == token[i] ||
+                    textInfo.ToLower(token[i]) == token[i])
                     return true;
-                 
-            }
             return false;
         }
+
         public static bool NotTooManyNoiseCharacters(string word)
         {
             if (word == null) return false;
-           
+
             //Check alphabet ratio
-            string clean = Regex.Replace(word, @"[^a-zA-Z0-9 -]", "");//Regex.Replace(word, @"[^a-zA-Z0-9]", "");
+            var clean = Regex.Replace(word, @"[^a-zA-Z0-9 -]", ""); //Regex.Replace(word, @"[^a-zA-Z0-9]", "");
 
             // @ialok
 
-            if (((double)clean.Length / (double)(word.Length-2) <= 0.5))              ////// I removed the equal sign from if statement    
+            if (clean.Length / (double) (word.Length - 2) <= 0.5) ////// I removed the equal sign from if statement    
                 return false; // too many noise characters
             //if (clean.Length < 3)
             //    return false;
-            
-            
+
+
             //Q and digits
-        //    if (word.Contains("Q") && Regex.IsMatch(word, @"\d"))
-        //        return false;
+            //    if (word.Contains("Q") && Regex.IsMatch(word, @"\d"))
+            //        return false;
             //Q and some other lower case characters
-        //    if (Regex.IsMatch(word, @"[a-z]") && word.Contains("Q"))
-        //       return false;
+            //    if (Regex.IsMatch(word, @"[a-z]") && word.Contains("Q"))
+            //       return false;
 
             //Check specific special characters
             //if (word.Contains("/") || word.Contains("\\") || word.Contains("%") || word.Contains("?") || word.Contains("!") || word.Contains("|") || word.Contains("*") || word.Equals("Q") || 
@@ -75,7 +72,7 @@ namespace Strabo.Core.TextRecognition
             //    return false;
 
             // These settings map be map specific
-            int count = word.Split('Q').Length - 1;
+            var count = word.Split('Q').Length - 1;
             if (count >= 2) return false;
             count = word.Split('1').Length - 1;
             if (count >= 4) return false;
@@ -83,12 +80,12 @@ namespace Strabo.Core.TextRecognition
             if (count >= 5) return false;
 
             // Trailing 1's can be recognized as backslash
-            int backSlashCount = word.Split('\\').Length - 1;
+            var backSlashCount = word.Split('\\').Length - 1;
             if (backSlashCount >= 2)
                 return false;
 
             // Quote count
-            int quoteCount = word.Split('\"').Length - 1;
+            var quoteCount = word.Split('\"').Length - 1;
             if (quoteCount >= 2)
                 return false;
 
@@ -146,49 +143,41 @@ namespace Strabo.Core.TextRecognition
 
         public static string EditWord(string word)
         {
-              string finalResult="";
-              //string newword = Regex.Replace(word, "\n\n", "");
-              char[] linedelimiterChars = { '\n' };
-              char[] spacedelimiter = { ' ' };
-              string[] splitline = word.Split(linedelimiterChars);
-              if (splitline.Length > 6)
-                  return "";
-              for (int i = 0; i < splitline.Length - 2; i++)
-              {
-                  if (Regex.IsMatch(splitline[i], " "))
-                  {
-                      string[] spliteachline = splitline[i].Split(spacedelimiter);
-                      for (int j = 0; j < spliteachline.Length; j++)
-                      {
-                          if (spliteachline[j].Length > 0)
-                          {
-                              if (j < spliteachline.Length - 1)
-                                  finalResult += spliteachline[j] + " ";
-                              else
-                                  finalResult += spliteachline[j];
-                          }
-                      }
-                  }
-                  else
-                  {
-                      if (splitline[i].Length > 1)
-                          finalResult += splitline[i];
+            var finalResult = "";
+            //string newword = Regex.Replace(word, "\n\n", "");
+            char[] linedelimiterChars = {'\n'};
+            char[] spacedelimiter = {' '};
+            var splitline = word.Split(linedelimiterChars);
+            if (splitline.Length > 6)
+                return "";
+            for (var i = 0; i < splitline.Length - 2; i++)
+            {
+                if (Regex.IsMatch(splitline[i], " "))
+                {
+                    var spliteachline = splitline[i].Split(spacedelimiter);
+                    for (var j = 0; j < spliteachline.Length; j++)
+                        if (spliteachline[j].Length > 0)
+                            if (j < spliteachline.Length - 1)
+                                finalResult += spliteachline[j] + " ";
+                            else
+                                finalResult += spliteachline[j];
+                }
+                else
+                {
+                    if (splitline[i].Length > 1)
+                        finalResult += splitline[i];
+                }
 
-                  }
+                if (!finalResult.Equals("") && splitline[i].Length != 1)
+                    if (i < splitline.Length - 3)
+                        finalResult += "\n";
+                    else
+                        finalResult += "\n\n";
 
-                  if (!finalResult.Equals("") && splitline[i].Length!=1)
-                  {
-                      if (i < splitline.Length - 3)
-                          finalResult += "\n";
-                      else                         
-                         finalResult += "\n\n";
-                  }
-
-                  if (!finalResult.Equals("") && splitline[i].Length == 1 && i == splitline.Length - 3)
-                      finalResult += "\n";
-
-              }
-              return finalResult;
+                if (!finalResult.Equals("") && splitline[i].Length == 1 && i == splitline.Length - 3)
+                    finalResult += "\n";
+            }
+            return finalResult;
         }
     }
 }

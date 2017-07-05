@@ -23,8 +23,6 @@
 using AForge.Imaging.Filters;
 using Emgu.CV;
 using Emgu.CV.Structure;
-using System;
-using System.Drawing;
 
 namespace Strabo.Core.ImageProcessing
 {
@@ -32,9 +30,9 @@ namespace Strabo.Core.ImageProcessing
     {
         public bool Process(string srcpathfn, string dstpathfn)
         {
-            BradleyLocalThresholding bradley = new BradleyLocalThresholding();
-            Image<Gray, Byte> img = new Image<Gray, Byte>(srcpathfn);
-            Bitmap dstimg = bradley.Apply(img.Bitmap);
+            var bradley = new BradleyLocalThresholding();
+            var img = new Image<Gray, byte>(srcpathfn);
+            var dstimg = bradley.Apply(img.Bitmap);
             dstimg.Save(dstpathfn);
             dstimg.Dispose();
             dstimg = null;

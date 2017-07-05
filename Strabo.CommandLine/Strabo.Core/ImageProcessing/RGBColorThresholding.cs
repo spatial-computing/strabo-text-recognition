@@ -20,18 +20,15 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using AForge.Imaging.Filters;
-using Emgu.CV;
-using Emgu.CV.Structure;
-using Strabo.Core.Utility;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Threading;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.ImageProcessing
 {
-    static public class RGBColorThresholding
+    public static class RGBColorThresholding
     {
         private static Bitmap _srcimg;
         private static bool[,] _dstimg;
@@ -55,30 +52,32 @@ namespace Strabo.Core.ImageProcessing
         //}
         public static void RunRGBColorThresholding(object step)
         {
-            int t = (int)step;
-            int offset1 = (_srcData.Stride - _width * 3);
+            var t = (int) step;
+            var offset1 = _srcData.Stride - _width * 3;
             // do the job
             unsafe
             {
-                byte* src = (byte*)_srcData.Scan0.ToPointer() + t * _srcData.Stride;
+                var src = (byte*) _srcData.Scan0.ToPointer() + t * _srcData.Stride;
 
                 // for each row
-                for (int y = t; y < _height; y += _tnum)
+                for (var y = t; y < _height; y += _tnum)
                 {
                     // for each pixel
-                    for (int x = 0; x < _width; x++, src += 3)
-                    {
-                        if ((src[RGB.R] <= _rgbThreshould.upperRedColorThd && src[RGB.R] >= _rgbThreshould.lowerRedColorThd) &&
-                            (src[RGB.G] <= _rgbThreshould.upperGreenColorThd && (src[RGB.G] >= _rgbThreshould.lowerGreenColorThd)) &&
-                            (src[RGB.B] <= _rgbThreshould.upperBlueColorThd && src[RGB.B] >= _rgbThreshould.lowerBlueColorThd))
+                    for (var x = 0; x < _width; x++, src += 3)
+                        if (src[RGB.R] <= _rgbThreshould.upperRedColorThd &&
+                            src[RGB.R] >= _rgbThreshould.lowerRedColorThd &&
+                            src[RGB.G] <= _rgbThreshould.upperGreenColorThd &&
+                            src[RGB.G] >= _rgbThreshould.lowerGreenColorThd &&
+                            src[RGB.B] <= _rgbThreshould.upperBlueColorThd &&
+                            src[RGB.B] >= _rgbThreshould.lowerBlueColorThd)
                             _dstimg[y, x] = true;
                         else
                             _dstimg[y, x] = false;
-                    }
                     src += offset1 + (_tnum - 1) * _srcData.Stride;
                 }
             }
         }
+
         public static string ApplyRGBColorThresholding(string inputPath, string outputPath, RGBThreshold thd, int tnum)
         {
             _srcimg = null;
@@ -90,26 +89,26 @@ namespace Strabo.Core.ImageProcessing
             _tnum = tnum;
 
             _srcData = _srcimg.LockBits(
-                       new Rectangle(0, 0, _srcimg.Width, _srcimg.Height),
-                       ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                new Rectangle(0, 0, _srcimg.Width, _srcimg.Height),
+                ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
             _dstimg = new bool[_srcimg.Height, _srcimg.Width];
 
             try
             {
-                Thread[] thread_array = new Thread[tnum];
-                for (int i = 0; i < tnum; i++)
+                var thread_array = new Thread[tnum];
+                for (var i = 0; i < tnum; i++)
                 {
-                    thread_array[i] = new Thread(new ParameterizedThreadStart(RunRGBColorThresholding));
+                    thread_array[i] = new Thread(RunRGBColorThresholding);
                     thread_array[i].Start(i);
                 }
-                for (int i = 0; i < tnum; i++)
+                for (var i = 0; i < tnum; i++)
                     thread_array[i].Join();
 
                 _srcimg.UnlockBits(_srcData);
                 _srcimg.Dispose();
                 _srcimg = null;
 
-                Bitmap img = ImageUtils.Array2DToBitmap(_dstimg);
+                var img = ImageUtils.Array2DToBitmap(_dstimg);
                 img.Save(outputPath);
                 img.Dispose();
                 img = null;

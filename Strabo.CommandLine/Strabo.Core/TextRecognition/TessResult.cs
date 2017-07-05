@@ -24,13 +24,47 @@ namespace Strabo.Core.TextRecognition
 {
     public class TessResult
     {
+        public bool back = false;
+        public double dict_similarity;
+        public string dict_word;
+        public string dict_word3;
+
+        public string fileName;
+
+        public bool front = false;
+        public int h;
+        public string hocr;
+
+        public string id;
+
+        public int mcX;
+        public int mcY;
+        public string sameMatches;
+        public double tess_cost;
+        public double tess_cost3;
+
+        public string tess_raw3;
+
+        public string tess_word;
+        public string tess_word3;
+
+        public int w;
+        public int x;
+        public int x2;
+        public int x3;
+        public int x4;
+        public int y;
+        public int y2;
+        public int y3;
+        public int y4;
+
         public TessResult()
         {
-
         }
+
         public TessResult(string id, string tess_word3, string tess_raw3,
-                            double tess_cost3, string hocr, string fileName,
-                            int x, int y, int w, int h)
+            double tess_cost3, string hocr, string fileName,
+            int x, int y, int w, int h)
         {
             this.id = id;
             this.tess_word3 = tess_word3;
@@ -43,39 +77,5 @@ namespace Strabo.Core.TextRecognition
             this.h = h;
             this.w = w;
         }
-
-        public string id;
-        public double dict_similarity;
-
-        public string tess_raw3;
-        public string tess_word3;
-        public string dict_word3;
-        public double tess_cost3;
-        public string hocr;
-
-        public string tess_word;
-        public string dict_word;
-        public double tess_cost;
-
-        public string fileName;
-        public int x;
-        public int y;
-        public int x2;
-        public int y2;
-        public int x3;
-        public int y3;
-        public int x4;
-        public int y4;
-
-        public int w;
-        public int h;
-
-        public int mcX;
-        public int mcY;
-        public string sameMatches;
-
-        public bool front = false;
-        public bool back = false;
     }
 }
-

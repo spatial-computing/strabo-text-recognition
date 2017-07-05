@@ -20,7 +20,6 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Strabo.Core.ImageProcessing;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -28,135 +27,133 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading;
+using Strabo.Core.ImageProcessing;
 using Strabo.Core.Utility;
 
 namespace Strabo.Core.TextDetection
 {
     public class ConditionalDilationAutomatic
     {
-        public double sizeRatio;
         public double angleThreshold;
+        private readonly Hashtable char_blob_idx_max_size_table;
+
+        private List<MyConnectedComponentsAnalysisFGFast.MyBlob> char_blobs;
+        private bool[] char_labels_confirmation;
+        private short[] char_labels_tmp;
+        private short[] charLabels;
+        private readonly List<HashSet<int>> connected_char_blob_idx_set_list;
+        private Hashtable connecting_angle_table;
+        private readonly HashSet<int> expendable_char_blob_idx_set;
+        private int iteration_counter;
+        private Hashtable iteration_for_first_connection_idx_table;
         public int iterationThreshold;
 
-        int minimum_distance_between_CCs_in_string;
+        private int minimum_distance_between_CCs_in_string;
+        private ushort[] originalCharLabels;
+        private readonly HashSet<int> short_char_blob_idx_set;
+        public double sizeRatio;
+        private readonly HashSet<string> weak_link_set;
 
-        int width, height, tnum;
-        ushort[] originalCharLabels;
-        short[] charLabels;
-        short[] char_labels_tmp;
-        bool[] char_labels_confirmation;
-
-        List<MyConnectedComponentsAnalysisFGFast.MyBlob> char_blobs;
-        Hashtable char_blob_idx_max_size_table;
-        HashSet<int> short_char_blob_idx_set;
-        HashSet<int> expendable_char_blob_idx_set;
-        List<HashSet<int>> connected_char_blob_idx_set_list;
-        HashSet<string> weak_link_set;
-        Hashtable connecting_angle_table;
-        Hashtable iteration_for_first_connection_idx_table;
-        int iteration_counter;
+        private int width, height, tnum;
 
         public ConditionalDilationAutomatic()
         {
-            this.sizeRatio = StraboParameters.cdaSizeRatio;
-            this.angleThreshold = StraboParameters.cdaAngleThreshold;
-            this.iterationThreshold = StraboParameters.cdaIterationThreshold;
-            this.minimum_distance_between_CCs_in_string = StraboParameters.minimumDistBetweenCC;
-            this.char_blob_idx_max_size_table = new Hashtable();
-            this.short_char_blob_idx_set = new HashSet<int>();
-            this.expendable_char_blob_idx_set = new HashSet<int>();
-            this.connected_char_blob_idx_set_list = new List<HashSet<int>>();
-            this.weak_link_set = new HashSet<string>();
-            this.connecting_angle_table = new Hashtable();
-            this.iteration_for_first_connection_idx_table = new Hashtable();
-            this.iteration_counter = 0;
+            sizeRatio = StraboParameters.cdaSizeRatio;
+            angleThreshold = StraboParameters.cdaAngleThreshold;
+            iterationThreshold = StraboParameters.cdaIterationThreshold;
+            minimum_distance_between_CCs_in_string = StraboParameters.minimumDistBetweenCC;
+            char_blob_idx_max_size_table = new Hashtable();
+            short_char_blob_idx_set = new HashSet<int>();
+            expendable_char_blob_idx_set = new HashSet<int>();
+            connected_char_blob_idx_set_list = new List<HashSet<int>>();
+            weak_link_set = new HashSet<string>();
+            connecting_angle_table = new Hashtable();
+            iteration_for_first_connection_idx_table = new Hashtable();
+            iteration_counter = 0;
         }
 
-        
+
         public void kernel(object step) // expand CC areas
         {
             // multi-threading setup
-            int delta_y = height / (int)tnum;
-            int start_y = delta_y * (int)step;
-            int stop_y = start_y + delta_y;
-            if ((int)step == tnum - 1) stop_y = height;
+            var delta_y = height / tnum;
+            var start_y = delta_y * (int) step;
+            var stop_y = start_y + delta_y;
+            if ((int) step == tnum - 1) stop_y = height;
 
-            for (int j = start_y; j < stop_y; j++)
-                for (int i = 0; i < width; i++)
+            for (var j = start_y; j < stop_y; j++)
+            for (var i = 0; i < width; i++)
+                if (charLabels[j * width + i] == 0) //bg
                 {
-                    if (charLabels[j * width + i] == 0) //bg
+                    var connected_char_blob_idx_set = new HashSet<short>();
+                    for (var x = i - 1; x <= i + 1; x++) // check 8 neighboors
+                    for (var y = j - 1; y <= j + 1; y++)
                     {
-                        HashSet<short> connected_char_blob_idx_set = new HashSet<short>();
-                        for (int x = i - 1; x <= i + 1; x++) // check 8 neighboors
-                            for (int y = j - 1; y <= j + 1; y++)
-                            {
-                                // outside image boundaries
-                                if (x < 0 || x >= width || y < 0 || y >= height)
-                                    continue; 
-                                int idx = y * width + x;
-                                if (charLabels[idx] != 0 && expendable_char_blob_idx_set.Contains(charLabels[idx] - 1)) //narges
-                                    connected_char_blob_idx_set.Add((short)(charLabels[idx] - 1));
-                            }
-                        // 0 connecting pixels, do not expand
-                        if (connected_char_blob_idx_set.Count == 0 || connected_char_blob_idx_set.Count > 2)
-                            char_labels_tmp[j * width + i] = 0;
-                        // 1 connecting pixel, check if short-string-only expansion applied
-                        else if (connected_char_blob_idx_set.Count == 1)
-                        {
-                            //if (short_char_blob_idx_set.Count == 0 || // expansion is for every string
-                            // expansion is for short strings, so check if connecting to a connecting short string
-                            //   short_char_blob_idx_set.Contains(connected_char_blob_idx_set.ElementAt(0)))
-                            char_labels_tmp[j * width + i]
-                                = (short)(connected_char_blob_idx_set.ElementAt(0) + 1);
-                        }
-                        else //(connected_char_blob_idx_set.Count == 2)
-                            char_labels_tmp[j * width + i] = (short)FindLabelForTheBiggestCharBlob(connected_char_blob_idx_set);
+                        // outside image boundaries
+                        if (x < 0 || x >= width || y < 0 || y >= height)
+                            continue;
+                        var idx = y * width + x;
+                        if (charLabels[idx] != 0 && expendable_char_blob_idx_set.Contains(charLabels[idx] - 1)) //narges
+                            connected_char_blob_idx_set.Add((short) (charLabels[idx] - 1));
                     }
-                    else
-                        char_labels_tmp[j * width + i] = charLabels[j * width + i];
+                    // 0 connecting pixels, do not expand
+                    if (connected_char_blob_idx_set.Count == 0 || connected_char_blob_idx_set.Count > 2)
+                        char_labels_tmp[j * width + i] = 0;
+                    // 1 connecting pixel, check if short-string-only expansion applied
+                    else if (connected_char_blob_idx_set.Count == 1)
+                        char_labels_tmp[j * width + i]
+                            = (short) (connected_char_blob_idx_set.ElementAt(0) + 1);
+                    else //(connected_char_blob_idx_set.Count == 2)
+                        char_labels_tmp[j * width + i] =
+                            (short) FindLabelForTheBiggestCharBlob(connected_char_blob_idx_set);
+                }
+                else
+                {
+                    char_labels_tmp[j * width + i] = charLabels[j * width + i];
                 }
         }
+
         public void kernel_confirmation(object step)
         {
-            int delta_y = height / (int)tnum;
-            int start_y = delta_y * (int)step;
-            int stop_y = start_y + delta_y;
-            if ((int)step == tnum - 1) stop_y = height;
-            for (int j = start_y; j < stop_y; j++)
-                for (int i = 0; i < width; i++)
+            var delta_y = height / tnum;
+            var start_y = delta_y * (int) step;
+            var stop_y = start_y + delta_y;
+            if ((int) step == tnum - 1) stop_y = height;
+            for (var j = start_y; j < stop_y; j++)
+            for (var i = 0; i < width; i++)
+                // expended areas and new expension
+                if (originalCharLabels[j * width + i] == 0 &&
+                    char_labels_tmp[j * width + i] != 0)
                 {
-                    // expended areas and new expension
-                    if (originalCharLabels[j * width + i] == 0 &&
-                        (char_labels_tmp[j * width + i] != 0))
+                    var connected_char_blob_idx_set = new HashSet<short>();
+                    byte connecting_counter = 0;
+                    for (var x = i - 1; x <= i + 1; x++)
+                    for (var y = j - 1; y <= j + 1; y++)
                     {
-                        HashSet<short> connected_char_blob_idx_set = new HashSet<short>();
-                        byte connecting_counter = 0;
-                        for (int x = i - 1; x <= i + 1; x++)
-                            for (int y = j - 1; y <= j + 1; y++)
-                            {
-                                if (x < 0 || x >= width || y < 0 || y >= height) continue;
-                                int idx = y * width + x;
+                        if (x < 0 || x >= width || y < 0 || y >= height) continue;
+                        var idx = y * width + x;
 
-                                if (idx >= 0 && idx < width * height)
-                                {
-                                    if (char_labels_tmp[idx] != 0)
-                                    {
-                                        connecting_counter++;
-                                        connected_char_blob_idx_set.Add((short)(char_labels_tmp[idx] - 1));
-                                    }
-                                }
+                        if (idx >= 0 && idx < width * height)
+                            if (char_labels_tmp[idx] != 0)
+                            {
+                                connecting_counter++;
+                                connected_char_blob_idx_set.Add((short) (char_labels_tmp[idx] - 1));
                             }
-                        if (connecting_counter == 1 || connected_char_blob_idx_set.Count == 0 || connected_char_blob_idx_set.Count > 2)
-                            char_labels_confirmation[j * width + i] = false;
-                        else if (connected_char_blob_idx_set.Count == 1)
-                            char_labels_confirmation[j * width + i] = true;
-                        else
-                            char_labels_confirmation[j * width + i] = ValidateConnection(connected_char_blob_idx_set);
                     }
-                    else
+                    if (connecting_counter == 1 || connected_char_blob_idx_set.Count == 0 ||
+                        connected_char_blob_idx_set.Count > 2)
+                        char_labels_confirmation[j * width + i] = false;
+                    else if (connected_char_blob_idx_set.Count == 1)
                         char_labels_confirmation[j * width + i] = true;
+                    else
+                        char_labels_confirmation[j * width + i] = ValidateConnection(connected_char_blob_idx_set);
+                }
+                else
+                {
+                    char_labels_confirmation[j * width + i] = true;
                 }
         }
+
         public bool BreakingAngle(int idx1, int idx2)
         {
             if (connected_char_blob_idx_set_list[idx1].Count == 0 && // idx1 and idx2 do not connect to anyone else
@@ -166,11 +163,11 @@ namespace Strabo.Core.TextDetection
                 connected_char_blob_idx_set_list[idx2].Contains(idx1))
                 return false;
 
-            int idx11 = -1;
+            var idx11 = -1;
             if (connected_char_blob_idx_set_list[idx1].Count == 1)
                 idx11 = connected_char_blob_idx_set_list[idx1].First(); // the list has exactly one element
 
-            int idx22 = -1;
+            var idx22 = -1;
             if (connected_char_blob_idx_set_list[idx2].Count == 1)
                 idx22 = connected_char_blob_idx_set_list[idx2].First(); // the list has exactly one element
 
@@ -182,33 +179,31 @@ namespace Strabo.Core.TextDetection
                 angle2 = CosAngel(idx1, idx22, idx2);
             if (angle1 > angleThreshold || angle2 > angleThreshold)
                 return true;
-            else
-                return false;
+            return false;
         }
+
         public int FindLabelForTheBiggestCharBlob(HashSet<short> char_blob_idx_set)
         {
             int idx1 = char_blob_idx_set.First(); // char_blob_idx_set has exactly two elements
             int idx2 = char_blob_idx_set.Last();
             // check if any of the connecting CC has two neighbors already
-            if ((connected_char_blob_idx_set_list[idx1].Count == 2 && !connected_char_blob_idx_set_list[idx1].Contains(idx2))
-                || (connected_char_blob_idx_set_list[idx2].Count == 2 && !connected_char_blob_idx_set_list[idx2].Contains(idx1)))
+            if (connected_char_blob_idx_set_list[idx1].Count == 2 &&
+                !connected_char_blob_idx_set_list[idx1].Contains(idx2)
+                || connected_char_blob_idx_set_list[idx2].Count == 2 &&
+                !connected_char_blob_idx_set_list[idx2].Contains(idx1))
                 return 0;
             if (BreakingAngle(idx1, idx2))
                 return 0;
             // check for size ratio
-            int size2 = (int)(char_blob_idx_max_size_table[idx2]);
-            int size1 = (int)(char_blob_idx_max_size_table[idx1]);
+            var size2 = (int) char_blob_idx_max_size_table[idx2];
+            var size1 = (int) char_blob_idx_max_size_table[idx1];
 
-            if ((double)size1 / (double)size2 > sizeRatio
-                || (double)size2 / (double)size1 > sizeRatio)
+            if (size1 / (double) size2 > sizeRatio
+                || size2 / (double) size1 > sizeRatio)
                 return 0;
-            else
-            {
-                if (size1 > size2)
-                    return idx1 + 1;
-                else
-                    return idx2 + 1;
-            }
+            if (size1 > size2)
+                return idx1 + 1;
+            return idx2 + 1;
         }
 
         public bool ValidateConnection(HashSet<short> char_blob_idx_set)
@@ -235,20 +230,19 @@ namespace Strabo.Core.TextDetection
                 connected_char_blob_idx_set_list[idx2].Add(idx1);
                 return true;
             }
-            else
-                return false;
+            return false;
         }
 
         public void k1()
         {
             char_labels_tmp = new short[width * height];
-            Thread[] thread_array = new Thread[tnum];
-            for (int i = 0; i < tnum; i++)
+            var thread_array = new Thread[tnum];
+            for (var i = 0; i < tnum; i++)
             {
-                thread_array[i] = new Thread(new ParameterizedThreadStart(kernel));
+                thread_array[i] = new Thread(kernel);
                 thread_array[i].Start(i);
             }
-            for (int i = 0; i < tnum; i++)
+            for (var i = 0; i < tnum; i++)
                 thread_array[i].Join();
             ConfirmationStep();
             IdentifyExpendableCharBlobs();
@@ -260,42 +254,43 @@ namespace Strabo.Core.TextDetection
             weak_link_set.Clear(); // we don't check weak links
             k_confirmation();
             //clear weak links
-            for (int j = 0; j < height; j++)
-                for (int i = 0; i < width; i++)
-                    if (char_labels_tmp[j * width + i] != 0 &&
-                        char_labels_confirmation[j * width + i])
-                        charLabels[j * width + i] = char_labels_tmp[j * width + i];
-                    else if (originalCharLabels[j * width + i] == 0)
-                        charLabels[j * width + i] = 0;
+            for (var j = 0; j < height; j++)
+            for (var i = 0; i < width; i++)
+                if (char_labels_tmp[j * width + i] != 0 &&
+                    char_labels_confirmation[j * width + i])
+                    charLabels[j * width + i] = char_labels_tmp[j * width + i];
+                else if (originalCharLabels[j * width + i] == 0)
+                    charLabels[j * width + i] = 0;
         }
 
         public void k_confirmation()
         {
             char_labels_confirmation = new bool[width * height];
-            Thread[] thread_array2 = new Thread[tnum];
-            for (int i = 0; i < tnum; i++)
+            var thread_array2 = new Thread[tnum];
+            for (var i = 0; i < tnum; i++)
             {
-                thread_array2[i] = new Thread(new ParameterizedThreadStart(kernel_confirmation));
+                thread_array2[i] = new Thread(kernel_confirmation);
                 thread_array2[i].Start(i);
             }
-            for (int i = 0; i < tnum; i++)
+            for (var i = 0; i < tnum; i++)
                 thread_array2[i].Join();
         }
 
-        public string Apply(int tnum, Bitmap srcimg, double size_ratio, double ang_threshold, bool preprocessing, string outImagePath)
+        public string Apply(int tnum, Bitmap srcimg, double size_ratio, double ang_threshold, bool preprocessing,
+            string outImagePath)
         {
             this.tnum = tnum;
-            this.width = srcimg.Width;
-            this.height = srcimg.Height;
-            int iteration = StraboParameters.minimumDistBetweenCC; // default: 2
-            this.sizeRatio = size_ratio;
-            this.angleThreshold = ang_threshold;
+            width = srcimg.Width;
+            height = srcimg.Height;
+            var iteration = StraboParameters.minimumDistBetweenCC; // default: 2
+            sizeRatio = size_ratio;
+            angleThreshold = ang_threshold;
             //input image: white as forground
             srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 128);
 
             if (preprocessing)
             {
-                ConnectLinesWithOnePixelGap cg = new ConnectLinesWithOnePixelGap();
+                var cg = new ConnectLinesWithOnePixelGap();
                 srcimg = cg.Apply(srcimg);
             }
 
@@ -303,23 +298,25 @@ namespace Strabo.Core.TextDetection
             //Log.WriteBitmap(srcimg, "InvertedImage.png");
             minimum_distance_between_CCs_in_string = iteration;
 
-            MyConnectedComponentsAnalysisFGFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
+            var char_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
 
-            this.char_blobs = char_bc.GetBlobs(srcimg,0);
-            this.charLabels = new short[width * height];
+            char_blobs = char_bc.GetBlobs(srcimg, 0);
+            charLabels = new short[width * height];
 
-            for (int i = 0; i < width * height; i++)
-                charLabels[i] = (short)(char_bc.objectLabels[i]);
+            for (var i = 0; i < width * height; i++)
+                charLabels[i] = (short) char_bc.objectLabels[i];
 
-            for (int i = 0; i < char_blobs.Count; i++)
+            for (var i = 0; i < char_blobs.Count; i++)
             {
-                char_blob_idx_max_size_table.Add(i, (int)Math.Max(char_blobs[i].bbx.width(), char_blobs[i].bbx.height())); // original size of the character //narges
+                char_blob_idx_max_size_table.Add(i,
+                    (int) Math.Max(char_blobs[i].bbx.width(),
+                        char_blobs[i].bbx.height())); // original size of the character //narges
                 expendable_char_blob_idx_set.Add(i);
                 connected_char_blob_idx_set_list.Add(new HashSet<int>());
             }
             originalCharLabels = char_bc.objectLabels;
-            for (int i = 0; i < width * height; i++)
-                charLabels[i] = (short)(char_bc.objectLabels[i]);
+            for (var i = 0; i < width * height; i++)
+                charLabels[i] = (short) char_bc.objectLabels[i];
 
             k1();
 
@@ -336,19 +333,19 @@ namespace Strabo.Core.TextDetection
         public void IdentifyExpendableCharBlobs()
         {
             short_char_blob_idx_set.Clear();
-            Bitmap resultimg = Print();
+            var resultimg = Print();
             //resultimg = ImageUtils.InvertColors(resultimg);
 
-            MyConnectedComponentsAnalysisFGFast.MyBlobCounter string_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
-            List<MyConnectedComponentsAnalysisFGFast.MyBlob> string_blobs = string_bc.GetBlobs(resultimg,0);
-            ushort[] string_labels = string_bc.objectLabels;
-            int string_count = string_blobs.Count;
+            var string_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
+            var string_blobs = string_bc.GetBlobs(resultimg, 0);
+            var string_labels = string_bc.objectLabels;
+            var string_count = string_blobs.Count;
 
-            List<List<MyConnectedComponentsAnalysisFGFast.MyBlob>> string_list = new List<List<MyConnectedComponentsAnalysisFGFast.MyBlob>>();
-            for (int i = 0; i < string_count; i++)
+            var string_list = new List<List<MyConnectedComponentsAnalysisFGFast.MyBlob>>();
+            for (var i = 0; i < string_count; i++)
                 string_list.Add(new List<MyConnectedComponentsAnalysisFGFast.MyBlob>());
 
-            for (int i = 0; i < char_blobs.Count; i++)
+            for (var i = 0; i < char_blobs.Count; i++)
             {
                 // sample_x and sample_y are concerning
                 char_blobs[i].string_id =
@@ -356,137 +353,136 @@ namespace Strabo.Core.TextDetection
 
                 string_list[char_blobs[i].string_id].Add(char_blobs[i]);
             }
-            for (int i = 0; i < string_list.Count; i++)
-            {
+            for (var i = 0; i < string_list.Count; i++)
                 if (string_list[i].Count > 0)
                 {
-                    int avg_size = 0;
-                    for (int j = 0; j < string_list[i].Count; j++)
-                        avg_size += (int)Math.Max(string_list[i][j].bbx.width(), string_list[i][j].bbx.height());
+                    var avg_size = 0;
+                    for (var j = 0; j < string_list[i].Count; j++)
+                        avg_size += (int) Math.Max(string_list[i][j].bbx.width(), string_list[i][j].bbx.height());
                     avg_size /= string_list[i].Count;
-                    for (int j = 0; j < string_list[i].Count; j++)
+                    for (var j = 0; j < string_list[i].Count; j++)
                         char_blob_idx_max_size_table[string_list[i][j].pixel_id - 1] = avg_size;
                 }
-            }
             // recomputing expendable char blob idx
-            for (int i = 0; i < char_blobs.Count; i++)
-            {
+            for (var i = 0; i < char_blobs.Count; i++)
                 if (connected_char_blob_idx_set_list[i].Count == 2)
                 {
                     expendable_char_blob_idx_set.Remove(i);
                 }
                 else // 0 or 1 connecting CC
                 {
-                    int max_dist = (int)((double)((int)char_blob_idx_max_size_table[i]) / 3);
+                    var max_dist = (int) ((double) (int) char_blob_idx_max_size_table[i] / 3);
                     // int max_dist = (int)((double)((int)char_blob_idx_max_size_table[i])/2 );
                     if (max_dist < minimum_distance_between_CCs_in_string * 2)
                         max_dist = minimum_distance_between_CCs_in_string * 2;
 
                     if (iteration_counter > max_dist)
-                    {
                         expendable_char_blob_idx_set.Remove(i);
-                    }
                 }
-            }
         }
+
         public Bitmap Printnumb()
         {
-            Bitmap dstimg = new Bitmap(width, height);
-            Graphics g = Graphics.FromImage(dstimg);
-            for (int i = 0; i < char_blobs.Count; i++)
+            var dstimg = new Bitmap(width, height);
+            var g = Graphics.FromImage(dstimg);
+            for (var i = 0; i < char_blobs.Count; i++)
             {
-                Font font2 = new Font("Arial", 8);
+                var font2 = new Font("Arial", 8);
                 g.DrawString(i.ToString(), font2, Brushes.Red, char_blobs[i].bbx.massCenter());
             }
             g.Dispose();
             return dstimg;
         }
+
         public Bitmap PrintRGB()
         {
-            int[] img = new int[height * width];
-            for (int i = 0; i < width; i++)
-                for (int j = 0; j < height; j++)
-                    if (charLabels[j * width + i] == 0)
-                        img[j * width + i] = 255 * 256 * 256 + 255 * 256 + 255;
-                    else if (charLabels[j * width + i] == 3)
-                        img[j * width + i] = 255 * 256 * 256;
-                    else if (charLabels[j * width + i] == 6)
-                        img[j * width + i] = 255 * 256;
-                    else
-                        img[j * width + i] = 0;
+            var img = new int[height * width];
+            for (var i = 0; i < width; i++)
+            for (var j = 0; j < height; j++)
+                if (charLabels[j * width + i] == 0)
+                    img[j * width + i] = 255 * 256 * 256 + 255 * 256 + 255;
+                else if (charLabels[j * width + i] == 3)
+                    img[j * width + i] = 255 * 256 * 256;
+                else if (charLabels[j * width + i] == 6)
+                    img[j * width + i] = 255 * 256;
+                else
+                    img[j * width + i] = 0;
             return ImageUtils.Array1DToBitmapRGB(img, width, height);
         }
+
         public Bitmap PrintTMPRGB()
         {
-            int[] img = new int[height * width];
-            for (int i = 0; i < width; i++)
-                for (int j = 0; j < height; j++)
-                    if (char_labels_tmp[j * width + i] == 0)
-                        img[j * width + i] = 255 * 256 * 256 + 255 * 256 + 255;
-                    else if (char_labels_tmp[j * width + i] == 3)
-                        img[j * width + i] = 255 * 256 * 256;
-                    else if (char_labels_tmp[j * width + i] == 6)
-                        img[j * width + i] = 255 * 256;
-                    else
-                        img[j * width + i] = 0;
+            var img = new int[height * width];
+            for (var i = 0; i < width; i++)
+            for (var j = 0; j < height; j++)
+                if (char_labels_tmp[j * width + i] == 0)
+                    img[j * width + i] = 255 * 256 * 256 + 255 * 256 + 255;
+                else if (char_labels_tmp[j * width + i] == 3)
+                    img[j * width + i] = 255 * 256 * 256;
+                else if (char_labels_tmp[j * width + i] == 6)
+                    img[j * width + i] = 255 * 256;
+                else
+                    img[j * width + i] = 0;
             return ImageUtils.Array1DToBitmapRGB(img, width, height);
         }
+
         public void Print(string outImagePath)
         {
-            bool[,] img = new bool[height, width];            
-            for (int i = 0; i < width; i++)
-                for (int j = 0; j < height; j++)
-                    if (charLabels[j * width + i] != 0)
-                        img[j, i] = true;
-                    else
-                        img[j, i] = false;
+            var img = new bool[height, width];
+            for (var i = 0; i < width; i++)
+            for (var j = 0; j < height; j++)
+                if (charLabels[j * width + i] != 0)
+                    img[j, i] = true;
+                else
+                    img[j, i] = false;
             ImageUtils.ArrayBool2DToBitmap(img).Save(outImagePath, ImageFormat.Png);
         }
 
         public Bitmap Print()
         {
-            bool[,] img = new bool[height, width];
-            for (int i = 0; i < width; i++)
-                for (int j = 0; j < height; j++)
-                    if (charLabels[j * width + i] != 0)
-                        img[j, i] = true;
-                    else
-                        img[j, i] = false;
+            var img = new bool[height, width];
+            for (var i = 0; i < width; i++)
+            for (var j = 0; j < height; j++)
+                if (charLabels[j * width + i] != 0)
+                    img[j, i] = true;
+                else
+                    img[j, i] = false;
             return ImageUtils.ArrayBool2DToBitmap(img);
         }
 
         public double CosAngel(int idx1, int idx2, int i)
         {
-            double angle1 = CosAngel(new PointF(char_blobs[idx1].bbx.massCenter().X, char_blobs[idx1].bbx.massCenter().Y),
-                                    new PointF(char_blobs[idx2].bbx.massCenter().X, char_blobs[idx2].bbx.massCenter().Y),
-                                    new PointF(char_blobs[i].bbx.massCenter().X, char_blobs[i].bbx.massCenter().Y));
+            var angle1 = CosAngel(new PointF(char_blobs[idx1].bbx.massCenter().X, char_blobs[idx1].bbx.massCenter().Y),
+                new PointF(char_blobs[idx2].bbx.massCenter().X, char_blobs[idx2].bbx.massCenter().Y),
+                new PointF(char_blobs[i].bbx.massCenter().X, char_blobs[i].bbx.massCenter().Y));
 
-            double angle2 = NormAngel(idx1, idx2, i);
+            var angle2 = NormAngel(idx1, idx2, i);
 
             return (angle2 - angle1) / angle1;
         }
+
         public double NormAngel(int idx1, int idx2, int i)
         {
+            var h1 = Math.Max(char_blobs[idx1].bbx.width(), char_blobs[idx1].bbx.height());
+            var w1 = Math.Min(char_blobs[idx1].bbx.width(), char_blobs[idx1].bbx.height());
 
-            float h1 = Math.Max(char_blobs[idx1].bbx.width(), char_blobs[idx1].bbx.height());
-            float w1 = Math.Min(char_blobs[idx1].bbx.width(), char_blobs[idx1].bbx.height());
+            var h2 = Math.Max(char_blobs[idx2].bbx.width(), char_blobs[idx2].bbx.height());
+            var w2 = Math.Min(char_blobs[idx2].bbx.width(), char_blobs[idx2].bbx.height());
 
-            float h2 = Math.Max(char_blobs[idx2].bbx.width(), char_blobs[idx2].bbx.height());
-            float w2 = Math.Min(char_blobs[idx2].bbx.width(), char_blobs[idx2].bbx.height());
+            var hi = Math.Max(char_blobs[i].bbx.width(), char_blobs[i].bbx.height());
+            var wi = Math.Min(char_blobs[i].bbx.width(), char_blobs[i].bbx.height());
 
-            float hi = Math.Max(char_blobs[i].bbx.width(), char_blobs[i].bbx.height());
-            float wi = Math.Min(char_blobs[i].bbx.width(), char_blobs[i].bbx.height());
+            var p1 = new PointF(w1 / 2, h1 / 2);
+            var p2 = new PointF(w2 / 2 + w1 + wi, h2 / 2);
+            var p3 = new PointF(wi / 2 + w1, hi / 2);
 
-            PointF p1 = new PointF(w1/2, h1/2);
-            PointF p2 = new PointF(w2 / 2 + w1 + wi, h2 / 2);
-            PointF p3 = new PointF(wi/2 + w1, hi/2);
 
-                                    
             return CosAngel(p1, p2, p3);
         }
+
         public double CosAngel(PointF p1, PointF p2, PointF p3)
         {
-            double error = 0.00001;
+            var error = 0.00001;
             double x1 = p1.X;
             double x2 = p2.X;
             double x3 = p3.X;
@@ -497,12 +493,15 @@ namespace Strabo.Core.TextDetection
                 return 180;
             if (y1 == y3 && y2 == y3)
                 return 180;
-            double adotb = (x2 - x3) * (x1 - x3) + (y2 - y3) * (y1 - y3);
-            double tmp1 = (Math.Sqrt((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3)) * Math.Sqrt((x1 - x3) * (x1 - x3) + (y1 - y3) * (y1 - y3)));
-            double tmp2 = adotb / tmp1;
+            var adotb = (x2 - x3) * (x1 - x3) + (y2 - y3) * (y1 - y3);
+            var tmp1 = Math.Sqrt((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3)) *
+                       Math.Sqrt((x1 - x3) * (x1 - x3) + (y1 - y3) * (y1 - y3));
+            var tmp2 = adotb / tmp1;
             double angel = 0;
             if (Math.Abs(Math.Abs(tmp2) - 1) < error)
+            {
                 angel = 180;
+            }
             else
             {
                 angel = Math.Acos(adotb / tmp1);
@@ -515,13 +514,11 @@ namespace Strabo.Core.TextDetection
 
         private Bitmap RemoveNoiseFromImage(Bitmap srcImg, int MyX, int MyY, int MyWidth, int MyHeight)
         {
-            Bitmap Mybitmap = new Bitmap(srcImg);
+            var Mybitmap = new Bitmap(srcImg);
 
-            for (int i = MyX; i < MyX + MyWidth; i++)
-                for (int j = MyHeight; j < MyY + MyHeight; j++)
-                {
-                    Mybitmap.SetPixel(i, j, Color.Black);
-                }
+            for (var i = MyX; i < MyX + MyWidth; i++)
+            for (var j = MyHeight; j < MyY + MyHeight; j++)
+                Mybitmap.SetPixel(i, j, Color.Black);
             /*
             BitmapData srcData = srcImg.LockBits(
                   new Rectangle(MyX, MyY, MyWidth, MyHeight),
@@ -546,6 +543,5 @@ namespace Strabo.Core.TextDetection
              **/
             return Mybitmap;
         }
-
     }
 }

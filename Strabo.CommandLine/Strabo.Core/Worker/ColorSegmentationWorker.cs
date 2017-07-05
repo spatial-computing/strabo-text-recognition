@@ -20,28 +20,28 @@
 * please see: http://spatial-computing.github.io/
 ******************************************************************************/
 
-using Strabo.Core.ColorSegmentation;
-using Strabo.Core.Utility;
 using System;
 using System.IO;
+using Strabo.Core.ColorSegmentation;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.Worker
 {
     /// <summary>
-    /// Starting class for color segmentation
+    ///     Starting class for color segmentation
     /// </summary>
     public class ColorSegmentationWorker : IStraboWorker
     {
-        public ColorSegmentationWorker() { }
         public string Apply(string inputDir, string interDir, string outputDir, string srcfileName, int threadNumber)
         {
-            string srcpath = Path.Combine(inputDir, srcfileName);
-            string dstpath = Path.Combine(interDir, Path.GetFileNameWithoutExtension(srcfileName) + "_");
+            var srcpath = Path.Combine(inputDir, srcfileName);
+            var dstpath = Path.Combine(interDir, Path.GetFileNameWithoutExtension(srcfileName) + "_");
             return Apply(srcpath, dstpath, threadNumber);
         }
+
         /// <summary>
-        /// Applies <c>meanshift</c> and <c>median cut</c> algorithms
-        /// for color quantization
+        ///     Applies <c>meanshift</c> and <c>median cut</c> algorithms
+        ///     for color quantization
         /// </summary>
         /// <param name="srcpathfn">Input image location</param>
         /// <param name="dstpathfn">Output image location</param>
@@ -54,18 +54,20 @@ namespace Strabo.Core.Worker
             {
                 //MeanShift
                 Log.WriteLine("Meanshift in progress...");
-                dstpathfn = Path.Combine(Path.GetDirectoryName(dstpathfn), Path.GetFileNameWithoutExtension(dstpathfn) + "ms.png");
-                MeanShiftMultiThreads mt = new MeanShiftMultiThreads();
+                dstpathfn = Path.Combine(Path.GetDirectoryName(dstpathfn),
+                    Path.GetFileNameWithoutExtension(dstpathfn) + "ms.png");
+                var mt = new MeanShiftMultiThreads();
                 mt.ApplyYIQMT(srcpathfn, threadNumber,
                     StraboParameters.spatialDistance, StraboParameters.colorDistance, dstpathfn);
                 mt = null;
                 GC.Collect();
                 Log.WriteLine("Meanshift finished");
-               
+
                 // Median Cut
                 Log.WriteLine("Median-Cut in progress...");
                 srcpathfn = dstpathfn;
-                dstpathfn = Path.Combine(Path.GetDirectoryName(dstpathfn), Path.GetFileNameWithoutExtension(dstpathfn) + "mc.png");
+                dstpathfn = Path.Combine(Path.GetDirectoryName(dstpathfn),
+                    Path.GetFileNameWithoutExtension(dstpathfn) + "mc.png");
                 IMedianCut mc = new MedianCutMultiThreads(); //AForgeMedianCut();
                 mc.Process(srcpathfn, dstpathfn, StraboParameters.medianCutColors);
                 Log.WriteLine("Median-Cut finished");

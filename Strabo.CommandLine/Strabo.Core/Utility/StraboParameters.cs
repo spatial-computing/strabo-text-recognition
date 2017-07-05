@@ -21,7 +21,6 @@
  ******************************************************************************/
 
 using System;
-using System.Configuration;
 
 namespace Strabo.Core.Utility
 {
@@ -37,52 +36,90 @@ namespace Strabo.Core.Utility
 
         public bool useAutomaticThresholding;
     }
+
     public static class StraboParameters
     {
         private static RGBThreshold _rgbThreshold;
-        private static string _sourceMapFileName;
-        private static string _dictionaryFilePath;
-        private static string _textLayerOutputFileName;
-        private static int _dictionaryExactMatchStringLength;
-        private static string _dictionaryWeightsPath;
-        private static string _straboReleaseVersion;
-        private static int _numberOfSegmentationColor;
-        private static int _char_size;
-        private static string _language;
-        private static bool _elasticsearch;
-        private static bool _otd;
-        private static string _oTDResultFolder;
-        private static int _connectedComponentThreshold;
-        private static int _holeThreshold;
-        private static double _averagePixel;
-        private static double _pixelToSizeRatio;
-        private static double _upperToLowerCaseWidthRatio;
-        private static double _firstToThirdGroupHeightRatio;
-        private static double _firstToSecondGroupHeightRatio;
 
-        private static int _spatialDistance;
-        private static int _colorDistance;
-        private static int _medianCutColors;
+        public static int numberOfSegmentationColor { get; set; }
 
-        private static double _cdaAngleThreshold;
-        private static int _cdaIterationThreshold;
-        private static int _minimumDistBetweenCC;
+        public static string straboReleaseVersion { get; set; }
 
-        private static double _angleRatio;
-        private static int _rowSlice;
-        private static int _colSlice;
-        private static int _overlap;
-        private static double _minPixelAreaSize;
+        public static RGBThreshold rgbThreshold
+        {
+            get => _rgbThreshold;
+            set => _rgbThreshold = value;
+        }
 
-        private static int _bbxMinWidth;
-        private static int _bbxMaxWidth;
-        private static int _bbxMinHeight;
-        private static int _bbxMaxHeight;
+        public static string textLayerOutputFileName { get; private set; }
 
-        private static Boolean _cdaPreProcessing;
-        private static double _cdaSizeRatio;
+        public static string sourceMapFileName { get; private set; }
 
-        private static int _bbxMultiplier;
+        public static string dictionaryFilePath { get; private set; }
+
+        public static int dictionaryExactMatchStringLength { get; private set; }
+
+        public static string oTDResultFolder { get; private set; }
+
+        public static int ConnectedComponentThreshold { get; private set; }
+
+        public static double AveragePixel { get; private set; }
+
+        public static double PixelToSizeRatio { get; private set; }
+
+        public static int HoleThreshold { get; private set; }
+
+        public static double UpperToLowerCaseWidthRatio { get; private set; }
+
+        public static double FirstToThirdGroupHeightRatio { get; private set; }
+
+        public static double FirstToSecondGroupHeightRatio { get; private set; }
+
+        public static string dictionaryWeightsPath { get; private set; }
+
+        public static int char_size { get; private set; }
+
+        public static string language { get; private set; }
+
+        public static bool elasticsearch { get; private set; }
+
+        public static bool otd { get; private set; }
+
+        public static int spatialDistance { get; private set; }
+
+        public static int colorDistance { get; private set; }
+
+        public static int medianCutColors { get; private set; }
+
+        public static double cdaAngleThreshold { get; private set; }
+
+        public static int cdaIterationThreshold { get; private set; }
+
+        public static int minimumDistBetweenCC { get; private set; }
+
+        public static double cdaAngleRatio { get; private set; }
+
+        public static int rowSlice { get; private set; }
+
+        public static int colSlice { get; private set; }
+
+        public static int overlap { get; private set; }
+
+        public static double minPixelAreaSize { get; private set; }
+
+        public static int bbxMinHeight { get; private set; }
+
+        public static int bbxMinWidth { get; private set; }
+
+        public static int bbxMaxHeight { get; private set; }
+
+        public static int bbxMaxWidth { get; private set; }
+
+        public static bool cdaPreProcessing { get; private set; }
+
+        public static double cdaSizeRatio { get; private set; }
+
+        public static int bbxMultiplier { get; private set; }
 
         public static void readConfigFile(string layer)
         {
@@ -91,9 +128,9 @@ namespace Strabo.Core.Utility
                 Log.WriteLine("Reading application settings...");
                 ReadConfigFile.init();
                 if (ReadString(layer + ":Name", "") != "")
-                    layer += ":";   //setting found
+                    layer += ":"; //setting found
                 else
-                    layer = "";     //use the default setting
+                    layer = ""; //use the default setting
 
                 _rgbThreshold = new RGBThreshold();
                 _rgbThreshold.upperBlueColorThd = ReadInt(layer + "UpperBlueColorThreshold", 0);
@@ -104,59 +141,59 @@ namespace Strabo.Core.Utility
                 _rgbThreshold.lowerGreenColorThd = ReadInt(layer + "LowerGreenColorThreshold", 0);
 
                 if (_rgbThreshold.upperBlueColorThd == _rgbThreshold.lowerBlueColorThd
-                   || _rgbThreshold.upperGreenColorThd == _rgbThreshold.lowerGreenColorThd
-                   || _rgbThreshold.upperRedColorThd == _rgbThreshold.lowerRedColorThd)
+                    || _rgbThreshold.upperGreenColorThd == _rgbThreshold.lowerGreenColorThd
+                    || _rgbThreshold.upperRedColorThd == _rgbThreshold.lowerRedColorThd)
                     _rgbThreshold.useAutomaticThresholding = true;
                 else
                     _rgbThreshold.useAutomaticThresholding = false;
 
-                _numberOfSegmentationColor = ReadInt(layer + "NumberOfSegmentationColor", 0);
-                _char_size = ReadInt(layer + "CharSize", 12);
-                _language = ReadString(layer + "Language", "en");
-                _elasticsearch = ReadBool(layer + "Elasticsearch", false);
-                _otd = ReadBool(layer + "OTD", false);
-                _dictionaryFilePath = ReadString(layer + "DictionaryFilePath", "");
-                _dictionaryExactMatchStringLength = ReadInt(layer + "DictionaryTwoLetterFilePath", 2);
-                _dictionaryWeightsPath = ReadString(layer + "DictionaryWeightsPath", "");
+                numberOfSegmentationColor = ReadInt(layer + "NumberOfSegmentationColor", 0);
+                char_size = ReadInt(layer + "CharSize", 12);
+                language = ReadString(layer + "Language", "en");
+                elasticsearch = ReadBool(layer + "Elasticsearch", false);
+                otd = ReadBool(layer + "OTD", false);
+                dictionaryFilePath = ReadString(layer + "DictionaryFilePath", "");
+                dictionaryExactMatchStringLength = ReadInt(layer + "DictionaryTwoLetterFilePath", 2);
+                dictionaryWeightsPath = ReadString(layer + "DictionaryWeightsPath", "");
 
-                _oTDResultFolder = ReadString(layer + "OTDResultFolder", "");
-                _sourceMapFileName = ReadString("SourceMapFileName", "SourceMapImage.png");
-                _textLayerOutputFileName = ReadString("TextLayerOutputFileName", "BinaryOutput.png");
-                _straboReleaseVersion = ReadString("Version", "");
-                _connectedComponentThreshold = ReadInt(layer + "ConnectedComponentThreshold", 0);
-                _holeThreshold = ReadInt(layer + "HoleThreshold", 0);
-                _averagePixel = ReadDouble(layer + "AveragePixel", 0);
-                _pixelToSizeRatio = ReadDouble(layer + "PixelToSizeRatio", 0);
-                _upperToLowerCaseWidthRatio = ReadDouble(layer + "UpperToLowerCaseWidthRatio", 0);
-                _firstToThirdGroupHeightRatio = ReadDouble(layer + "FirstToThirdGroupHeightRatio", 0);
-                _firstToSecondGroupHeightRatio = ReadDouble(layer + "FirstToSecondGroupHeightRatio", 0);
+                oTDResultFolder = ReadString(layer + "OTDResultFolder", "");
+                sourceMapFileName = ReadString("SourceMapFileName", "SourceMapImage.png");
+                textLayerOutputFileName = ReadString("TextLayerOutputFileName", "BinaryOutput.png");
+                straboReleaseVersion = ReadString("Version", "");
+                ConnectedComponentThreshold = ReadInt(layer + "ConnectedComponentThreshold", 0);
+                HoleThreshold = ReadInt(layer + "HoleThreshold", 0);
+                AveragePixel = ReadDouble(layer + "AveragePixel", 0);
+                PixelToSizeRatio = ReadDouble(layer + "PixelToSizeRatio", 0);
+                UpperToLowerCaseWidthRatio = ReadDouble(layer + "UpperToLowerCaseWidthRatio", 0);
+                FirstToThirdGroupHeightRatio = ReadDouble(layer + "FirstToThirdGroupHeightRatio", 0);
+                FirstToSecondGroupHeightRatio = ReadDouble(layer + "FirstToSecondGroupHeightRatio", 0);
 
-                _spatialDistance = ReadInt(layer + "SpatialDistance", 3);
-                _colorDistance = ReadInt(layer + "ColorDistance", 3);
-                _medianCutColors = ReadInt(layer + "MedianCutColors", 256);
+                spatialDistance = ReadInt(layer + "SpatialDistance", 3);
+                colorDistance = ReadInt(layer + "ColorDistance", 3);
+                medianCutColors = ReadInt(layer + "MedianCutColors", 256);
 
-                
-                _minimumDistBetweenCC = ReadInt(layer + "MinimumDistanceBetweenCC", 2);
 
-                _angleRatio = ReadDouble(layer + "AngleRatio", 0.3);
-                _rowSlice = ReadInt(layer + "RowSlice", 1);
-                _colSlice = ReadInt(layer + "ColSlice", 1);
-                _overlap = ReadInt(layer + "Overlap", 100);
-                _minPixelAreaSize = ReadDouble(layer + "MinPixelAreaSize", 0.18);
+                minimumDistBetweenCC = ReadInt(layer + "MinimumDistanceBetweenCC", 2);
 
-                _bbxMinHeight = ReadInt(layer + "BbxMinHeight", 10);
-                _bbxMinWidth = ReadInt(layer + "BbxMinWidth", 10);
-                _bbxMaxHeight = ReadInt(layer + "BbxMaxHeight", 500);
-                _bbxMaxWidth = ReadInt(layer + "BbxMaxWidth", 500);
+                cdaAngleRatio = ReadDouble(layer + "AngleRatio", 0.3);
+                rowSlice = ReadInt(layer + "RowSlice", 1);
+                colSlice = ReadInt(layer + "ColSlice", 1);
+                overlap = ReadInt(layer + "Overlap", 100);
+                minPixelAreaSize = ReadDouble(layer + "MinPixelAreaSize", 0.18);
 
-                _cdaAngleThreshold = ReadDouble(layer + "cdaAngleThreshold", 0.3);
-                _cdaPreProcessing = ReadBool(layer + "cdaPreProcessing", false);
-                _cdaSizeRatio = ReadDouble(layer + "cdaSizeRatio", 2.5);
-                _cdaIterationThreshold = ReadInt(layer + "cdaIterationThreshold", 15);
+                bbxMinHeight = ReadInt(layer + "BbxMinHeight", 10);
+                bbxMinWidth = ReadInt(layer + "BbxMinWidth", 10);
+                bbxMaxHeight = ReadInt(layer + "BbxMaxHeight", 500);
+                bbxMaxWidth = ReadInt(layer + "BbxMaxWidth", 500);
 
-                _bbxMultiplier = ReadInt(layer + "bbxMultiplier", 3);
+                cdaAngleThreshold = ReadDouble(layer + "cdaAngleThreshold", 0.3);
+                cdaPreProcessing = ReadBool(layer + "cdaPreProcessing", false);
+                cdaSizeRatio = ReadDouble(layer + "cdaSizeRatio", 2.5);
+                cdaIterationThreshold = ReadInt(layer + "cdaIterationThreshold", 15);
+
+                bbxMultiplier = ReadInt(layer + "bbxMultiplier", 3);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Log.WriteLine(e.Message);
                 Log.WriteLine(e.Source);
@@ -164,284 +201,33 @@ namespace Strabo.Core.Utility
                 throw;
             }
         }
+
         private static string ReadString(string key, string default_value)
         {
-            return ReadConfigFile.ReadModelConfiguration(key).ToString() != "" ? ReadConfigFile.ReadModelConfiguration(key).ToString() : default_value;
+            return ReadConfigFile.ReadModelConfiguration(key) != ""
+                ? ReadConfigFile.ReadModelConfiguration(key)
+                : default_value;
         }
+
         private static int ReadInt(string key, int default_value)
         {
-            return ReadConfigFile.ReadModelConfiguration(key).ToString() != "" ? Convert.ToInt16(ReadConfigFile.ReadModelConfiguration(key).ToString()) : default_value;
+            return ReadConfigFile.ReadModelConfiguration(key) != ""
+                ? Convert.ToInt16(ReadConfigFile.ReadModelConfiguration(key))
+                : default_value;
         }
+
         private static double ReadDouble(string key, double default_value)
         {
-            return ReadConfigFile.ReadModelConfiguration(key).ToString() != "" ? Convert.ToDouble(ReadConfigFile.ReadModelConfiguration(key).ToString()) : default_value;
+            return ReadConfigFile.ReadModelConfiguration(key) != ""
+                ? Convert.ToDouble(ReadConfigFile.ReadModelConfiguration(key))
+                : default_value;
         }
+
         private static bool ReadBool(string key, bool default_value)
         {
-            return ReadConfigFile.ReadModelConfiguration(key).ToString() != "" ? Convert.ToBoolean(ReadConfigFile.ReadModelConfiguration(key).ToString()) : default_value;
-        }
-        public static int numberOfSegmentationColor
-        {
-            get { return StraboParameters._numberOfSegmentationColor; }
-            set { StraboParameters._numberOfSegmentationColor = value; }
-        }
-        public static string straboReleaseVersion
-        {
-            get { return _straboReleaseVersion; }
-            set { _straboReleaseVersion = value; }
-        }
-        public static RGBThreshold rgbThreshold
-        {
-            get { return _rgbThreshold; }
-            set { _rgbThreshold = value; }
-        }
-        public static string textLayerOutputFileName
-        {
-            get
-            {
-                return _textLayerOutputFileName;
-            }
-        }
-        public static string sourceMapFileName
-        {
-            get
-            {
-                return _sourceMapFileName;
-            }
-        }
-        public static string dictionaryFilePath
-        {
-            get
-            {
-                return _dictionaryFilePath;
-            }
-        }
-        public static int dictionaryExactMatchStringLength
-        {
-            get
-            {
-                return _dictionaryExactMatchStringLength;
-            }
-        }
-
-        public static string oTDResultFolder
-        {
-            get
-            {
-                return _oTDResultFolder;
-            }
-        }
-
-        public static int ConnectedComponentThreshold
-        {
-            get
-            {
-                return _connectedComponentThreshold;
-            }
-        }
-
-        public static double AveragePixel
-        {
-            get
-            {
-                return _averagePixel;
-            }
-        }
-        public static double PixelToSizeRatio
-        {
-            get
-            {
-                return _pixelToSizeRatio;
-            }
-        }
-        public static int HoleThreshold
-        {
-            get
-            {
-                return _holeThreshold;
-            }
-        }
-        public static double UpperToLowerCaseWidthRatio
-        {
-            get
-            {
-                return _upperToLowerCaseWidthRatio;
-            }
-        }
-        public static double FirstToThirdGroupHeightRatio
-        {
-            get
-            {
-                return _firstToThirdGroupHeightRatio;
-            }
-        }
-       public static double FirstToSecondGroupHeightRatio
-        {
-            get
-            {
-                return _firstToSecondGroupHeightRatio;
-            }
-        }
-        public static string dictionaryWeightsPath
-        {
-            get
-            {
-                return _dictionaryWeightsPath;
-            }
-        }
-        public static int char_size
-        {
-            get
-            {
-                return _char_size;
-            }
-        }
-        public static string language
-        {
-            get
-            {
-                return _language;
-            }
-        }
-        public static bool elasticsearch
-        {
-            get
-            {
-                return _elasticsearch;
-            }
-        }
-        public static bool otd
-        {
-            get
-            {
-                return _otd;
-            }
-        }
-        public static int spatialDistance
-        {
-            get
-            {
-                return _spatialDistance;
-            }
-        }
-        public static int colorDistance
-        {
-            get
-            {
-                return _colorDistance;
-            }
-        }
-        public static int medianCutColors
-        {
-            get
-            {
-                return _medianCutColors;
-            }
-        }
-        public static double cdaAngleThreshold
-        {
-            get
-            {
-                return _cdaAngleThreshold;
-            }
-        }
-        public static int cdaIterationThreshold
-        {
-            get
-            {
-                return _cdaIterationThreshold;
-            }
-        }
-        public static int minimumDistBetweenCC
-        {
-            get
-            {
-                return _minimumDistBetweenCC;
-            }
-        }
-        public static double cdaAngleRatio
-        {
-            get
-            {
-                return _angleRatio;
-            }
-        }
-        public static int rowSlice
-        {
-            get
-            {
-                return _rowSlice;
-            }
-        }
-        public static int colSlice
-        {
-            get
-            {
-                return _colSlice;
-            }
-        }
-        public static int overlap
-        {
-            get
-            {
-                return _overlap;
-            }
-        }
-        public static double minPixelAreaSize
-        {
-            get
-            {
-                return _minPixelAreaSize;
-            }
-        }
-        public static int bbxMinHeight
-        {
-            get
-            {
-                return _bbxMinHeight;
-            }
-        }
-        public static int bbxMinWidth
-        {
-            get
-            {
-                return _bbxMinWidth;
-            }
-        }
-        public static int bbxMaxHeight
-        {
-            get
-            {
-                return _bbxMaxHeight;
-            }
-        }
-        public static int bbxMaxWidth
-        {
-            get
-            {
-                return _bbxMaxWidth;
-            }
-        }
-        public static bool cdaPreProcessing
-        {
-            get
-            {
-                return _cdaPreProcessing;
-            }
-        }
-        public static double cdaSizeRatio
-        {
-            get
-            {
-                return _cdaSizeRatio;
-            }
-        }
-        public static int bbxMultiplier
-        {
-            get
-            {
-                return _bbxMultiplier;
-            }
+            return ReadConfigFile.ReadModelConfiguration(key) != ""
+                ? Convert.ToBoolean(ReadConfigFile.ReadModelConfiguration(key))
+                : default_value;
         }
     }
 }

@@ -20,69 +20,63 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Emgu.CV;
-using Emgu.CV.ML;
-using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using Emgu.CV;
+using Emgu.CV.ML;
+using Emgu.CV.ML.MlEnum;
+using Emgu.CV.Structure;
+using Strabo.Core.ImageProcessing;
 
 namespace Strabo.Core.MachineLearning
 {
     public class ConnectedComponentClassifier
     {
-        public static string svmDataPath = @".\SVM_training\";
-
-        public ConnectedComponentClassifier() { }
+        public static string svmDataPath = Path.GetDirectoryName(@".\libdata\SVM_training\");
 
         public void Apply(string intermediatePath, string inputFileName, string outputFileName, bool open)
         {
             //1.Get the input image
-            Image<Gray, Byte> srcimage = new Image<Gray, byte>(Path.Combine(intermediatePath, inputFileName));
-            Bitmap srcimg = new Bitmap(Path.Combine(intermediatePath, inputFileName));
-            srcimg = ImageProcessing.ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
-            srcimg = ImageProcessing.ImageUtils.InvertColors(srcimg);
+            var srcimage = new Image<Gray, byte>(Path.Combine(intermediatePath, inputFileName));
+            var srcimg = new Bitmap(Path.Combine(intermediatePath, inputFileName));
+            srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
+            srcimg = ImageUtils.InvertColors(srcimg);
             //2.Do open or close operation here
             Bitmap closed_img = null;
             //if (open)
             //{
-                //Image<Gray, Byte> closed_image = new Image<Gray, byte>(srcimage.Width, srcimage.Height);
-                //StructuringElementEx element = new StructuringElementEx(3, 3, 1, 1, Emgu.CV.CvEnum.CV_ELEMENT_SHAPE.CV_SHAPE_CROSS);
-                //CvInvoke.cvMorphologyEx(srcimage, closed_image, IntPtr.Zero, element, Emgu.CV.CvEnum.CV_MORPH_OP.CV_MOP_OPEN, 1);
-                //closed_image.Save(Path.Combine(intermediatePath, "CDAInput_BinaryClosed.png"));
-                //closed_img = closed_image.ToBitmap();
-                //closed_img = ImageProcessing.ImageUtils.InvertColors(closed_img);
+            //Image<Gray, Byte> closed_image = new Image<Gray, byte>(srcimage.Width, srcimage.Height);
+            //StructuringElementEx element = new StructuringElementEx(3, 3, 1, 1, Emgu.CV.CvEnum.CV_ELEMENT_SHAPE.CV_SHAPE_CROSS);
+            //CvInvoke.cvMorphologyEx(srcimage, closed_image, IntPtr.Zero, element, Emgu.CV.CvEnum.CV_MORPH_OP.CV_MOP_OPEN, 1);
+            //closed_image.Save(Path.Combine(intermediatePath, "CDAInput_BinaryClosed.png"));
+            //closed_img = closed_image.ToBitmap();
+            //closed_img = ImageProcessing.ImageUtils.InvertColors(closed_img);
             //}
             //else
             {
                 closed_img = srcimg;
             }
             //3.Get each CC in CDAInput image with features
-            CCfetcher fetcher = new CCfetcher();
-            List<CCforClassification> CCs = fetcher.GetConnectedComponents(closed_img);
+            var fetcher = new CCfetcher();
+            var CCs = fetcher.GetConnectedComponents(closed_img);
             //4.Classify each CC
-            bool[] classification = ClassifyWorker(CCs, true);
+            var classification = ClassifyWorker(CCs, true);
             //this sum is only for statistics, not really useful
-            int sum = 0;
-            foreach(bool var in classification)
-            {
+            var sum = 0;
+            foreach (var var in classification)
                 if (var) sum++;
-            }
             //5.Get the output
-            bool[,] dst_bool = new bool[srcimg.Height, srcimg.Width];
-            int i = 0;
-            ushort[] labels = fetcher.objectLabels;
-            for(int y = 0; y < srcimg.Height; y++)
-            {
-                for(int x = 0; x < srcimg.Width; x++, i++)
-                {
-                    dst_bool[y, x] = classification[labels[i]];
-                }
-            }
+            var dst_bool = new bool[srcimg.Height, srcimg.Width];
+            var i = 0;
+            var labels = fetcher.objectLabels;
+            for (var y = 0; y < srcimg.Height; y++)
+            for (var x = 0; x < srcimg.Width; x++, i++)
+                dst_bool[y, x] = classification[labels[i]];
             //6.Save the output image
-            Bitmap dstimg = ImageProcessing.ImageUtils.ArrayBool2DToBitmap(dst_bool);
+            var dstimg = ImageUtils.ArrayBool2DToBitmap(dst_bool);
             dstimg.Save(intermediatePath + outputFileName);
         }
 
@@ -95,30 +89,30 @@ namespace Strabo.Core.MachineLearning
         public bool[] ClassifyWorker(List<CCforClassification> CCs, bool loadLocalModel)
         {
             //Initialization
-            bool[] result = new bool[CCs.Count + 1];
+            var result = new bool[CCs.Count + 1];
             result[0] = false;
             SVM svm_classifier = null;
             if (loadLocalModel)
             {
                 svm_classifier = new SVM();
-               // svm_classifier.load(Path.Combine(svmDataPath, "SVM_model.xml")); emgucv 2.9
-                FileStorage fs = new FileStorage(Path.Combine(svmDataPath, "SVM_model.xml"), FileStorage.Mode.Read);
+                // svm_classifier.load(Path.Combine(svmDataPath, "SVM_model.xml")); emgucv 2.9
+                var fs = new FileStorage(Path.Combine(svmDataPath, "SVM_model.xml"), FileStorage.Mode.Read);
                 svm_classifier.Read(fs.GetFirstTopLevelNode());
                 fs.ReleaseAndGetString();
             }
             //else svm_classifier = SVMTrainer(10, true);
             //Classify each CC
-            int counter = 0;
-            for (int i = 0; i < CCs.Count; i++)
+            var counter = 0;
+            for (var i = 0; i < CCs.Count; i++)
             {
                 //Currently only use two features for each CC
-                Matrix<float> feature = new Matrix<float>(1, 2);
+                var feature = new Matrix<float>(1, 2);
                 feature.Data[0, 0] = CCs[i].rectangularity;
                 feature.Data[0, 1] = CCs[i].eccentricity;
                 //Predict the CC is number or not
-                float score = svm_classifier.Predict(feature);
+                var score = svm_classifier.Predict(feature);
                 //If the score is greater than 0.5, classify as true
-                result[i + 1] = (score >= 0.5);
+                result[i + 1] = score >= 0.5;
                 if (score >= 0.5) counter++;
             }
             return result;
@@ -135,31 +129,28 @@ namespace Strabo.Core.MachineLearning
             if (usingsvm)
             {
                 //Load the SVM from disk
-                SVM predictor = new SVM();
+                var predictor = new SVM();
                 //predictor.Load(Path.Combine(svmDataPath, "SVM_model.xml"));//path!
-                FileStorage fs = new FileStorage(Path.Combine(svmDataPath, "SVM_model.xml"), FileStorage.Mode.Read);
+                var fs = new FileStorage(Path.Combine(svmDataPath, "SVM_model.xml"), FileStorage.Mode.Read);
                 predictor.Read(fs.GetRoot());
                 fs.ReleaseAndGetString();
                 //Construct the feature matrix
-                Matrix<float> sample = new Matrix<float>(1, 4);
+                var sample = new Matrix<float>(1, 4);
                 sample.Data[0, 0] = CC.pixelCount;
                 sample.Data[0, 1] = CC.MBRArea;
                 sample.Data[0, 2] = CC.rectangularity;
                 sample.Data[0, 3] = CC.eccentricity;
                 //Do the prediction and return result
-                float result = predictor.Predict(sample);
+                var result = predictor.Predict(sample);
                 if (result < 0.5) return false;
-                else return true;
-            }
-            else
-            {
-                //Naive classification using threshold, not robust
-                if (CC.pixelCount <= 20) return false;
-                if (CC.MBRArea <= 30) return false;
-                if (CC.rectangularity <= 0.25 || CC.rectangularity >= 0.9) return false;
-                if (CC.eccentricity >= 4) return false;
                 return true;
             }
+            //Naive classification using threshold, not robust
+            if (CC.pixelCount <= 20) return false;
+            if (CC.MBRArea <= 30) return false;
+            if (CC.rectangularity <= 0.25 || CC.rectangularity >= 0.9) return false;
+            if (CC.eccentricity >= 4) return false;
+            return true;
         }
 
         /*
@@ -170,40 +161,36 @@ namespace Strabo.Core.MachineLearning
          */
         public SVM SVMTrainer(float C, bool preprocess)
         {
-            string dataPath = svmDataPath;
+            var dataPath = svmDataPath;
             //Do the preprocess
             if (preprocess) SVMTrainingPreprocessor(dataPath);
             //Read the training data in the txt file
-            List<string> feature_lines = new List<string>();
-            using (System.IO.StreamReader feature_file = new System.IO.StreamReader(Path.Combine(dataPath, "features.txt")))
+            var feature_lines = new List<string>();
+            using (var feature_file = new StreamReader(Path.Combine(dataPath, "features.txt")))
             {
                 string line;
                 while ((line = feature_file.ReadLine()) != null)
-                {
                     feature_lines.Add(line);
-                }
             }
             //Get the number of training samples and the dimension of each training sample
-            int trainSampleCount = feature_lines.Count;
-            int dimensions = feature_lines[0].Split().Length - 1;
+            var trainSampleCount = feature_lines.Count;
+            var dimensions = feature_lines[0].Split().Length - 1;
             //Read the features in strings and save in matrices
-            Matrix<float> trainData = new Matrix<float>(trainSampleCount, dimensions);
-            Matrix<int> trainClasses = new Matrix<int>(trainSampleCount, 1);
-            for (int i = 0; i < trainSampleCount; i++)
+            var trainData = new Matrix<float>(trainSampleCount, dimensions);
+            var trainClasses = new Matrix<int>(trainSampleCount, 1);
+            for (var i = 0; i < trainSampleCount; i++)
             {
                 /*
                  * Each line represents a training sample, for each line, the format is:
                  * [feature #1] [feature #2] .. [feature #dimension] [sample class #(1 or 0)]
                  */
-                string[] features = feature_lines[i].Split();
-                for (int j = 0; j < dimensions; j++)
-                {
+                var features = feature_lines[i].Split();
+                for (var j = 0; j < dimensions; j++)
                     trainData.Data[i, j] = float.Parse(features[j]);
-                }
                 trainClasses.Data[i, 0] = int.Parse(features[dimensions]);
             }
             //Initialize the SVM
-            SVM model = new SVM();
+            var model = new SVM();
             //Set the training parameters
             //SVMParams p = new SVMParams();
             //p.KernelType = Emgu.CV.ML.MlEnum.SVM_KERNEL_TYPE.RBF;//No Gaussian???
@@ -218,8 +205,8 @@ namespace Strabo.Core.MachineLearning
             model.C = C;
             model.Gamma = 10;
             //Do the training
-            TrainData td = new TrainData(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainClasses);
-            bool trained = model.TrainAuto(td, 5);
+            var td = new TrainData(trainData, DataLayoutType.RowSample, trainClasses);
+            var trained = model.TrainAuto(td, 5);
 
             //bool trained = model.TrainAuto(trainData, trainClasses, null, null, model.MCvSVMParams, 5);
             Console.WriteLine("SVM training finished!");
@@ -239,65 +226,94 @@ namespace Strabo.Core.MachineLearning
         public void SVMTrainingPreprocessor(string dataPath)
         {
             //Assume dataPath is ..\\SVM_training\\
-            string posDataPath = dataPath + "pos\\";
-            string negDataPath = dataPath + "neg\\";
+            var posDataPath = dataPath + "pos\\";
+            var negDataPath = dataPath + "neg\\";
             string line;
-            List<string> pos_list = new List<string>();
-            List<string> neg_list = new List<string>();
-            System.IO.StreamReader list_file = new System.IO.StreamReader(posDataPath + "pos_list.txt");
-            while((line = list_file.ReadLine()) != null)
-            {
-                pos_list.Add(line);
-            }
-            list_file.Close();
-            list_file = new System.IO.StreamReader(negDataPath + "neg_list.txt");
+            var pos_list = new List<string>();
+            var neg_list = new List<string>();
+            var list_file = new StreamReader(posDataPath + "pos_list.txt");
             while ((line = list_file.ReadLine()) != null)
-            {
+                pos_list.Add(line);
+            list_file.Close();
+            list_file = new StreamReader(negDataPath + "neg_list.txt");
+            while ((line = list_file.ReadLine()) != null)
                 neg_list.Add(line);
-            }
             list_file.Close();
 
-            string featureFilePath = dataPath + "features.txt";
-            using (System.IO.StreamWriter feature_file = new System.IO.StreamWriter(featureFilePath))
-            {            
-                foreach (string filename in pos_list)
+            var featureFilePath = dataPath + "features.txt";
+            using (var feature_file = new StreamWriter(featureFilePath))
+            {
+                foreach (var filename in pos_list)
                 {
-                    Bitmap srcimg = new Bitmap(posDataPath + filename);
-                    srcimg = ImageProcessing.ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
-                    srcimg = ImageProcessing.ImageUtils.InvertColors(srcimg);
-                    CCfetcher fetcher = new CCfetcher();
-                    List<CCforClassification> CCs = fetcher.GetConnectedComponents(srcimg);
-                    for(int j = 0; j < CCs.Count; j++)
-                    {
+                    var srcimg = new Bitmap(posDataPath + filename);
+                    srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
+                    srcimg = ImageUtils.InvertColors(srcimg);
+                    var fetcher = new CCfetcher();
+                    var CCs = fetcher.GetConnectedComponents(srcimg);
+                    for (var j = 0; j < CCs.Count; j++)
                         feature_file.WriteLine(CCs[j] + " 1");
-                    }
                 }
-                foreach (string filename in neg_list)
+                foreach (var filename in neg_list)
                 {
-                    Bitmap srcimg = new Bitmap(negDataPath + filename);
-                    srcimg = ImageProcessing.ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
-                    srcimg = ImageProcessing.ImageUtils.InvertColors(srcimg);
-                    CCfetcher fetcher = new CCfetcher();
-                    List<CCforClassification> CCs = fetcher.GetConnectedComponents(srcimg);
-                    for (int j = 0; j < CCs.Count; j++)
-                    {
+                    var srcimg = new Bitmap(negDataPath + filename);
+                    srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
+                    srcimg = ImageUtils.InvertColors(srcimg);
+                    var fetcher = new CCfetcher();
+                    var CCs = fetcher.GetConnectedComponents(srcimg);
+                    for (var j = 0; j < CCs.Count; j++)
                         feature_file.WriteLine(CCs[j] + " 0");
-                    }
                 }
             }
         }
-        
+
+        //New writen methods, should be in the ImageUtil module
+        //Check if a coordinate is in the bound of image.
+        public static bool CheckInBound(Bitmap src, int y, int x)
+        {
+            return 0 <= x && x < src.Width && 0 <= y && y < src.Height;
+        }
+
+        //Do the image closing for binary image.
+        public static Bitmap BinaryImageClosing(Bitmap src, int radius)
+        {
+            var src_bool = ImageUtils.BitmapToBoolArray2D(src, 0); //what is margin???
+            var after_dilation = new bool[src.Height, src.Width];
+            var after_erosion = new bool[src.Height, src.Width];
+            for (var y = 0; y < src.Height; y++)
+            for (var x = 0; x < src.Width; x++)
+            {
+                after_dilation[y, x] = false;
+                after_erosion[y, x] = true;
+            }
+            for (var y = 0; y < src.Height; y++)
+            for (var x = 0; x < src.Width; x++)
+                if (src_bool[y, x])
+                    for (var j = -radius; j <= radius; j++)
+                    for (var i = -radius; i <= radius; i++)
+                        if (CheckInBound(src, y + j, x + i))
+                            after_dilation[y + j, x + i] = true;
+            for (var y = 0; y < src.Height; y++)
+            for (var x = 0; x < src.Width; x++)
+                if (!after_dilation[y, x])
+                    for (var j = -radius; j <= radius; j++)
+                    for (var i = -radius; i <= radius; i++)
+                        if (CheckInBound(src, y + j, x + i))
+                            after_erosion[y + j, x + i] = true;
+            return ImageUtils.ArrayBool2DToBitmap(after_erosion);
+        }
+
         public class CCforClassification
         {
-            public Rectangle maxBoundingRectangle;
-            public RotatedRect minBoundingRectangle;
+            public float eccentricity;
             public Point massCenter;
-            public int pixelCount = 0;
-            public int pixelId = 0;
+            public Rectangle maxBoundingRectangle;
+            public float MBRArea;
+            public RotatedRect minBoundingRectangle;
             public double orientation = -1;
-            public float MBRArea = 0;
-            public float rectangularity = 0;
-            public float eccentricity = 0;
+            public int pixelCount;
+            public int pixelId;
+            public float rectangularity;
+
             ///Next step:
             ///1.Compute the histogram along length of mbr
             ///2.Try to use other shape descriptors
@@ -323,29 +339,29 @@ namespace Strabo.Core.MachineLearning
             private void Process(Bitmap srcImg)
             {
                 // get source image size
-                int width = srcImg.Width;
-                int height = srcImg.Height;
+                var width = srcImg.Width;
+                var height = srcImg.Height;
                 // allocate labels array
                 objectLabels = new ushort[width * height];
                 // initial labels count
                 ushort labelsCount = 0;
                 // create map
-                int maxObjects = ((width / 2) + 1) * ((height / 2) + 1) + 1;
-                int[] map = new int[maxObjects];
+                var maxObjects = (width / 2 + 1) * (height / 2 + 1) + 1;
+                var map = new int[maxObjects];
                 // initially map all labels to themself
-                for (int i = 0; i < maxObjects; i++)
+                for (var i = 0; i < maxObjects; i++)
                     map[i] = i;
                 // lock source bitmap data
-                BitmapData srcData = srcImg.LockBits(
+                var srcData = srcImg.LockBits(
                     new Rectangle(0, 0, width, height),
                     ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
-                int srcStride = srcData.Stride;
-                int srcOffset = srcStride - width;
+                var srcStride = srcData.Stride;
+                var srcOffset = srcStride - width;
                 // do the job
                 unsafe
                 {
-                    byte* src = (byte*)srcData.Scan0.ToPointer();
-                    int p = 0;
+                    var src = (byte*) srcData.Scan0.ToPointer();
+                    var p = 0;
                     // label the first pixel
                     // 1 - for pixels of the first row
                     if (*src != 0)
@@ -353,30 +369,23 @@ namespace Strabo.Core.MachineLearning
                     ++src;
                     ++p;
                     // label the first row
-                    for (int x = 1; x < width; x++, src++, p++)
-                    {
+                    for (var x = 1; x < width; x++, src++, p++)
                         // check if we need to label current pixel
                         if (*src != 0)
-                        {
-                            // check if the previous pixel already labeled
                             if (src[-1] != 0)
                                 // label current pixel, as the previous
                                 objectLabels[p] = objectLabels[p - 1];
                             else
                                 // create new label
                                 objectLabels[p] = ++labelsCount;
-                        }
-                    }
                     src += srcOffset;
                     // 2 - for other rows
                     // for each row
-                    for (int y = 1; y < height; y++)
+                    for (var y = 1; y < height; y++)
                     {
                         // for the first pixel of the row, we need to check
                         // only upper and upper-right pixels
                         if (*src != 0)
-                        {
-                            // check surrounding pixels
                             if (src[-srcStride] != 0)
                                 // label current pixel, as the above
                                 objectLabels[p] = objectLabels[p - width];
@@ -386,12 +395,10 @@ namespace Strabo.Core.MachineLearning
                             else
                                 // create new label
                                 objectLabels[p] = ++labelsCount;
-                        }
                         ++src;
                         ++p;
                         // check left pixel and three upper pixels
-                        for (int x = 1; x < width - 1; x++, src++, p++)
-                        {
+                        for (var x = 1; x < width - 1; x++, src++, p++)
                             if (*src != 0)
                             {
                                 // check surrounding pixels
@@ -405,23 +412,28 @@ namespace Strabo.Core.MachineLearning
                                     // label current pixel, as the above
                                     objectLabels[p] = objectLabels[p - width];
                                 if (src[1 - srcStride] != 0)
-                                {
                                     if (objectLabels[p] == 0)
                                         // label current pixel, as the above right
+                                    {
                                         objectLabels[p] = objectLabels[p + 1 - width];
+                                    }
                                     else
                                     {
                                         int l1 = objectLabels[p];
                                         int l2 = objectLabels[p + 1 - width];
-                                        if ((l1 != l2) && (map[l1] != map[l2]))
+                                        if (l1 != l2 && map[l1] != map[l2])
                                         {
                                             // merge
                                             if (map[l1] == l1)
                                                 // map left value to the right
+                                            {
                                                 map[l1] = map[l2];
+                                            }
                                             else if (map[l2] == l2)
                                                 // map right value to the left
+                                            {
                                                 map[l2] = map[l1];
+                                            }
                                             else
                                             {
                                                 // both values already mapped
@@ -429,51 +441,32 @@ namespace Strabo.Core.MachineLearning
                                                 map[l1] = map[l2];
                                             }
                                             // reindex
-                                            for (int i = 1; i <= labelsCount; i++)
-                                            {
+                                            for (var i = 1; i <= labelsCount; i++)
                                                 if (map[i] != i)
                                                 {
                                                     // reindex
-                                                    int j = map[i];
+                                                    var j = map[i];
                                                     while (j != map[j])
                                                         j = map[j];
                                                     map[i] = j;
                                                 }
-                                            }
                                         }
                                     }
-                                }
                                 if (objectLabels[p] == 0)
                                     // create new label
                                     objectLabels[p] = ++labelsCount;
                             }
-                        }
                         // for the last pixel of the row, we need to check
                         // only upper and upper-left pixels
                         if (*src != 0)
-                        {
-                            // check surrounding pixels
                             if (src[-1] != 0)
-                            {
-                                // label current pixel, as the left
                                 objectLabels[p] = objectLabels[p - 1];
-                            }
                             else if (src[-1 - srcStride] != 0)
-                            {
-                                // label current pixel, as the above left
                                 objectLabels[p] = objectLabels[p - 1 - width];
-                            }
                             else if (src[-srcStride] != 0)
-                            {
-                                // label current pixel, as the above
                                 objectLabels[p] = objectLabels[p - width];
-                            }
                             else
-                            {
-                                // create new label
                                 objectLabels[p] = ++labelsCount;
-                            }
-                        }
                         ++src;
                         ++p;
                         src += srcOffset;
@@ -482,132 +475,107 @@ namespace Strabo.Core.MachineLearning
                 // unlock source images
                 srcImg.UnlockBits(srcData);
                 // allocate remapping array
-                ushort[] reMap = new ushort[map.Length];
+                var reMap = new ushort[map.Length];
                 // count objects and prepare remapping array
                 objectsCount = 0;
-                for (int i = 1; i <= labelsCount; i++)
-                {
+                for (var i = 1; i <= labelsCount; i++)
                     if (map[i] == i)
-                    {
-                        // increase objects count
                         reMap[i] = ++objectsCount;
-                    }
-                }
                 // second pass to compete remapping
-                for (int i = 1; i <= labelsCount; i++)
-                {
+                for (var i = 1; i <= labelsCount; i++)
                     if (map[i] != i)
-                    {
                         reMap[i] = reMap[map[i]];
-                    }
-                }
                 // repair object labels
                 for (int i = 0, n = objectLabels.Length; i < n; i++)
-                {
                     objectLabels[i] = reMap[objectLabels[i]];
-                }
             }
+
             // Get array of objects rectangles
             public List<CCforClassification> GetConnectedComponents(Bitmap srcImg)
             {
                 Process(srcImg);
-                ushort[] labels = this.objectLabels;
-                int maxLabel = 0;
-                for(int j = 0; j < labels.Length; j++)
-                {
+                var labels = objectLabels;
+                var maxLabel = 0;
+                for (var j = 0; j < labels.Length; j++)
                     if (labels[j] > maxLabel) maxLabel = labels[j];
-                }
-                int count = this.objectsCount;
-                this.objectSize = new int[count + 1];
-                double[] center_x = new double[count + 1];
-                double[] center_y = new double[count + 1];
+                int count = objectsCount;
+                objectSize = new int[count + 1];
+                var center_x = new double[count + 1];
+                var center_y = new double[count + 1];
                 // LBF off for now
                 //LineOfBestFit[] lbf = new LineOfBestFit[count + 1];
                 // image size
-                int width = srcImg.Width;
-                int height = srcImg.Height;
+                var width = srcImg.Width;
+                var height = srcImg.Height;
                 int i = 0, label;
                 // create object coordinates arrays
-                int[] x1 = new int[count + 1];
-                int[] y1 = new int[count + 1];
-                int[] x2 = new int[count + 1];
-                int[] y2 = new int[count + 1];
-                int[] sample_x = new int[count + 1];
-                int[] sample_y = new int[count + 1];
-                for (int j = 1; j <= count; j++)
+                var x1 = new int[count + 1];
+                var y1 = new int[count + 1];
+                var x2 = new int[count + 1];
+                var y2 = new int[count + 1];
+                var sample_x = new int[count + 1];
+                var sample_y = new int[count + 1];
+                for (var j = 1; j <= count; j++)
                 {
                     x1[j] = width;
                     y1[j] = height;
                 }
                 // walk through labels array, skip one row and one col
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
+                for (var x = 0; x < width; x++, i++)
                 {
-                    for (int x = 0; x < width; x++, i++)
-                    {
-                        // get current label
-                        label = labels[i];
-                        // skip unlabeled pixels
-                        if (label == 0)
-                            continue;
-                        this.objectSize[label]++;
-                        // check and update all coordinates
-                        center_x[label] += x;
-                        center_y[label] += y;
-                        sample_x[label] = x; // record the last point as a sample
-                        sample_y[label] = y;
-                        if (x < x1[label])
-                        {
-                            x1[label] = x;
-                        }
-                        if (x > x2[label])
-                        {
-                            x2[label] = x;
-                        }
-                        if (y < y1[label])
-                        {
-                            y1[label] = y;
-                        }
-                        if (y > y2[label])
-                        {
-                            y2[label] = y;
-                        }
-                    }
+                    // get current label
+                    label = labels[i];
+                    // skip unlabeled pixels
+                    if (label == 0)
+                        continue;
+                    objectSize[label]++;
+                    // check and update all coordinates
+                    center_x[label] += x;
+                    center_y[label] += y;
+                    sample_x[label] = x; // record the last point as a sample
+                    sample_y[label] = y;
+                    if (x < x1[label])
+                        x1[label] = x;
+                    if (x > x2[label])
+                        x2[label] = x;
+                    if (y < y1[label])
+                        y1[label] = y;
+                    if (y > y2[label])
+                        y2[label] = y;
                 }
                 //Get the list of pixel locations to calculate minimum bounding rectangles
-                List<PointF[]> positions = new List<PointF[]>();
+                var positions = new List<PointF[]>();
                 //Store the next bias to insert in each list in positions
-                int[] nextPos = new int[count];
-                for (int j = 1; j <= count; j++)
-                {
+                var nextPos = new int[count];
+                for (var j = 1; j <= count; j++)
                     positions.Add(new PointF[objectSize[j]]);
-                }
                 i = 0;
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
+                for (var x = 0; x < width; x++, i++)
                 {
-                    for (int x = 0; x < width; x++, i++)
-                    {
-                        label = labels[i] - 1;//because label starts from 1
-                        if (label == -1) continue;
-                        ///not sure if the label number is always less than count ????
-                        positions[label][nextPos[label]] = new PointF(x, y);
-                        nextPos[label] += 1;
-                    }
+                    label = labels[i] - 1; //because label starts from 1
+                    if (label == -1) continue;
+                    ///not sure if the label number is always less than count ????
+                    positions[label][nextPos[label]] = new PointF(x, y);
+                    nextPos[label] += 1;
                 }
-                List<CCforClassification> CCs = new List<CCforClassification>();
-                for (int j = 1; j <= count; j++)
+                var CCs = new List<CCforClassification>();
+                for (var j = 1; j <= count; j++)
                 {
-                    CCforClassification b = new CCforClassification();
+                    var b = new CCforClassification();
                     b.maxBoundingRectangle = new Rectangle(x1[j], y1[j], x2[j] - x1[j] + 1, y2[j] - y1[j] + 1);
                     //Calculate the minimum bounding rectangles for each CC
                     //from this webpage: http://www.emgu.com/wiki/index.php/Minimum_Area_Rectangle_in_CSharp
                     b.minBoundingRectangle = CvInvoke.MinAreaRect(positions[j - 1]);
-                    b.pixelCount = this.objectSize[j];
-                    b.massCenter = new Point(Convert.ToInt32(center_x[j] / (double)b.pixelCount), Convert.ToInt32(center_y[j] / (double)b.pixelCount));
+                    b.pixelCount = objectSize[j];
+                    b.massCenter = new Point(Convert.ToInt32(center_x[j] / b.pixelCount),
+                        Convert.ToInt32(center_y[j] / b.pixelCount));
                     //b.area = (x2[j] - x1[j] + 1) * (y2[j] - y1[j] + 1);
                     b.MBRArea = b.minBoundingRectangle.Size.Height * b.minBoundingRectangle.Size.Width;
                     b.rectangularity = b.pixelCount / b.MBRArea;
                     b.eccentricity = Math.Max(b.minBoundingRectangle.Size.Height, b.minBoundingRectangle.Size.Width) /
-                        Math.Min(b.minBoundingRectangle.Size.Height, b.minBoundingRectangle.Size.Width);
+                                     Math.Min(b.minBoundingRectangle.Size.Height, b.minBoundingRectangle.Size.Width);
                     b.pixelId = j;
                     if (b.maxBoundingRectangle.Width == 1)
                     {
@@ -621,74 +589,10 @@ namespace Strabo.Core.MachineLearning
                         //b.m = 0;
                         //b.b = y1[j]; // y = 4
                     }
-                    else
-                    {
-                        //   b.orientation = lbf[j].GetOrientation();  
-                        //  b.m = lbf[j].m;
-                        // b.b = lbf[j].b;
-                    }
                     CCs.Add(b);
                 }
                 return CCs;
             }
-        }
-
-        //New writen methods, should be in the ImageUtil module
-        //Check if a coordinate is in the bound of image.
-        public static bool CheckInBound(Bitmap src, int y, int x)
-        {
-            return (0 <= x) && (x < src.Width) && (0 <= y) && (y < src.Height);
-        }
-        
-        //Do the image closing for binary image.
-        public static Bitmap BinaryImageClosing(Bitmap src, int radius)
-        {
-            bool[,] src_bool = ImageProcessing.ImageUtils.BitmapToBoolArray2D(src, 0);//what is margin???
-            bool[,] after_dilation = new bool[src.Height, src.Width];
-            bool[,] after_erosion = new bool[src.Height, src.Width];
-            for (int y = 0; y < src.Height; y++)
-            {
-                for(int x = 0; x < src.Width; x++)
-                {
-                    after_dilation[y, x] = false;
-                    after_erosion[y, x] = true;
-                }
-            }
-            for (int y = 0; y < src.Height; y++)
-            {
-                for (int x = 0; x < src.Width; x++)
-                {
-                    if(src_bool[y, x])
-                    {
-                        for(int j = -radius; j <= radius; j++)
-                        {
-                            for(int i = -radius; i <= radius; i++)
-                            {
-                                if (CheckInBound(src, y + j, x + i))
-                                    after_dilation[y + j, x + i] = true;
-                            }
-                        }
-                    }
-                }
-            }
-            for (int y = 0; y < src.Height; y++)
-            {
-                for (int x = 0; x < src.Width; x++)
-                {
-                    if (!after_dilation[y, x])
-                    {
-                        for (int j = -radius; j <= radius; j++)
-                        {
-                            for (int i = -radius; i <= radius; i++)
-                            {
-                                if (CheckInBound(src, y + j, x + i))
-                                    after_erosion[y + j, x + i] = true;
-                            }
-                        }
-                    }
-                }
-            }
-            return ImageProcessing.ImageUtils.ArrayBool2DToBitmap(after_erosion);
         }
     }
 }

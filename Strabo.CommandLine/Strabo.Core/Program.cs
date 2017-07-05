@@ -1,19 +1,20 @@
-﻿using Strabo.Core.Utility;
-using System;
+﻿using System;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.Worker
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
-        /// The main entry point for the application.
+        ///     The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            if(args.Length != 5)
+            if (args.Length != 5)
             {
-                Console.WriteLine("Input parameter is invalid. Please use \"Strabo.core.exe [input file path & name] [intermediate_folder] [output_folder] [layer] [thread_number]\"");
+                Console.WriteLine(
+                    "Input parameter is invalid. Please use \"Strabo.core.exe [input file path & name] [intermediate_folder] [output_folder] [layer] [thread_number]\"");
                 return;
             }
             try
@@ -21,19 +22,19 @@ namespace Strabo.Core.Worker
                 //BoundingBox bbx = new BoundingBox();
                 //bbx.BBW = args[0];
                 //bbx.BBN = args[1];
-                InputArgs inputArgs = new InputArgs();
+                var inputArgs = new InputArgs();
                 inputArgs.outputFileName = "geojson";
                 //inputArgs.bbx = bbx;
                 inputArgs.intermediatePath = args[1];
                 inputArgs.outputPath = args[2];
                 inputArgs.mapLayerName = args[3];
-                inputArgs.threadNumber = Int32.Parse(args[4]);
+                inputArgs.threadNumber = int.Parse(args[4]);
 
-                CommandLineWorker cmdWorker = new CommandLineWorker();
+                var cmdWorker = new CommandLineWorker();
                 cmdWorker.Apply(inputArgs, args[0]);
                 Log.WriteLine("Strabo process finised.");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Log.WriteLine(e.Message);
                 Log.WriteLine(e.Source);

@@ -20,11 +20,11 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Emgu.CV;
-using Emgu.CV.Structure;
 using System;
 using System.Drawing;
 using System.Linq;
+using Emgu.CV;
+using Emgu.CV.Structure;
 
 namespace Strabo.Core.BoundingBox
 {
@@ -35,113 +35,111 @@ namespace Strabo.Core.BoundingBox
         public MinimumBoundingBox(PointF[] points)
         {
             //from this webpage: http://www.emgu.com/wiki/index.php/Minimum_Area_Rectangle_in_CSharp
-            this.bbx = CvInvoke.MinAreaRect(points);
+            bbx = CvInvoke.MinAreaRect(points);
         }
 
         public MinimumBoundingBox()
         {
         }
 
-        public RotatedRect Bbx()
-        {
-            return this.bbx;
-        }
-
-        public void updateBbx(RotatedRect bbx)
-        {
-            this.bbx = bbx;
-        }
-
         public float area()
         {
-            return this.bbx.Size.Height * this.bbx.Size.Width;
+            return bbx.Size.Height * bbx.Size.Width;
         }
 
         public float returnCalculatedAngle()
         {
             // Return the angle with the longer side
-            if (this.bbx.Size.Height >= this.bbx.Size.Width)
-            {
-                return Math.Abs(this.bbx.Angle) + 90;
-            }
-            else
-            {
-                return Math.Abs(this.bbx.Angle);
-            }
+            if (bbx.Size.Height >= bbx.Size.Width)
+                return Math.Abs(bbx.Angle) + 90;
+            return Math.Abs(bbx.Angle);
         }
 
         public PointF firstVertex()
         {
-            return this.bbx.GetVertices()[0];
+            return bbx.GetVertices()[0];
         }
 
         public float height()
         {
-            return this.bbx.Size.Height;
+            return bbx.Size.Height;
         }
 
         public PointF massCenter()
         {
-            return this.bbx.Center;
+            return bbx.Center;
         }
 
         public float orientation()
         {
-            return this.bbx.Angle;
+            return bbx.Angle;
         }
 
         public PointF[] vertices()
         {
-            return this.bbx.GetVertices();
+            return bbx.GetVertices();
         }
 
         public float width()
         {
-            return this.bbx.Size.Width;
+            return bbx.Size.Width;
         }
 
         public PointF returnExtremeStart()
         {
-            PointF[] rawPoints = vertices();
+            var rawPoints = vertices();
             rawPoints.OrderBy(p => p.X).ThenBy(p => p.Y);
             return rawPoints[0];
         }
 
         public PointF returnExtremeEnd()
         {
-            PointF[] rawPoints = vertices();
+            var rawPoints = vertices();
             rawPoints.OrderBy(p => p.X).ThenBy(p => p.Y);
             return rawPoints[rawPoints.Length - 1];
         }
 
         public float returnExtremeStartX()
         {
-            PointF[] rawPoints = vertices();
+            var rawPoints = vertices();
             rawPoints.OrderBy(p => p.X);
             return rawPoints[0].X;
         }
+
         public float returnExtremeStartY()
         {
-            PointF[] rawPoints = vertices();
+            var rawPoints = vertices();
             rawPoints.OrderBy(p => p.Y);
             return rawPoints[0].Y;
         }
+
         public float returnExtremeEndX()
         {
-            PointF[] rawPoints = vertices();
+            var rawPoints = vertices();
             rawPoints.OrderBy(p => p.X);
             return rawPoints[rawPoints.Length - 1].X;
         }
+
         public float returnExtremeEndY()
         {
-            PointF[] rawPoints = vertices();
+            var rawPoints = vertices();
             rawPoints.OrderBy(p => p.Y);
             return rawPoints[rawPoints.Length - 1].Y;
         }
 
         public PointF returnDiagonalVertex()
         {
-            return this.bbx.GetVertices()[2];
+            return bbx.GetVertices()[2];
+        }
+
+        public RotatedRect Bbx()
+        {
+            return bbx;
+        }
+
+        public void updateBbx(RotatedRect bbx)
+        {
+            this.bbx = bbx;
         }
     }
 }

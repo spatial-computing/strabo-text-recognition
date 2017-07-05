@@ -20,23 +20,23 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Strabo.Core.ImageProcessing;
-using Strabo.Core.Utility;
 using System;
 using System.IO;
+using Strabo.Core.ImageProcessing;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.Worker
 {
     public class TextExtractionWorker : IStraboWorker
     {
-        public TextExtractionWorker()
-        { }
         public string Apply(string inputDir, string interDir, string outputDir, string srcfileName, int threadNumber)
         {
             //Get user parameters
-            RGBThreshold threshold = StraboParameters.rgbThreshold;
-            return Apply(Path.Combine(inputDir, srcfileName), Path.Combine(interDir, Path.GetFileNameWithoutExtension(srcfileName) + "_"), threshold, threadNumber);
+            var threshold = StraboParameters.rgbThreshold;
+            return Apply(Path.Combine(inputDir, srcfileName),
+                Path.Combine(interDir, Path.GetFileNameWithoutExtension(srcfileName) + "_"), threshold, threadNumber);
         }
+
         /// <param name="srcpathfn">Source Image path</param>
         /// <param name="dstpathfn">Output Image path</param>
         /// <param name="intermediatePath">Location containing different versions of the image</param>
@@ -46,11 +46,12 @@ namespace Strabo.Core.Worker
         {
             try
             {
-                dstpathfn = Path.Combine(Path.GetDirectoryName(dstpathfn), Path.GetFileNameWithoutExtension(dstpathfn) + "te.png");
+                dstpathfn = Path.Combine(Path.GetDirectoryName(dstpathfn),
+                    Path.GetFileNameWithoutExtension(dstpathfn) + "te.png");
                 if (threshold.useAutomaticThresholding)
                 {
                     Log.WriteLine("Bradley local thresholding in progress");
-                    BradleyThresholding bt = new BradleyThresholding();
+                    var bt = new BradleyThresholding();
                     bt.Process(srcpathfn, dstpathfn);
                     Log.WriteLine("Bradley local thresholding finished");
                 }
@@ -60,7 +61,7 @@ namespace Strabo.Core.Worker
                     RGBColorThresholding.ApplyRGBColorThresholding(
                         srcpathfn, dstpathfn,
                         threshold, threadNumber
-                        );
+                    );
                     Log.WriteLine("RGB thresholding finished");
                 }
                 return dstpathfn;

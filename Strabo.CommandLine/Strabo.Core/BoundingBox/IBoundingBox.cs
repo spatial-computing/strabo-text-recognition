@@ -24,7 +24,7 @@ using System.Drawing;
 
 namespace Strabo.Core.BoundingBox
 {
-    interface IBoundingBox
+    internal interface IBoundingBox
     {
         // A bounding box will have masscenter, vertices, height, width, startx, starty
 
@@ -48,13 +48,13 @@ namespace Strabo.Core.BoundingBox
         float returnExtremeStartY();
         float returnExtremeEndX();
         float returnExtremeEndY();
+
         PointF returnDiagonalVertex();
+        // and find the angles in range [0, 180]
+        // We will want to have some method that takes care of this transformation
+        // -90/0 means perfectly horizontal/vertical
+        // OpenCv returns orientation ranging from [-90, 0]
 
         // http://stackoverflow.com/questions/15956124/minarearect-angles-unsure-about-the-angle-returned
-        // OpenCv returns orientation ranging from [-90, 0]
-        // -90/0 means perfectly horizontal/vertical
-        // We will want to have some method that takes care of this transformation
-        // and find the angles in range [0, 180]
-
     }
 }

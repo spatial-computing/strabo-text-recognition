@@ -20,17 +20,17 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Strabo.Core.Utility;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.Worker
 {
     /// <summary>
-    /// Read App.Config-> GetMapFromWMS/WMTS/Local -> ColorSegmentation -> ExtractTexLayerFromMapWorker -> TextDetectionWorker -> TextRecognitionWorker
+    ///     Read App.Config-> GetMapFromWMS/WMTS/Local -> ColorSegmentation -> ExtractTexLayerFromMapWorker ->
+    ///     TextDetectionWorker -> TextRecognitionWorker
     /// </summary>
-
     public struct BoundingBox
     {
         public string BBW;
@@ -49,15 +49,13 @@ namespace Strabo.Core.Worker
 
     public class CommandLineWorker
     {
-        public CommandLineWorker() { }
         private void SetFolder(string path)
         {
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-            DirectoryInfo TheFolder = new DirectoryInfo(path);
+            var TheFolder = new DirectoryInfo(path);
             if (TheFolder.GetDirectories() != null)
-                foreach (DirectoryInfo NextDir in TheFolder.GetDirectories())
-                {
+                foreach (var NextDir in TheFolder.GetDirectories())
                     try
                     {
                         Directory.Delete(NextDir.FullName);
@@ -69,16 +67,14 @@ namespace Strabo.Core.Worker
                         //if (errorCode == 32 || errorCode == 33)
                         //    Log.WriteLine("Don't worry. Everything is fine!");
                     }
-                }
             if (TheFolder.GetFiles() != null)
-                foreach (FileInfo NextFile in TheFolder.GetFiles())
-                {
+                foreach (var NextFile in TheFolder.GetFiles())
                     try
                     {
-                        if (!(NextFile.FullName.EndsWith(StraboParameters.sourceMapFileName) || NextFile.FullName.EndsWith("gitkeep") || NextFile.FullName.EndsWith("log.txt") || NextFile.FullName.EndsWith(StraboParameters.sourceMapFileName)))
-                        {
+                        if (!(NextFile.FullName.EndsWith(StraboParameters.sourceMapFileName) ||
+                              NextFile.FullName.EndsWith("gitkeep") || NextFile.FullName.EndsWith("log.txt") ||
+                              NextFile.FullName.EndsWith(StraboParameters.sourceMapFileName)))
                             File.Delete(NextFile.FullName);
-                        }
                     }
                     catch (Exception e)
                     {
@@ -87,15 +83,15 @@ namespace Strabo.Core.Worker
                         if (errorCode == 32 || errorCode == 33)
                             Log.WriteLine("Don't worry. Everything is fine!");
                     }
-                }
         }
+
         public void Apply(InputArgs inputArgs, string path)
         {
-            ColorSegmentationWorker _colorSegmentationWorker = new ColorSegmentationWorker();
-            TextExtractionWorker _textExtractionWorker = new TextExtractionWorker();
-            TextCleaningWorker _textCleaningWorker = new TextCleaningWorker();
-            TextDetectionWorker _textDetectionWorker = new TextDetectionWorker();
-            TextRecognitionWorker _textRecognitionWorker = new TextRecognitionWorker();
+            var _colorSegmentationWorker = new ColorSegmentationWorker();
+            var _textExtractionWorker = new TextExtractionWorker();
+            var _textCleaningWorker = new TextCleaningWorker();
+            var _textDetectionWorker = new TextDetectionWorker();
+            var _textRecognitionWorker = new TextRecognitionWorker();
 
             //set log folders
             Log.SetLogDir(inputArgs.intermediatePath);
@@ -129,13 +125,14 @@ namespace Strabo.Core.Worker
 
             Log.WriteLine("Initialization finished. Folders checked and cleaned.");
 
-            string intermediate_result_pathfn=path;
+            var intermediate_result_pathfn = path;
             if (StraboParameters.numberOfSegmentationColor > 0)
-            {
                 try
                 {
                     Log.WriteLine("ColorSegmentationWorker in progress...");
-                    intermediate_result_pathfn = _colorSegmentationWorker.Apply(Path.GetDirectoryName(path), inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(path), inputArgs.threadNumber);
+                    intermediate_result_pathfn = _colorSegmentationWorker.Apply(Path.GetDirectoryName(path),
+                        inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(path),
+                        inputArgs.threadNumber);
                     Log.WriteLine("ColorSegmentationWorker finished");
                 }
                 catch (Exception e)
@@ -143,12 +140,14 @@ namespace Strabo.Core.Worker
                     Log.WriteLine("ColorSegmentationWorker: " + e.Message);
                     throw;
                 }
-            }
 
             try
             {
                 Log.WriteLine("TextExtractionWorker in progress...");
-                intermediate_result_pathfn = _textExtractionWorker.Apply(Path.GetDirectoryName(intermediate_result_pathfn), inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(intermediate_result_pathfn), inputArgs.threadNumber);
+                intermediate_result_pathfn =
+                    _textExtractionWorker.Apply(Path.GetDirectoryName(intermediate_result_pathfn),
+                        inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(intermediate_result_pathfn),
+                        inputArgs.threadNumber);
                 Log.WriteLine("TextExtractionWorker finished");
             }
             catch (Exception e)
@@ -160,9 +159,11 @@ namespace Strabo.Core.Worker
             try
             {
                 Log.WriteLine("TextDetectionWorker in progress...");
-                intermediate_result_pathfn = _textDetectionWorker.Apply(Path.GetDirectoryName(intermediate_result_pathfn), inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(intermediate_result_pathfn), inputArgs.threadNumber);
+                intermediate_result_pathfn =
+                    _textDetectionWorker.Apply(Path.GetDirectoryName(intermediate_result_pathfn),
+                        inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(intermediate_result_pathfn),
+                        inputArgs.threadNumber);
                 Log.WriteLine("ApplyTextDetection finished");
-
             }
             catch (Exception e)
             {
@@ -174,9 +175,11 @@ namespace Strabo.Core.Worker
             try
             {
                 Log.WriteLine("TextRecognition in progress...");
-                intermediate_result_pathfn = _textRecognitionWorker.Apply(Path.GetDirectoryName(intermediate_result_pathfn) + "\\", inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(path), inputArgs.threadNumber);
+                intermediate_result_pathfn =
+                    _textRecognitionWorker.Apply(Path.GetDirectoryName(intermediate_result_pathfn) + "\\",
+                        inputArgs.intermediatePath, inputArgs.outputPath, Path.GetFileName(path),
+                        inputArgs.threadNumber);
                 Log.WriteLine("TextRecognitionWorker finished");
-
             }
             catch (Exception e)
             {
@@ -184,7 +187,7 @@ namespace Strabo.Core.Worker
                 throw;
             }
 
-            Log.WriteLine("Execution time: " + Log.GetDurationInSeconds().ToString());
+            Log.WriteLine("Execution time: " + Log.GetDurationInSeconds());
         }
     }
 }

@@ -20,159 +20,154 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Strabo.Core.ImageProcessing;
-using Strabo.Core.Utility;
 using System;
 using System.Collections;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using System.Threading;
+using Strabo.Core.ImageProcessing;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.ColorSegmentation
 {
     public class MeanShiftMultiThreads
     {
-        int width;
-        int height;
-        unsafe byte* src;
-        int srcOffset;
-        int srcStride;
-        int rad;
-        int rad2;
-        float radCol;
-        float radCol2;
+        private Hashtable color_table = new Hashtable();
+        private object hashlock = new object();
+        private int height;
+        private int rad;
+        private int rad2;
+        private float radCol;
+        private float radCol2;
 
-        byte[] rgbpixel;
-        int tnum;
-        Hashtable color_table = new Hashtable();
-        object hashlock = new object();
+        private byte[] rgbpixel;
+        private unsafe byte* src;
+        private int srcOffset;
+        private int srcStride;
+        private int tnum;
+        private int width;
 
-        public class RGB
+        ~MeanShiftMultiThreads()
         {
-            public const short B = 0;
-            public const short G = 1;
-            public const short R = 2;
         }
-        public MeanShiftMultiThreads() { }
-        ~MeanShiftMultiThreads() { }
+
         public float[] RGB2YIQ(int pos)
         {
             float Rc = rgbpixel[pos + RGB.R];
             float Gc = rgbpixel[pos + RGB.G];
             float Bc = rgbpixel[pos + RGB.B];
-            float[] yiq = new float[3];
+            var yiq = new float[3];
             yiq[0] = 0.299f * Rc + 0.587f * Gc + 0.114f * Bc; // Y
             yiq[1] = 0.5957f * Rc - 0.2744f * Gc - 0.3212f * Bc; // I
             yiq[2] = 0.2114f * Rc - 0.5226f * Gc + 0.3111f * Bc; // Q
             return yiq;
         }
+
         public void kernel(object step)
         {
             int start_xy, stop_xy;
-            int length = width * height;
-            int one_step = length / tnum;
-            start_xy = (int)step * one_step;
-            stop_xy = ((int)step + 1) * one_step;
-            if ((int)step == tnum - 1) stop_xy = length;
-            int row_counter = 0;
-            for (int y = (int)step; y < height; y += tnum)
-                for (int x = 0; x < width; x++)
+            var length = width * height;
+            var one_step = length / tnum;
+            start_xy = (int) step * one_step;
+            stop_xy = ((int) step + 1) * one_step;
+            if ((int) step == tnum - 1) stop_xy = length;
+            var row_counter = 0;
+            for (var y = (int) step; y < height; y += tnum)
+            for (var x = 0; x < width; x++)
+            {
+                row_counter++;
+                float shift = 0;
+                var iters = 0;
+                var xc = x;
+                var yc = y;
+                int xcOld, ycOld;
+                float YcOld, IcOld, QcOld;
+                var pos = (y * width + x) * 3 + y * srcOffset;
+                var yiq = RGB2YIQ(pos);
+                var Yc = yiq[0];
+                var Ic = yiq[1];
+                var Qc = yiq[2];
+                do
                 {
-                    row_counter++;
-                    float shift = 0;
-                    int iters = 0;
-                    int xc = x;
-                    int yc = y;
-                    int xcOld, ycOld;
-                    float YcOld, IcOld, QcOld;
-                    int pos = (y * width + x) * 3 + y * srcOffset;
-                    float[] yiq = RGB2YIQ(pos);
-                    float Yc = yiq[0];
-                    float Ic = yiq[1];
-                    float Qc = yiq[2];
-                    do
+                    xcOld = xc;
+                    ycOld = yc;
+                    YcOld = Yc;
+                    IcOld = Ic;
+                    QcOld = Qc;
+
+                    float mx = 0;
+                    float my = 0;
+                    float mY = 0;
+                    float mI = 0;
+                    float mQ = 0;
+                    var num = 0;
+
+                    for (var ry = -rad; ry <= rad; ry++)
                     {
-                        xcOld = xc;
-                        ycOld = yc;
-                        YcOld = Yc;
-                        IcOld = Ic;
-                        QcOld = Qc;
-
-                        float mx = 0;
-                        float my = 0;
-                        float mY = 0;
-                        float mI = 0;
-                        float mQ = 0;
-                        int num = 0;
-
-                        for (int ry = -rad; ry <= rad; ry++)
-                        {
-                            int y2 = yc + ry;
-                            if (y2 >= 0 && y2 < height)
+                        var y2 = yc + ry;
+                        if (y2 >= 0 && y2 < height)
+                            for (var rx = -rad; rx <= rad; rx++)
                             {
-                                for (int rx = -rad; rx <= rad; rx++)
-                                {
-                                    int x2 = xc + rx;
-                                    if (x2 >= 0 && x2 < width)
+                                var x2 = xc + rx;
+                                if (x2 >= 0 && x2 < width)
+                                    if (ry * ry + rx * rx <= rad2)
                                     {
-                                        if (ry * ry + rx * rx <= rad2)
+                                        yiq = RGB2YIQ(y2 * srcStride + x2 * 3);
+                                        var Y2 = yiq[0];
+                                        var I2 = yiq[1];
+                                        var Q2 = yiq[2];
+
+                                        var dY = Yc - Y2;
+                                        var dI = Ic - I2;
+                                        var dQ = Qc - Q2;
+
+                                        if (dY * dY + dI * dI + dQ * dQ <= radCol2)
                                         {
-                                            yiq = RGB2YIQ(y2 * srcStride + x2 * 3);
-                                            float Y2 = yiq[0];
-                                            float I2 = yiq[1];
-                                            float Q2 = yiq[2];
-
-                                            float dY = Yc - Y2;
-                                            float dI = Ic - I2;
-                                            float dQ = Qc - Q2;
-
-                                            if (dY * dY + dI * dI + dQ * dQ <= radCol2)
-                                            {
-                                                mx += x2;
-                                                my += y2;
-                                                mY += Y2;
-                                                mI += I2;
-                                                mQ += Q2;
-                                                num++;
-                                            }
+                                            mx += x2;
+                                            my += y2;
+                                            mY += Y2;
+                                            mI += I2;
+                                            mQ += Q2;
+                                            num++;
                                         }
                                     }
-                                }
                             }
-                        }
-                        float num_ = 1f / num;
-                        Yc = mY * num_;
-                        Ic = mI * num_;
-                        Qc = mQ * num_;
-                        xc = (int)(mx * num_ + 0.5);
-                        yc = (int)(my * num_ + 0.5);
-                        int dx = xc - xcOld;
-                        int dy = yc - ycOld;
-                        float dY2 = Yc - YcOld;
-                        float dI2 = Ic - IcOld;
-                        float dQ2 = Qc - QcOld;
-
-                        shift = dx * dx + dy * dy + dY2 * dY2 + dI2 * dI2 + dQ2 * dQ2;
-                        iters++;
                     }
-                    while (shift > 3 && iters < 100);
+                    var num_ = 1f / num;
+                    Yc = mY * num_;
+                    Ic = mI * num_;
+                    Qc = mQ * num_;
+                    xc = (int) (mx * num_ + 0.5);
+                    yc = (int) (my * num_ + 0.5);
+                    var dx = xc - xcOld;
+                    var dy = yc - ycOld;
+                    var dY2 = Yc - YcOld;
+                    var dI2 = Ic - IcOld;
+                    var dQ2 = Qc - QcOld;
 
-                    int pos2 = pos;
-                    unsafe
-                    {
-                        src[pos2 + RGB.R] = (byte)(Yc + 0.9563f * Ic + 0.6210f * Qc);
-                        src[pos2 + RGB.G] = (byte)(Yc - 0.2721f * Ic - 0.6473f * Qc);
-                        src[pos2 + RGB.B] = (byte)(Yc - 1.1070f * Ic + 1.7046f * Qc);
-                    }
+                    shift = dx * dx + dy * dy + dY2 * dY2 + dI2 * dI2 + dQ2 * dQ2;
+                    iters++;
+                } while (shift > 3 && iters < 100);
+
+                var pos2 = pos;
+                unsafe
+                {
+                    src[pos2 + RGB.R] = (byte) (Yc + 0.9563f * Ic + 0.6210f * Qc);
+                    src[pos2 + RGB.G] = (byte) (Yc - 0.2721f * Ic - 0.6473f * Qc);
+                    src[pos2 + RGB.B] = (byte) (Yc - 1.1070f * Ic + 1.7046f * Qc);
                 }
+            }
         }
+
         public string ApplyYIQMT(string srcpathfn, int tnum, int spatial_distance, int color_distance, string dstpathfn)
         {
-            using (Bitmap srcimg = new Bitmap(srcpathfn))
-            { 
+            using (var srcimg = new Bitmap(srcpathfn))
+            {
                 return ApplyYIQMT(srcimg, tnum, spatial_distance, color_distance, dstpathfn);
             }
         }
+
         public string ApplyYIQMT(Bitmap srcimg, int tnum, int spatial_distance, int color_distance, string outImagePath)
         {
             try
@@ -182,24 +177,24 @@ namespace Strabo.Core.ColorSegmentation
                 height = srcimg.Height;
                 srcimg = ImageUtils.AnyToFormat24bppRgb(srcimg);
                 BitmapToArray1DRGB(srcimg);
-                BitmapData srcData = srcimg.LockBits(
-                                new Rectangle(0, 0, width, height),
-                                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+                var srcData = srcimg.LockBits(
+                    new Rectangle(0, 0, width, height),
+                    ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
                 unsafe
                 {
-                    src = (byte*)srcData.Scan0.ToPointer();
+                    src = (byte*) srcData.Scan0.ToPointer();
                 }
                 rad = spatial_distance;
                 rad2 = rad * rad;
-                radCol = (float)(color_distance + 1);
+                radCol = color_distance + 1;
                 radCol2 = radCol * radCol;
-                Thread[] thread_array = new Thread[tnum];
-                for (int i = 0; i < tnum; i++)
+                var thread_array = new Thread[tnum];
+                for (var i = 0; i < tnum; i++)
                 {
-                    thread_array[i] = new Thread(new ParameterizedThreadStart(kernel));
+                    thread_array[i] = new Thread(kernel);
                     thread_array[i].Start(i);
                 }
-                for (int i = 0; i < tnum; i++)
+                for (var i = 0; i < tnum; i++)
                     thread_array[i].Join();
                 srcimg.UnlockBits(srcData);
                 srcimg.Save(outImagePath, ImageFormat.Png);
@@ -213,22 +208,30 @@ namespace Strabo.Core.ColorSegmentation
             }
             return outImagePath;
         }
+
         public void BitmapToArray1DRGB(Bitmap srcimg)
         {
-            BitmapData srcData = srcimg.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
+            var srcData = srcimg.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
                 PixelFormat.Format24bppRgb);
 
             // Get the address of the first line.
-            IntPtr ptr = srcData.Scan0;
+            var ptr = srcData.Scan0;
             srcStride = srcData.Stride;
             srcOffset = srcData.Stride - width * 3;
             // Declare an array to hold the bytes of the bitmap.
-            int bytes = srcStride * height;
+            var bytes = srcStride * height;
             rgbpixel = new byte[bytes];
 
             // Copy the RGB values into the array.
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbpixel, 0, bytes);
+            Marshal.Copy(ptr, rgbpixel, 0, bytes);
             srcimg.UnlockBits(srcData);
+        }
+
+        public class RGB
+        {
+            public const short B = 0;
+            public const short G = 1;
+            public const short R = 2;
         }
     }
 }

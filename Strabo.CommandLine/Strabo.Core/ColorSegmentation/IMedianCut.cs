@@ -20,12 +20,10 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using System;
-
 namespace Strabo.Core.ColorSegmentation
 {
     public interface IMedianCut
     {
-        bool Process(String srcpathfn, String dstpathfn, int color_number);
+        bool Process(string srcpathfn, string dstpathfn, int color_number);
     }
 }

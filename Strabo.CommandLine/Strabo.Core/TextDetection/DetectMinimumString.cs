@@ -20,28 +20,21 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using Emgu.CV;
-using Emgu.CV.Structure;
-using Strabo.Core.BoundingBox;
-using Strabo.Core.ImageProcessing;
-using Strabo.Core.TextDetection;
-using Strabo.Core.Utility;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Strabo.Core.ImageProcessing;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.TextDetection
 {
     public class DetectMinimumStrings
     {
-        int width, height;
-        int min_width = StraboParameters.bbxMinWidth;
-        int min_height = StraboParameters.bbxMinHeight;
-        int max_width = StraboParameters.bbxMaxWidth;
-        int max_height = StraboParameters.bbxMaxHeight;
-
-        public DetectMinimumStrings() { }
+        private readonly int max_height = StraboParameters.bbxMaxHeight;
+        private readonly int max_width = StraboParameters.bbxMaxWidth;
+        private readonly int min_height = StraboParameters.bbxMinHeight;
+        private readonly int min_width = StraboParameters.bbxMinWidth;
+        private int width, height;
 
         public List<TextString> Apply(Bitmap srcimg, Bitmap cleanimg, Bitmap dilatedimg)
         {
@@ -49,59 +42,50 @@ namespace Strabo.Core.TextDetection
             height = cleanimg.Height;
 
             // Get string labels of the cleaned image
-            MyConnectedComponentsAnalysisFGFast.MyBlobCounter char_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
-            List<MyConnectedComponentsAnalysisFGFast.MyBlob> char_blobs = char_bc.GetBlobs(cleanimg, 0);
-            ushort[] char_labels = char_bc.objectLabels;
+            var char_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
+            var char_blobs = char_bc.GetBlobs(cleanimg, 0);
+            var char_labels = char_bc.objectLabels;
 
             // Get string labels of the dilated image
-            MyConnectedComponentsAnalysisFGFast.MyBlobCounter string_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
-            List<MyConnectedComponentsAnalysisFGFast.MyBlob> string_blobs = string_bc.GetBlobs(dilatedimg, 0);
-            ushort[] string_labels = string_bc.objectLabels;
+            var string_bc = new MyConnectedComponentsAnalysisFGFast.MyBlobCounter();
+            var string_blobs = string_bc.GetBlobs(dilatedimg, 0);
+            var string_labels = string_bc.objectLabels;
 
-            List<TextString> initial_string_list = new List<TextString>();
-            HashSet<ushort> dict = new HashSet<ushort>();
+            var initial_string_list = new List<TextString>();
+            var dict = new HashSet<ushort>();
 
-            for (int x = 0; x < width; x++)
-                for (int y = 0; y < height; y++)
-                    {
-                        dict.Add(char_labels[y * width + x]);
-                        //Console.WriteLine(char_labels[y * width + x]);
-                    }
+            for (var x = 0; x < width; x++)
+            for (var y = 0; y < height; y++)
+                dict.Add(char_labels[y * width + x]);
+            //Console.WriteLine(char_labels[y * width + x]);
 
             // Dilated Image
-            for (int i = 0; i < string_blobs.Count; i++)
+            for (var i = 0; i < string_blobs.Count; i++)
             {
                 initial_string_list.Add(new TextString());
                 initial_string_list.Last().mass_center = string_blobs[i].bbx.massCenter();
             }
 
             // Source Image
-            for (int i = 0; i < char_blobs.Count; i++)
-            {
+            for (var i = 0; i < char_blobs.Count; i++)
                 if (char_blobs[i].bbx.width() > 1 && char_blobs[i].bbx.height() > 1)
                 {
-                    char_blobs[i].string_id = string_labels[char_blobs[i].sample_y * width + char_blobs[i].sample_x] - 1;
+                    char_blobs[i].string_id = string_labels[char_blobs[i].sample_y * width + char_blobs[i].sample_x] -
+                                              1;
                     if (char_blobs[i].string_id > -1)
                         initial_string_list[char_blobs[i].string_id].AddChar(char_blobs[i]);
                 }
-            }
 
-            for (int i = 0; i < initial_string_list.Count; i++)
-            {
+            for (var i = 0; i < initial_string_list.Count; i++)
                 if (
-                    (initial_string_list[i].char_list.Count == 0) ||
-                    (initial_string_list[i].bbx.width() < min_width ||
-                      initial_string_list[i].bbx.height() < min_height
-                    ) ||
-                    (initial_string_list[i].bbx.width() > max_width ||
-                      initial_string_list[i].bbx.height() > max_height
-                    )
-                   )
+                    initial_string_list[i].char_list.Count == 0 || initial_string_list[i].bbx.width() < min_width ||
+                    initial_string_list[i].bbx.height() < min_height ||
+                    initial_string_list[i].bbx.width() > max_width || initial_string_list[i].bbx.height() > max_height
+                )
                 {
                     initial_string_list.RemoveAt(i);
                     i--;
                 }
-            }
             return initial_string_list;
         }
     }

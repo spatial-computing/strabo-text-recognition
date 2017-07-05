@@ -20,54 +20,56 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
 namespace Strabo.Core.ImageProcessing
 {
     /// <summary>
-    /// Narges
+    ///     Narges
     /// </summary>
     public class ImageStitcher
     {
-        public int cell_width=-1, cell_height=-1;
+        public int cell_width = -1, cell_height = -1;
         public int cols, rows;
-        public ImageStitcher() { }
+
         public Bitmap ExpandCanvas(Bitmap srcimg, int size)
         {
-            Bitmap string_img = new Bitmap(srcimg.Width + size*2, srcimg.Height + size*2);
-            Graphics g = Graphics.FromImage(string_img);
+            var string_img = new Bitmap(srcimg.Width + size * 2, srcimg.Height + size * 2);
+            var g = Graphics.FromImage(string_img);
             g.Clear(Color.White);
             g.DrawImage(srcimg, new Point(size, size));
             g.Dispose();
             return string_img;
         }
 
-        public Bitmap mergeContiguousImageBlocks(List<Bitmap> srcImgs, 
+        public Bitmap mergeContiguousImageBlocks(List<Bitmap> srcImgs,
             int row, int col)
         {
             // Assume all the sub-images will have similar dimensions
             // Width = (width of 1 image) * (number of columns)
             // Height = (height of 1 image) * (number of rows)
-            int imgWidth = srcImgs[0].Width * col;
-            int imgHeight = srcImgs[0].Height * row;
-            Bitmap stichedImage = new Bitmap(imgWidth, imgHeight);
+            var imgWidth = srcImgs[0].Width * col;
+            var imgHeight = srcImgs[0].Height * row;
+            var stichedImage = new Bitmap(imgWidth, imgHeight);
 
             try
             {
-                using (Graphics g = Graphics.FromImage(stichedImage))
+                using (var g = Graphics.FromImage(stichedImage))
                 {
                     g.Clear(Color.White);
-                    int row_offset = 0;
-                    for (int r = 0; r < row; r++)
+                    var row_offset = 0;
+                    for (var r = 0; r < row; r++)
                     {
-                        int col_offset = 0;
-                        for (int c = 0; c < col; c++)
+                        var col_offset = 0;
+                        for (var c = 0; c < col; c++)
                         {
-                            int idx = r * col + c;
+                            var idx = r * col + c;
                             if (idx >= srcImgs.Count)
                                 continue;
-                            g.DrawImage(srcImgs[idx], new Rectangle(col_offset, row_offset, srcImgs[idx].Width, srcImgs[idx].Height));
+                            g.DrawImage(srcImgs[idx],
+                                new Rectangle(col_offset, row_offset, srcImgs[idx].Width, srcImgs[idx].Height));
                             // g.DrawImage(srcImgs[idx], col_offset, row_offset);
                             col_offset += srcImgs[c].Width;
                         }
@@ -76,26 +78,23 @@ namespace Strabo.Core.ImageProcessing
                     return stichedImage;
                 }
             }
-            catch(System.Exception)
+            catch (Exception)
             {
-                if(stichedImage != null)
-                {
+                if (stichedImage != null)
                     stichedImage.Dispose();
-                }
                 throw;
             }
             finally
             {
                 // Cleanup memory
-                foreach(Bitmap img in srcImgs)
-                {
+                foreach (var img in srcImgs)
                     img.Dispose();
-                }
             }
         }
+
         public Bitmap ApplyWithoutGridLines(List<Bitmap> srcimg_list, int max_width)
         {
-            for (int i = 0; i < srcimg_list.Count; i++)
+            for (var i = 0; i < srcimg_list.Count; i++)
             {
                 if (cell_height < srcimg_list[i].Height)
                     cell_height = srcimg_list[i].Height;
@@ -108,32 +107,33 @@ namespace Strabo.Core.ImageProcessing
 
             cols = max_width / cell_width;
             rows = srcimg_list.Count / cols + 1;
-            int image_width = cols * cell_width;
-            int image_height = rows * cell_height;
-            Bitmap string_img = new Bitmap(image_width, image_height);
-            Graphics g = Graphics.FromImage(string_img);
+            var image_width = cols * cell_width;
+            var image_height = rows * cell_height;
+            var string_img = new Bitmap(image_width, image_height);
+            var g = Graphics.FromImage(string_img);
             g.Clear(Color.White);
-         
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                {
-                    int idx = r * cols + c;
-                    if (idx >= srcimg_list.Count) continue;
-                    int margin = 4;
-                    int w = cell_width - srcimg_list[idx].Width - margin;
-                    w /= 2;
-                    int h = cell_height - srcimg_list[idx].Height - margin;
-                    h /= 2;
 
-                    g.DrawImage(srcimg_list[idx],
-                        new Point(c * cell_width + w, r * cell_height + h));
-                }
+            for (var r = 0; r < rows; r++)
+            for (var c = 0; c < cols; c++)
+            {
+                var idx = r * cols + c;
+                if (idx >= srcimg_list.Count) continue;
+                var margin = 4;
+                var w = cell_width - srcimg_list[idx].Width - margin;
+                w /= 2;
+                var h = cell_height - srcimg_list[idx].Height - margin;
+                h /= 2;
+
+                g.DrawImage(srcimg_list[idx],
+                    new Point(c * cell_width + w, r * cell_height + h));
+            }
             g.Dispose();
             return string_img;
         }
+
         public Bitmap Apply(List<Bitmap> srcimg_list, int max_width)
         {
-            for (int i = 0; i < srcimg_list.Count; i++)
+            for (var i = 0; i < srcimg_list.Count; i++)
             {
                 if (cell_height < srcimg_list[i].Height)
                     cell_height = srcimg_list[i].Height;
@@ -146,36 +146,38 @@ namespace Strabo.Core.ImageProcessing
 
             cols = max_width / cell_width;
             rows = srcimg_list.Count / cols + 1;
-            int image_width = cols * cell_width;
-            int image_height = rows * cell_height;
-            Bitmap string_img = new Bitmap(image_width, image_height);
-            Graphics g = Graphics.FromImage(string_img);
+            var image_width = cols * cell_width;
+            var image_height = rows * cell_height;
+            var string_img = new Bitmap(image_width, image_height);
+            var g = Graphics.FromImage(string_img);
             g.Clear(Color.White);
-            for (int r = 0; r < rows; r++)
-                g.DrawLine(new Pen(Color.Black, 3), new Point(0, r * cell_height), new Point(image_width, r * cell_height));
-            for (int c = 0; c < cols; c++)
+            for (var r = 0; r < rows; r++)
+                g.DrawLine(new Pen(Color.Black, 3), new Point(0, r * cell_height),
+                    new Point(image_width, r * cell_height));
+            for (var c = 0; c < cols; c++)
                 g.DrawLine(new Pen(Color.Black), new Point(c * cell_width, 0), new Point(c * cell_width, image_height));
 
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                {
-                    int idx = r * cols + c;
-                    if (idx >= srcimg_list.Count) continue;
-                    int margin = 4;
-                    int w = cell_width - srcimg_list[idx].Width - margin;
-                    w /= 2;
-                    int h = cell_height - srcimg_list[idx].Height - margin;
-                    h /= 2;
+            for (var r = 0; r < rows; r++)
+            for (var c = 0; c < cols; c++)
+            {
+                var idx = r * cols + c;
+                if (idx >= srcimg_list.Count) continue;
+                var margin = 4;
+                var w = cell_width - srcimg_list[idx].Width - margin;
+                w /= 2;
+                var h = cell_height - srcimg_list[idx].Height - margin;
+                h /= 2;
 
-                    g.DrawImage(srcimg_list[idx],
-                        new Point(c * cell_width + w, r * cell_height + h));
-                }
+                g.DrawImage(srcimg_list[idx],
+                    new Point(c * cell_width + w, r * cell_height + h));
+            }
             g.Dispose();
             return string_img;
         }
+
         public Bitmap ApplyAtLeastTwoRows(List<Bitmap> srcimg_list, int max_width)
         {
-            for (int i = 0; i < srcimg_list.Count; i++)
+            for (var i = 0; i < srcimg_list.Count; i++)
             {
                 if (cell_height < srcimg_list[i].Height)
                     cell_height = srcimg_list[i].Height;
@@ -186,32 +188,33 @@ namespace Strabo.Core.ImageProcessing
             cell_width += 50;
             cell_height += 50;
 
-            cols = srcimg_list.Count+1;// max_width / cell_width;
-            rows = 2;// srcimg_list.Count / cols + 1;
-            int image_width = cols * cell_width;
-            int image_height = rows * cell_height;
-            Bitmap string_img = new Bitmap(image_width, image_height);
-            Graphics g = Graphics.FromImage(string_img);
+            cols = srcimg_list.Count + 1; // max_width / cell_width;
+            rows = 2; // srcimg_list.Count / cols + 1;
+            var image_width = cols * cell_width;
+            var image_height = rows * cell_height;
+            var string_img = new Bitmap(image_width, image_height);
+            var g = Graphics.FromImage(string_img);
             g.Clear(Color.White);
-            for (int r = 0; r < rows; r++)
-                g.DrawLine(new Pen(Color.Black,3), new Point(0, r * cell_height), new Point(image_width, r * cell_height));
-            for (int c = 0; c < cols; c++)
+            for (var r = 0; r < rows; r++)
+                g.DrawLine(new Pen(Color.Black, 3), new Point(0, r * cell_height),
+                    new Point(image_width, r * cell_height));
+            for (var c = 0; c < cols; c++)
                 g.DrawLine(new Pen(Color.Black), new Point(c * cell_width, 0), new Point(c * cell_width, image_height));
-            g.DrawRectangle(new Pen(Color.Black,3), new Rectangle(0,0,image_width,image_height));
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                {
-                    int idx = r * cols + c;
-                    if (idx >= srcimg_list.Count) continue;
-                    int margin = 30;
-                    int w = cell_width - srcimg_list[idx].Width - margin;
-                    w /= 2;
-                    int h = cell_height - srcimg_list[idx].Height - margin;
-                    h /= 2;
+            g.DrawRectangle(new Pen(Color.Black, 3), new Rectangle(0, 0, image_width, image_height));
+            for (var r = 0; r < rows; r++)
+            for (var c = 0; c < cols; c++)
+            {
+                var idx = r * cols + c;
+                if (idx >= srcimg_list.Count) continue;
+                var margin = 30;
+                var w = cell_width - srcimg_list[idx].Width - margin;
+                w /= 2;
+                var h = cell_height - srcimg_list[idx].Height - margin;
+                h /= 2;
 
-                    g.DrawImage(srcimg_list[idx],
-                        new Point(c * cell_width + w, r * cell_height + h));
-                }
+                g.DrawImage(srcimg_list[idx],
+                    new Point(c * cell_width + w, r * cell_height + h));
+            }
             g.Dispose();
             return string_img;
         }

@@ -20,20 +20,19 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
-using AForge.Imaging.ColorReduction;
-using System;
 using System.Drawing;
 using System.IO;
+using AForge.Imaging.ColorReduction;
 
 namespace Strabo.Core.ColorSegmentation
 {
-    public class AForgeMedianCut : IMedianCut 
+    public class AForgeMedianCut : IMedianCut
     {
-        public bool Process(String srcpathfn, String dstpathfn, int color_number)
+        public bool Process(string srcpathfn, string dstpathfn, int color_number)
         {
-            using (Bitmap msimg = new Bitmap(srcpathfn))
+            using (var msimg = new Bitmap(srcpathfn))
             {
-                ColorImageQuantizer ciq = new ColorImageQuantizer(new MedianCutQuantizer());
+                var ciq = new ColorImageQuantizer(new MedianCutQuantizer());
                 ciq.ReduceColors(msimg, color_number).Save(dstpathfn);
             }
             return File.Exists(dstpathfn);
