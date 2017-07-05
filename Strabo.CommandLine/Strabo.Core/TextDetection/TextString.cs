@@ -123,14 +123,14 @@ namespace Strabo.Core.TextDetection
                 // Create a bounding box using those points
                 // Update the bounding box using this newlyx created IBoundingBox
 
-                MCvBox2D toBeMergedBbx = _bbx.Bbx();
-                MCvBox2D toMergeBbx = char_blob.bbx.Bbx();
+                RotatedRect toBeMergedBbx = _bbx.Bbx();
+                RotatedRect toMergeBbx = char_blob.bbx.Bbx();
                 PointF[] toBeMergedBbxVertex = toBeMergedBbx.GetVertices();
                 PointF[] toMergeBbxVertex = toMergeBbx.GetVertices();
                 PointF[] points = toBeMergedBbxVertex.Concat(toMergeBbxVertex).ToArray();
 
                 ///from this webpage: http://www.emgu.com/wiki/index.php/Minimum_Area_Rectangle_in_CSharp
-                _bbx.updateBbx(PointCollection.MinAreaRect(points));
+                _bbx.updateBbx(CvInvoke.MinAreaRect(points));
             }
         }
 

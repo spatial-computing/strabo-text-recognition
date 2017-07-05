@@ -31,7 +31,7 @@ using System.IO;
 
 namespace Strabo.Core.MachineLearning
 {
-    class ConnectedComponentClassifier
+    public class ConnectedComponentClassifier
     {
         public static string svmDataPath = @".\SVM_training\";
 
@@ -46,16 +46,16 @@ namespace Strabo.Core.MachineLearning
             srcimg = ImageProcessing.ImageUtils.InvertColors(srcimg);
             //2.Do open or close operation here
             Bitmap closed_img = null;
-            if (open)
-            {
-                Image<Gray, Byte> closed_image = new Image<Gray, byte>(srcimage.Width, srcimage.Height);
-                StructuringElementEx element = new StructuringElementEx(3, 3, 1, 1, Emgu.CV.CvEnum.CV_ELEMENT_SHAPE.CV_SHAPE_CROSS);
-                CvInvoke.cvMorphologyEx(srcimage, closed_image, IntPtr.Zero, element, Emgu.CV.CvEnum.CV_MORPH_OP.CV_MOP_OPEN, 1);
-                closed_image.Save(Path.Combine(intermediatePath, "CDAInput_BinaryClosed.png"));
-                closed_img = closed_image.ToBitmap();
-                closed_img = ImageProcessing.ImageUtils.InvertColors(closed_img);
-            }
-            else
+            //if (open)
+            //{
+                //Image<Gray, Byte> closed_image = new Image<Gray, byte>(srcimage.Width, srcimage.Height);
+                //StructuringElementEx element = new StructuringElementEx(3, 3, 1, 1, Emgu.CV.CvEnum.CV_ELEMENT_SHAPE.CV_SHAPE_CROSS);
+                //CvInvoke.cvMorphologyEx(srcimage, closed_image, IntPtr.Zero, element, Emgu.CV.CvEnum.CV_MORPH_OP.CV_MOP_OPEN, 1);
+                //closed_image.Save(Path.Combine(intermediatePath, "CDAInput_BinaryClosed.png"));
+                //closed_img = closed_image.ToBitmap();
+                //closed_img = ImageProcessing.ImageUtils.InvertColors(closed_img);
+            //}
+            //else
             {
                 closed_img = srcimg;
             }
@@ -101,9 +101,12 @@ namespace Strabo.Core.MachineLearning
             if (loadLocalModel)
             {
                 svm_classifier = new SVM();
-                svm_classifier.Load(Path.Combine(svmDataPath, "SVM_model.xml"));
+               // svm_classifier.load(Path.Combine(svmDataPath, "SVM_model.xml")); emgucv 2.9
+                FileStorage fs = new FileStorage(Path.Combine(svmDataPath, "SVM_model.xml"), FileStorage.Mode.Read);
+                svm_classifier.Read(fs.GetFirstTopLevelNode());
+                fs.ReleaseAndGetString();
             }
-            else svm_classifier = SVMTrainer(10, true);
+            //else svm_classifier = SVMTrainer(10, true);
             //Classify each CC
             int counter = 0;
             for (int i = 0; i < CCs.Count; i++)
@@ -133,7 +136,10 @@ namespace Strabo.Core.MachineLearning
             {
                 //Load the SVM from disk
                 SVM predictor = new SVM();
-                predictor.Load(Path.Combine(svmDataPath, "SVM_model.xml"));//path!
+                //predictor.Load(Path.Combine(svmDataPath, "SVM_model.xml"));//path!
+                FileStorage fs = new FileStorage(Path.Combine(svmDataPath, "SVM_model.xml"), FileStorage.Mode.Read);
+                predictor.Read(fs.GetRoot());
+                fs.ReleaseAndGetString();
                 //Construct the feature matrix
                 Matrix<float> sample = new Matrix<float>(1, 4);
                 sample.Data[0, 0] = CC.pixelCount;
@@ -182,7 +188,7 @@ namespace Strabo.Core.MachineLearning
             int dimensions = feature_lines[0].Split().Length - 1;
             //Read the features in strings and save in matrices
             Matrix<float> trainData = new Matrix<float>(trainSampleCount, dimensions);
-            Matrix<float> trainClasses = new Matrix<float>(trainSampleCount, 1);
+            Matrix<int> trainClasses = new Matrix<int>(trainSampleCount, 1);
             for (int i = 0; i < trainSampleCount; i++)
             {
                 /*
@@ -194,23 +200,31 @@ namespace Strabo.Core.MachineLearning
                 {
                     trainData.Data[i, j] = float.Parse(features[j]);
                 }
-                trainClasses.Data[i, 0] = float.Parse(features[dimensions]);
+                trainClasses.Data[i, 0] = int.Parse(features[dimensions]);
             }
             //Initialize the SVM
             SVM model = new SVM();
             //Set the training parameters
-            SVMParams p = new SVMParams();
-            p.KernelType = Emgu.CV.ML.MlEnum.SVM_KERNEL_TYPE.RBF;//No Gaussian???
-            p.SVMType = Emgu.CV.ML.MlEnum.SVM_TYPE.C_SVC;
-            p.C = C;
-            p.Gamma = 10;
-            p.TermCrit = new MCvTermCriteria(300, 0.001);
+            //SVMParams p = new SVMParams();
+            //p.KernelType = Emgu.CV.ML.MlEnum.SVM_KERNEL_TYPE.RBF;//No Gaussian???
+            //p.SVMType = Emgu.CV.ML.MlEnum.SVM_TYPE.C_SVC;
+            //p.C = C;
+            //p.Gamma = 10;
+            //p.TermCrit = new MCvTermCriteria(300, 0.001);
 
+            model.SetKernel(SVM.SvmKernelType.Rbf);
+            model.Type = SVM.SvmType.CSvc;
+            model.TermCriteria = new MCvTermCriteria(300, 0.001);
+            model.C = C;
+            model.Gamma = 10;
             //Do the training
-            bool trained = model.TrainAuto(trainData, trainClasses, null, null, p.MCvSVMParams, 5);
+            TrainData td = new TrainData(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainClasses);
+            bool trained = model.TrainAuto(td, 5);
+
+            //bool trained = model.TrainAuto(trainData, trainClasses, null, null, model.MCvSVMParams, 5);
             Console.WriteLine("SVM training finished!");
             //Save the model on disk
-            model.Save(dataPath + "SVM_model.xml");
+            model.Save(dataPath + "SVM_model2.xml");
             Console.WriteLine("SVM saved to disk file");
 
             return model;
@@ -276,7 +290,7 @@ namespace Strabo.Core.MachineLearning
         public class CCforClassification
         {
             public Rectangle maxBoundingRectangle;
-            public MCvBox2D minBoundingRectangle;
+            public RotatedRect minBoundingRectangle;
             public Point massCenter;
             public int pixelCount = 0;
             public int pixelId = 0;
@@ -586,14 +600,14 @@ namespace Strabo.Core.MachineLearning
                     b.maxBoundingRectangle = new Rectangle(x1[j], y1[j], x2[j] - x1[j] + 1, y2[j] - y1[j] + 1);
                     //Calculate the minimum bounding rectangles for each CC
                     //from this webpage: http://www.emgu.com/wiki/index.php/Minimum_Area_Rectangle_in_CSharp
-                    b.minBoundingRectangle = PointCollection.MinAreaRect(positions[j - 1]);
+                    b.minBoundingRectangle = CvInvoke.MinAreaRect(positions[j - 1]);
                     b.pixelCount = this.objectSize[j];
                     b.massCenter = new Point(Convert.ToInt32(center_x[j] / (double)b.pixelCount), Convert.ToInt32(center_y[j] / (double)b.pixelCount));
                     //b.area = (x2[j] - x1[j] + 1) * (y2[j] - y1[j] + 1);
-                    b.MBRArea = b.minBoundingRectangle.size.Height * b.minBoundingRectangle.size.Width;
+                    b.MBRArea = b.minBoundingRectangle.Size.Height * b.minBoundingRectangle.Size.Width;
                     b.rectangularity = b.pixelCount / b.MBRArea;
-                    b.eccentricity = Math.Max(b.minBoundingRectangle.size.Height, b.minBoundingRectangle.size.Width) /
-                        Math.Min(b.minBoundingRectangle.size.Height, b.minBoundingRectangle.size.Width);
+                    b.eccentricity = Math.Max(b.minBoundingRectangle.Size.Height, b.minBoundingRectangle.Size.Width) /
+                        Math.Min(b.minBoundingRectangle.Size.Height, b.minBoundingRectangle.Size.Width);
                     b.pixelId = j;
                     if (b.maxBoundingRectangle.Width == 1)
                     {

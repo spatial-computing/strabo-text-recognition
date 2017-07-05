@@ -28,6 +28,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using Strabo.Core.MachineLearning;
 
 namespace Strabo.Test
 {
@@ -40,8 +41,11 @@ namespace Strabo.Test
             //**************************************************************************************************************
             try
             {
+               // ConnectedComponentClassifier ccc = new ConnectedComponentClassifier();
+               // ccc.SVMTrainer(5, false);
                 TestCommandLineWorker tcl = new TestCommandLineWorker();
-                tcl.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961_msmc_te.png", "uscdl-usgs");
+                tcl.TestLocalFile("test2.jpg", "uscdl-usgs");
+                // tcl.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961_msmc_te.png", "uscdl-usgs");
                 //tcl.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961.jpg", "uscdl-usgs");
             }
             catch (Exception e)

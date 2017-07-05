@@ -30,43 +30,43 @@ namespace Strabo.Core.BoundingBox
 {
     public class MinimumBoundingBox : IBoundingBox
     {
-        private MCvBox2D bbx;
+        private RotatedRect bbx;
 
         public MinimumBoundingBox(PointF[] points)
         {
             //from this webpage: http://www.emgu.com/wiki/index.php/Minimum_Area_Rectangle_in_CSharp
-            this.bbx = PointCollection.MinAreaRect(points);
+            this.bbx = CvInvoke.MinAreaRect(points);
         }
 
         public MinimumBoundingBox()
         {
         }
 
-        public MCvBox2D Bbx()
+        public RotatedRect Bbx()
         {
             return this.bbx;
         }
 
-        public void updateBbx(MCvBox2D bbx)
+        public void updateBbx(RotatedRect bbx)
         {
             this.bbx = bbx;
         }
 
         public float area()
         {
-            return this.bbx.size.Height * this.bbx.size.Width;
+            return this.bbx.Size.Height * this.bbx.Size.Width;
         }
 
         public float returnCalculatedAngle()
         {
             // Return the angle with the longer side
-            if (this.bbx.size.Height >= this.bbx.size.Width)
+            if (this.bbx.Size.Height >= this.bbx.Size.Width)
             {
-                return Math.Abs(this.bbx.angle) + 90;
+                return Math.Abs(this.bbx.Angle) + 90;
             }
             else
             {
-                return Math.Abs(this.bbx.angle);
+                return Math.Abs(this.bbx.Angle);
             }
         }
 
@@ -77,17 +77,17 @@ namespace Strabo.Core.BoundingBox
 
         public float height()
         {
-            return this.bbx.size.Height;
+            return this.bbx.Size.Height;
         }
 
         public PointF massCenter()
         {
-            return this.bbx.center;
+            return this.bbx.Center;
         }
 
         public float orientation()
         {
-            return this.bbx.angle;
+            return this.bbx.Angle;
         }
 
         public PointF[] vertices()
@@ -97,7 +97,7 @@ namespace Strabo.Core.BoundingBox
 
         public float width()
         {
-            return this.bbx.size.Width;
+            return this.bbx.Size.Width;
         }
 
         public PointF returnExtremeStart()
