@@ -66,7 +66,7 @@ namespace Strabo.Core.TextRecognition
                             tessOcrResultList[i].id = "-1";
                             break;
                         }
-                        if (tessOcrResultList[i].tess_cost3 < tessOcrResultList[j].tess_cost3)
+                        if (tessOcrResultList[i].tess_cost3+ (1-tessOcrResultList[i].dict_similarity) < tessOcrResultList[j].tess_cost3+ (1 - tessOcrResultList[j].dict_similarity))
                         {
                             tessOcrResultList[j].id = "-1";
                         }
@@ -158,7 +158,7 @@ namespace Strabo.Core.TextRecognition
                 this.elasticsearch = elasticsearch;
                 this.threadNumber = threadNumber;
 
-                tessOcrResultList = RemoveMergeMultiLineResults(tessOcrResultList, 3);
+               
 
                 if (dictionaryPath != "")
                     if (!elasticsearch)
@@ -176,7 +176,7 @@ namespace Strabo.Core.TextRecognition
                 for (var i = 0; i < threadNumber; i++)
                     thread_array[i].Join();
 
-
+                tessOcrResultList = RemoveMergeMultiLineResults(tessOcrResultList, 3);
                 //else ElasticSearch needs a geo bounding box
                 //CheckDictionaryElasticSearch.readDictionary(top, left, bottom, right);
 
@@ -221,7 +221,9 @@ namespace Strabo.Core.TextRecognition
                 {
                     //if (tessOcrResultList[i].tess_word3.Length < dictionaryExactMatchStringLength)
                     //    tessOcrResultList[i].id = "-1";
-                    if (dictionaryPath != "" && tessOcrResultList[i].tess_word3.Length >=
+                    if (tessOcrResultList[i].id =="6")
+                        Console.WriteLine("debug");
+                        if (dictionaryPath != "" && tessOcrResultList[i].tess_word3.Length >=
                         dictionaryExactMatchStringLength)
                         tessOcrResultList[i] =
                             CheckDictionary.getDictionaryWord(tessOcrResultList[i], dictionaryExactMatchStringLength);

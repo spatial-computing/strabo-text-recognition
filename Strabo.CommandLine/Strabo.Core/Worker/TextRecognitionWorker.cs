@@ -64,10 +64,10 @@ namespace Strabo.Core.Worker
 
                 var ctr = new CleanTesseractResult();
                 tessOcrResultList = ctr.Apply(tessOcrResultList, dictionaryFilePath, dictionaryExactMatchStringLength,
-                    lng, false, threadNumber);
+                    lng, false, 1);
 
                 //foreach (TessResult tr in tessOcrResultList)
-                //{
+                ////{
 
 
                 //    Log.WriteLine("Raw Text before GeoJSON: " + tr.tess_raw3 + " Text before GeoJSON: " + tr.tess_word3);

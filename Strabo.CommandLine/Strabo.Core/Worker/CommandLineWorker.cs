@@ -72,7 +72,7 @@ namespace Strabo.Core.Worker
                     try
                     {
                         if (!(NextFile.FullName.EndsWith(StraboParameters.sourceMapFileName) ||
-                              NextFile.FullName.EndsWith("gitkeep") || NextFile.FullName.EndsWith("log.txt") ||
+                              NextFile.FullName.EndsWith("gitkeep") || NextFile.FullName.EndsWith(".txt") ||
                               NextFile.FullName.EndsWith(StraboParameters.sourceMapFileName)))
                             File.Delete(NextFile.FullName);
                     }

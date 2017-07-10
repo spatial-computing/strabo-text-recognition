@@ -28,6 +28,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using OpenTK.Graphics.OpenGL;
 using Strabo.Core.MachineLearning;
 
 namespace Strabo.Test
@@ -39,17 +40,29 @@ namespace Strabo.Test
             //**************************************************************************************************************
             // Before you commit and push your code, you need to make sure both tcl.Test() and tcl.TestLocalFiles() run correctly
             //**************************************************************************************************************
-            try
+            //try
             {
-               // ConnectedComponentClassifier ccc = new ConnectedComponentClassifier();
-               // ccc.SVMTrainer(5, false);
-                TestCommandLineWorker tcl = new TestCommandLineWorker();
-                tcl.TestLocalFile("test2.jpg", "uscdl-usgs");
+                //string[] filePaths = Directory.GetFiles(Path.GetFullPath(@"C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\data\"), "*.tiff");
+                //for (var i = 0; i < filePaths.Length; i++)
+                //{
+                //    TestCommandLineWorker tcl = new TestCommandLineWorker();
+                //    tcl.TestLocalFile(Path.GetFileName(filePaths[i]), "uscdl-usgs");
+                //}
+                // ConnectedComponentClassifier ccc = new ConnectedComponentClassifier();
+                // ccc.SVMTrainer(5, false);
+                TestCommandLineWorker tcl2 = new TestCommandLineWorker();
+                tcl2.TestLocalFile("SourceMapImage.png", "cls-os");
+                //tcl2.TestLocalFile("D2_CA_ACTON_Authoritative_US_Topos_1959.tif", "wm-usgs");
+
+
+                //tcl.TestLocalFile("test2.jpg", "uscdl-usgs");
                 // tcl.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961_msmc_te.png", "uscdl-usgs");
                 //tcl.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961.jpg", "uscdl-usgs");
+
+
             }
-            catch (Exception e)
-            { Log.WriteLine(e.Message); }
+            //catch (Exception e)
+            //{ Log.WriteLine(e.Message); }
         }
         public static void generateDictionary(string srcpathfn, string dstpathfn)
         {

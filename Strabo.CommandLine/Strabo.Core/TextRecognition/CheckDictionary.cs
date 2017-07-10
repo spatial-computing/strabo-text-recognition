@@ -57,6 +57,8 @@ namespace Strabo.Core.TextRecognition
         {
             index = index - _minWordLength;
             word = word.ToLower();
+            if(word == "main")
+                Console.WriteLine("debug");
             double NewSimilarity = 0;
             var WordLength = word.Length;
             if (WordLength + index < 0)
@@ -71,7 +73,10 @@ namespace Strabo.Core.TextRecognition
                 var JaroDist = new JaroWinklerDistance();
                 var ng = new NGramDistance();
                 var jd = new JaccardDistance();
-
+                if(_IndexDictionary[
+                    WordLength +
+                    index][j] == "main")
+                    Console.WriteLine(("debug"));
                 NewSimilarity =
                     jd.GetDistance(word,
                         _IndexDictionary[
@@ -105,7 +110,7 @@ namespace Strabo.Core.TextRecognition
             {
                 if (_IndexDictionary[line.Length] == null)
                     _IndexDictionary[line.Length] = new List<string>();
-                _IndexDictionary[line.Length].Add(line);
+                _IndexDictionary[line.Length].Add(line.ToLower());
             }
         }
 

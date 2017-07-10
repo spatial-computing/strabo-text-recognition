@@ -74,11 +74,11 @@ namespace Strabo.Core.TextRecognition
                 // _engine.SetVariable("tessedit_char_whitelist", "0123456789");
 
                 lng = "eng";
-                engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
+                engine = new TesseractEngine(@"./libdata/tessdata3/", lng, EngineMode.Default);
             }
             else
             {
-                engine = new TesseractEngine(@"./tessdata3/", lng, EngineMode.Default);
+                engine = new TesseractEngine(@"./libdata/tessdata3/", lng, EngineMode.Default);
             }
             Log.WriteLine("Tesseract Version: " + engine.Version);
             return engine;
@@ -89,15 +89,15 @@ namespace Strabo.Core.TextRecognition
 
         public List<TessResult> Apply(string inputPath, string outputPath, string lng, int threadNumber)
         {
-            var filePaths = Directory.GetFiles(inputPath, "*.png");
+            String[] filePaths = Directory.GetFiles(inputPath, "*.png");
             if (filePaths.Length == 0)
                 return null;
-            for (var i = 0; i < filePaths.Length; i++)
+            for (int i = 0; i < filePaths.Length; i++)
             {
                 // if (i == 176)
                 //Console.WriteLine("debug");
-                var filename = Path.GetFileNameWithoutExtension(filePaths[i]);
-                var splitTokens = filename.Split('_');
+                string filename = Path.GetFileNameWithoutExtension(filePaths[i]);
+                string[] splitTokens = filename.Split('_');
 
                 if (splitTokens.Length == 17)
                     filepathfn.Add(filePaths[i]);
@@ -131,7 +131,7 @@ namespace Strabo.Core.TextRecognition
 
         public void recognize(object s)
         {
-            var x = (int) s;
+            var x = (int)s;
 
             for (var i = 0; i < filepathfn.Count; i++)
             {
@@ -147,7 +147,7 @@ namespace Strabo.Core.TextRecognition
                     Page page;
                     page = _engine[i % num_engine].Process(img, PageSegMode.SingleBlock);
                     text = page.GetText();
-
+                   
                     var HOCR = page.GetHOCRText(1);
 
                     // PageIteratorLevel a = new PageIteratorLevel();
@@ -173,21 +173,21 @@ namespace Strabo.Core.TextRecognition
 
                         tr.fileName = Path.GetFileName(filename);
 
-                        tr.mcX = (int) Convert.ToDouble(splitTokens[3]);
-                        tr.mcY = (int) Convert.ToDouble(splitTokens[4]);
+                        tr.mcX = (int)Convert.ToDouble(splitTokens[3]);
+                        tr.mcY = (int)Convert.ToDouble(splitTokens[4]);
 
-                        tr.x = (int) Convert.ToDouble(splitTokens[7]);
-                        tr.y = (int) Convert.ToDouble(splitTokens[8]);
+                        tr.x = (int)Convert.ToDouble(splitTokens[7]);
+                        tr.y = (int)Convert.ToDouble(splitTokens[8]);
 
-                        tr.x2 = (int) Convert.ToDouble(splitTokens[9]);
-                        tr.y2 = (int) Convert.ToDouble(splitTokens[10]);
-                        tr.x3 = (int) Convert.ToDouble(splitTokens[11]);
-                        tr.y3 = (int) Convert.ToDouble(splitTokens[12]);
-                        tr.x4 = (int) Convert.ToDouble(splitTokens[13]);
-                        tr.y4 = (int) Convert.ToDouble(splitTokens[14]);
+                        tr.x2 = (int)Convert.ToDouble(splitTokens[9]);
+                        tr.y2 = (int)Convert.ToDouble(splitTokens[10]);
+                        tr.x3 = (int)Convert.ToDouble(splitTokens[11]);
+                        tr.y3 = (int)Convert.ToDouble(splitTokens[12]);
+                        tr.x4 = (int)Convert.ToDouble(splitTokens[13]);
+                        tr.y4 = (int)Convert.ToDouble(splitTokens[14]);
 
-                        tr.w = (int) Convert.ToDouble(splitTokens[15]);
-                        tr.h = (int) Convert.ToDouble(splitTokens[16]);
+                        tr.w = (int)Convert.ToDouble(splitTokens[15]);
+                        tr.h = (int)Convert.ToDouble(splitTokens[16]);
                         tessOcrResultList.Add(tr);
                     }
                 }
