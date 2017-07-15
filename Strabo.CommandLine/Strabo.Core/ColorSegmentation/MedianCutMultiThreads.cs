@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Strabo.Core.ImageProcessing;
@@ -33,8 +34,14 @@ namespace Strabo.Core.ColorSegmentation
         {
             var qnum_list = new List<int>();
             qnum_list.Add(color_number);
-            GenerateColorPalette(srcpathfn, qnum_list);
-            var mcqImagePaths = quantizeImageMT(8, dstpathfn);
+            ColorHistogram colorHist = GenerateColorPalette(srcpathfn, qnum_list);
+            if (colorHist.getNumberOfColors() > color_number)
+            {
+                findRepresentativeColors(colorHist);
+                quantizeImageMT(8, dstpathfn);
+            }
+            else
+                File.Copy(srcpathfn, dstpathfn);
             return true;
         }
 
@@ -43,7 +50,7 @@ namespace Strabo.Core.ColorSegmentation
             Console.WriteLine("MedianCut Disposed");
         }
 
-        private void GenerateColorPalette(string fn, List<int> qnum_list)
+        private ColorHistogram GenerateColorPalette(string fn, List<int> qnum_list)
         {
             this.qnum_list = qnum_list;
             srcimg = new Bitmap(fn);
@@ -55,13 +62,12 @@ namespace Strabo.Core.ColorSegmentation
                 color_table_list.Add(new Hashtable());
                 ini_color_table_list.Add(new Hashtable());
             }
-            var colorHist = new ColorHistogram(pixels, false);
-            var K = colorHist.getNumberOfColors();
-            findRepresentativeColors(K, colorHist);
+            return new ColorHistogram(pixels, false);
         }
 
-        private void findRepresentativeColors(int K, ColorHistogram colorHist)
+        private void findRepresentativeColors(ColorHistogram colorHist)
         {
+            int K = colorHist.getNumberOfColors();
             imageColors = new ColorNode[K];
             for (var i = 0; i < K; i++)
             {
@@ -105,18 +111,18 @@ namespace Strabo.Core.ColorSegmentation
 
         public void kernel(object step)
         {
-            for (var y = (int) step; y < height; y += tnum)
-            for (var x = 0; x < width; x++)
-            {
-                var pos = y * width + x;
-                unsafe
+            for (var y = (int)step; y < height; y += tnum)
+                for (var x = 0; x < width; x++)
                 {
-                    var cn = quantColors_list[qimg_counter][(int) ini_color_table_list[qimg_counter][pixels[pos]]];
-                    src[pos * 3 + y * srcOffset + RGB.R] = (byte) cn.red;
-                    src[pos * 3 + y * srcOffset + RGB.G] = (byte) cn.grn;
-                    src[pos * 3 + y * srcOffset + RGB.B] = (byte) cn.blu;
+                    var pos = y * width + x;
+                    unsafe
+                    {
+                        var cn = quantColors_list[qimg_counter][(int)ini_color_table_list[qimg_counter][pixels[pos]]];
+                        src[pos * 3 + y * srcOffset + RGB.R] = (byte)cn.red;
+                        src[pos * 3 + y * srcOffset + RGB.G] = (byte)cn.grn;
+                        src[pos * 3 + y * srcOffset + RGB.B] = (byte)cn.blu;
+                    }
                 }
-            }
         }
 
         public string[] quantizeImageMT(int tnum, string dstpathfn)
@@ -134,7 +140,7 @@ namespace Strabo.Core.ColorSegmentation
                     ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
                 unsafe
                 {
-                    src = (byte*) srcData.Scan0.ToPointer();
+                    src = (byte*)srcData.Scan0.ToPointer();
                 }
                 srcOffset = srcData.Stride - width * 3;
 
@@ -149,7 +155,6 @@ namespace Strabo.Core.ColorSegmentation
                     thread_array[i].Join();
 
                 srcimg.UnlockBits(srcData);
-                //outImgPaths[j] = output_dir + fn + qnum_list[j] + ".png";
                 srcimg.Save(dstpathfn, ImageFormat.Png);
             }
 
@@ -227,7 +232,7 @@ namespace Strabo.Core.ColorSegmentation
             // Implement IComparable CompareTo to provide default sort order.
             int IComparable.CompareTo(object obj)
             {
-                var c = (ColorNode) obj;
+                var c = (ColorNode)obj;
                 if (cnt > c.cnt) return 1;
                 if (cnt < c.cnt) return -1;
                 return 0;
@@ -262,8 +267,8 @@ namespace Strabo.Core.ColorSegmentation
             {
                 int IComparer.Compare(object a, object b)
                 {
-                    var cn1 = (ColorNode) a;
-                    var cn2 = (ColorNode) b;
+                    var cn1 = (ColorNode)a;
+                    var cn2 = (ColorNode)b;
                     if (cn1.red > cn2.red) return 1;
                     if (cn1.red < cn2.red) return -1;
                     return 0;
@@ -274,8 +279,8 @@ namespace Strabo.Core.ColorSegmentation
             {
                 int IComparer.Compare(object a, object b)
                 {
-                    var cn1 = (ColorNode) a;
-                    var cn2 = (ColorNode) b;
+                    var cn1 = (ColorNode)a;
+                    var cn2 = (ColorNode)b;
                     if (cn1.grn > cn2.grn) return 1;
                     if (cn1.grn < cn2.grn) return -1;
                     return 0;
@@ -286,8 +291,8 @@ namespace Strabo.Core.ColorSegmentation
             {
                 int IComparer.Compare(object a, object b)
                 {
-                    var cn1 = (ColorNode) a;
-                    var cn2 = (ColorNode) b;
+                    var cn1 = (ColorNode)a;
+                    var cn2 = (ColorNode)b;
                     if (cn1.blu > cn2.blu) return 1;
                     if (cn1.blu < cn2.blu) return -1;
                     return 0;
@@ -319,7 +324,7 @@ namespace Strabo.Core.ColorSegmentation
 
             int IComparable.CompareTo(object obj)
             {
-                var cb = (ColorBox) obj;
+                var cb = (ColorBox)obj;
                 if (level > cb.level) return 1;
                 if (level < cb.level) return -1;
                 return 0;
@@ -439,9 +444,9 @@ namespace Strabo.Core.ColorSegmentation
                         ini_color_table.Add(ci.rgb, idx);
                 }
                 double nd = n;
-                var avgRed = (int) (0.5 + rSum / nd);
-                var avgGrn = (int) (0.5 + gSum / nd);
-                var avgBlu = (int) (0.5 + bSum / nd);
+                var avgRed = (int)(0.5 + rSum / nd);
+                var avgGrn = (int)(0.5 + gSum / nd);
+                var avgBlu = (int)(0.5 + bSum / nd);
 
                 return new ColorNode(avgRed, avgGrn, avgBlu, n);
             }

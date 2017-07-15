@@ -45,13 +45,18 @@ namespace Strabo.Core.ImageProcessing
                     char_blobs[i].bbx.returnExtremeEndY() == srcimg.Height)
                     boarder_char_idx_set.Add(i);
 
-                // Line
-                if ((double) char_blobs[i].pixel_count / char_blobs[i].bbx.area() < min_pixel_area_size)
+               // Line
+                if ((double)char_blobs[i].pixel_count / char_blobs[i].bbx.area() < min_pixel_area_size)
                     noise_char_idx_set.Add(i);
-                // Small CC
+                //Small CC
                 if (char_blobs[i].bbx.width() < char_size &&
                     char_blobs[i].bbx.height() < char_size)
                     noise_char_idx_set.Add(i);
+
+                if (char_blobs[i].bbx.width() > char_size * 10 ||
+                    char_blobs[i].bbx.height() > char_size * 10)
+                    noise_char_idx_set.Add(i);
+
                 if (char_blobs[i].bbx.width() < char_size &&
                     char_blobs[i].bbx.height() > char_size * StraboParameters.bbxMultiplier)
                     noise_char_idx_set.Add(i);

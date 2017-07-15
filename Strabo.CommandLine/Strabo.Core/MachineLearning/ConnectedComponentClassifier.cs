@@ -25,11 +25,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using Emgu.CV;
 using Emgu.CV.ML;
 using Emgu.CV.ML.MlEnum;
 using Emgu.CV.Structure;
 using Strabo.Core.ImageProcessing;
+using Strabo.Core.Utility;
 
 namespace Strabo.Core.MachineLearning
 {
@@ -40,7 +42,6 @@ namespace Strabo.Core.MachineLearning
         public void Apply(string intermediatePath, string inputFileName, string outputFileName, bool open)
         {
             //1.Get the input image
-            var srcimage = new Image<Gray, byte>(Path.Combine(intermediatePath, inputFileName));
             var srcimg = new Bitmap(Path.Combine(intermediatePath, inputFileName));
             srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
             srcimg = ImageUtils.InvertColors(srcimg);
@@ -96,7 +97,7 @@ namespace Strabo.Core.MachineLearning
             {
                 svm_classifier = new SVM();
                 // svm_classifier.load(Path.Combine(svmDataPath, "SVM_model.xml")); emgucv 2.9
-                var fs = new FileStorage(Path.Combine(svmDataPath, "SVM_model.xml"), FileStorage.Mode.Read);
+                var fs = new FileStorage(Path.Combine(svmDataPath, StraboParameters.CleanWithSVM), FileStorage.Mode.Read);
                 svm_classifier.Read(fs.GetFirstTopLevelNode());
                 fs.ReleaseAndGetString();
             }
@@ -211,7 +212,7 @@ namespace Strabo.Core.MachineLearning
             //bool trained = model.TrainAuto(trainData, trainClasses, null, null, model.MCvSVMParams, 5);
             Console.WriteLine("SVM training finished!");
             //Save the model on disk
-            model.Save(dataPath + "SVM_model2.xml");
+            model.Save(Path.Combine(dataPath, "SVM_model.xml"));
             Console.WriteLine("SVM saved to disk file");
 
             return model;
@@ -226,36 +227,27 @@ namespace Strabo.Core.MachineLearning
         public void SVMTrainingPreprocessor(string dataPath)
         {
             //Assume dataPath is ..\\SVM_training\\
-            var posDataPath = dataPath + "pos\\";
-            var negDataPath = dataPath + "neg\\";
-            string line;
-            var pos_list = new List<string>();
-            var neg_list = new List<string>();
-            var list_file = new StreamReader(posDataPath + "pos_list.txt");
-            while ((line = list_file.ReadLine()) != null)
-                pos_list.Add(line);
-            list_file.Close();
-            list_file = new StreamReader(negDataPath + "neg_list.txt");
-            while ((line = list_file.ReadLine()) != null)
-                neg_list.Add(line);
-            list_file.Close();
+            string posDataPath = Path.Combine(dataPath,"pos");
+            string negDataPath = Path.Combine(dataPath, "neg");
+            String[] pos_list = Directory.GetFiles(posDataPath, "*.png");
+            String[] neg_list = Directory.GetFiles(negDataPath, "*.png");
 
-            var featureFilePath = dataPath + "features.txt";
-            using (var feature_file = new StreamWriter(featureFilePath))
+            string featureFilePath = Path.Combine(dataPath, "features.txt");
+            using (StreamWriter feature_file = new StreamWriter(featureFilePath))
             {
-                foreach (var filename in pos_list)
+                for (int i = 0; i<  pos_list.Length;i++)
                 {
-                    var srcimg = new Bitmap(posDataPath + filename);
+                    Bitmap srcimg = new Bitmap(pos_list[i]);
                     srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
                     srcimg = ImageUtils.InvertColors(srcimg);
-                    var fetcher = new CCfetcher();
+                    CCfetcher fetcher = new CCfetcher();
                     var CCs = fetcher.GetConnectedComponents(srcimg);
                     for (var j = 0; j < CCs.Count; j++)
                         feature_file.WriteLine(CCs[j] + " 1");
                 }
-                foreach (var filename in neg_list)
+                for (int i = 0; i < neg_list.Length; i++)
                 {
-                    var srcimg = new Bitmap(negDataPath + filename);
+                    var srcimg = new Bitmap(neg_list[i]);
                     srcimg = ImageUtils.ConvertGrayScaleToBinary(srcimg, 254);
                     srcimg = ImageUtils.InvertColors(srcimg);
                     var fetcher = new CCfetcher();

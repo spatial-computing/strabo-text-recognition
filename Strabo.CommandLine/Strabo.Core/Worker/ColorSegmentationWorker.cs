@@ -68,7 +68,7 @@ namespace Strabo.Core.Worker
                 srcpathfn = dstpathfn;
                 dstpathfn = Path.Combine(Path.GetDirectoryName(dstpathfn),
                     Path.GetFileNameWithoutExtension(dstpathfn) + "mc.png");
-                IMedianCut mc = new MedianCutMultiThreads(); //AForgeMedianCut();
+                IMedianCut mc = new MedianCutMultiThreads();//new AForgeMedianCut();
                 mc.Process(srcpathfn, dstpathfn, StraboParameters.medianCutColors);
                 Log.WriteLine("Median-Cut finished");
                 return dstpathfn;

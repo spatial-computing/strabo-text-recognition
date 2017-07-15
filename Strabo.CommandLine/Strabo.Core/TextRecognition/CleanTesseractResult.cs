@@ -39,7 +39,7 @@ namespace Strabo.Core.TextRecognition
         public List<TessResult> RemoveMergeMultiLineResults(List<TessResult> tessOcrResultList, int maxLineLimit)
         {
             // compare cost
-            char[] delimiter = {'\n'};
+            char[] delimiter = { '\n' };
 
             for (var i = 0; i < tessOcrResultList.Count; i++)
             {
@@ -66,7 +66,7 @@ namespace Strabo.Core.TextRecognition
                             tessOcrResultList[i].id = "-1";
                             break;
                         }
-                        if (tessOcrResultList[i].tess_cost3+ (1-tessOcrResultList[i].dict_similarity) < tessOcrResultList[j].tess_cost3+ (1 - tessOcrResultList[j].dict_similarity))
+                        if (tessOcrResultList[i].tess_cost3 + (1 - tessOcrResultList[i].dict_similarity) < tessOcrResultList[j].tess_cost3 + (1 - tessOcrResultList[j].dict_similarity))
                         {
                             tessOcrResultList[j].id = "-1";
                         }
@@ -116,11 +116,11 @@ namespace Strabo.Core.TextRecognition
         {
             // Two types of degrees exists
             // ASCII 0176, 0186
-            const char degree_1 = (char) 176;
+            const char degree_1 = (char)176;
             var degreestr = degree_1.ToString();
             raw_result = raw_result.Replace(degreestr, "0");
 
-            const char degree_2 = (char) 186;
+            const char degree_2 = (char)186;
             degreestr = degree_2.ToString();
             raw_result = raw_result.Replace(degreestr, "0");
 
@@ -158,7 +158,7 @@ namespace Strabo.Core.TextRecognition
                 this.elasticsearch = elasticsearch;
                 this.threadNumber = threadNumber;
 
-               
+
 
                 if (dictionaryPath != "")
                     if (!elasticsearch)
@@ -201,7 +201,7 @@ namespace Strabo.Core.TextRecognition
 
         private void check(object s)
         {
-            var x = (int) s;
+            var x = (int)s;
 
             for (var i = 0; i < tessOcrResultList.Count; i++)
             {
@@ -221,10 +221,10 @@ namespace Strabo.Core.TextRecognition
                 {
                     //if (tessOcrResultList[i].tess_word3.Length < dictionaryExactMatchStringLength)
                     //    tessOcrResultList[i].id = "-1";
-                    if (tessOcrResultList[i].id =="6")
-                        Console.WriteLine("debug");
-                        if (dictionaryPath != "" && tessOcrResultList[i].tess_word3.Length >=
-                        dictionaryExactMatchStringLength)
+                    //if (tessOcrResultList[i].id =="6")
+                    //    Console.WriteLine("debug");
+                    if (dictionaryPath != "" && tessOcrResultList[i].tess_word3.Length >=
+                    dictionaryExactMatchStringLength)
                         tessOcrResultList[i] =
                             CheckDictionary.getDictionaryWord(tessOcrResultList[i], dictionaryExactMatchStringLength);
                 }

@@ -42,6 +42,9 @@ namespace Strabo.Test
             //**************************************************************************************************************
             //try
             {
+                //ConnectedComponentClassifier ccc = new ConnectedComponentClassifier();
+                //ccc.SVMTrainer(10, true);
+
                 //string[] filePaths = Directory.GetFiles(Path.GetFullPath(@"C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\data\"), "*.tiff");
                 //for (var i = 0; i < filePaths.Length; i++)
                 //{
@@ -51,13 +54,14 @@ namespace Strabo.Test
                 // ConnectedComponentClassifier ccc = new ConnectedComponentClassifier();
                 // ccc.SVMTrainer(5, false);
                 TestCommandLineWorker tcl2 = new TestCommandLineWorker();
-                tcl2.TestLocalFile("SourceMapImage.png", "cls-os");
+                tcl2.TestLocalFile("SourceMapImage2.png", "cls-os");
+                //tcl2.TestLocalFile("101201496.jpg", "cls-os");
                 //tcl2.TestLocalFile("D2_CA_ACTON_Authoritative_US_Topos_1959.tif", "wm-usgs");
 
 
                 //tcl.TestLocalFile("test2.jpg", "uscdl-usgs");
                 // tcl.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961_msmc_te.png", "uscdl-usgs");
-                //tcl.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961.jpg", "uscdl-usgs");
+                //tcl2.TestLocalFile("USGS-15-CA-brawley-e1957-s1957-p1961.jpg", "uscdl-usgs");
 
 
             }

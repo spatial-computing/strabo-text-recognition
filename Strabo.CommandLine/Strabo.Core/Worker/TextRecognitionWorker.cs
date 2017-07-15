@@ -33,17 +33,17 @@ namespace Strabo.Core.Worker
     {
         public string Apply(string inputDir, string interDir, string outputDir, string srcfileName, int threadNumber)
         {
-            return Apply(inputDir, outputDir, StraboParameters.oTDResultFolder,
+            return Apply(inputDir, outputDir, 
                 Path.GetFileNameWithoutExtension(srcfileName), StraboParameters.language,
                 StraboParameters.dictionaryFilePath,
                 StraboParameters.dictionaryExactMatchStringLength,
-                StraboParameters.elasticsearch, StraboParameters.otd, threadNumber);
+                StraboParameters.elasticsearch,threadNumber);
         }
 
-        public string Apply(string inputPath, string outputPath, string OTDPath,
+        public string Apply(string inputPath, string outputPath,
             string TesseractResultsJSONFileName, string lng,
             string dictionaryFilePath, int dictionaryExactMatchStringLength,
-            bool elasticsearch, bool otd, int threadNumber)
+            bool elasticsearch, int threadNumber)
         {
             try
             {
@@ -77,8 +77,7 @@ namespace Strabo.Core.Worker
                 //NumberCorrection nc = new NumberCorrection(tessOcrResultList);
                 //tessOcrResultList = nc.mergeFeatures();
 
-                WriteToJsonFile(tessOcrResultList, outputPath, OTDPath, TesseractResultsJSONFileName, lng,
-                    dictionaryFilePath, dictionaryExactMatchStringLength, -1);
+                WriteToJsonFile(tessOcrResultList, outputPath, TesseractResultsJSONFileName, -1);
             }
             catch (Exception e)
             {
@@ -90,9 +89,8 @@ namespace Strabo.Core.Worker
             return TesseractResultsJSONFileName;
         }
 
-        private void WriteToJsonFile(List<TessResult> tessOcrResultList, string outputPath, string OTDPath,
-            string TesseractResultsJSONFileName, string lng, string dictionaryFilePath,
-            int dictionaryExactMatchStringLength, int georef)
+        private void WriteToJsonFile(List<TessResult> tessOcrResultList, string outputPath,
+            string TesseractResultsJSONFileName,int georef)
         {
             Log.WriteLine("Writing results to GeoJSON...");
             QGISJson.path = outputPath;

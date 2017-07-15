@@ -12,7 +12,7 @@
          <Members>
           <Member Name="#Finalize()" Kind="Method" Static="False" Accessibility="Family" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="RemoveEmptyFinalizers" Category="Microsoft.Performance" CheckId="CA1821" Status="Active" Created="2017-07-10 18:03:48Z" FixCategory="NonBreaking">
+            <Message TypeName="RemoveEmptyFinalizers" Category="Microsoft.Performance" CheckId="CA1821" Status="Active" Created="2017-07-15 03:00:11Z" FixCategory="NonBreaking">
              <Issue Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ColorSegmentation" File="MeanShiftMultiThreads.cs" Line="52">'MeanShiftMultiThreads' implements a finalizer that only calls conditionally emitted methods or the base type finalizer. Remove the finalizer or ensure that it is only conditionally compiled into the assembly. If this violation occurs against a finalizer that is entirely wrapped in a conditionally-emitted block of code, suppress this message.</Issue>
             </Message>
            </Messages>
@@ -21,7 +21,7 @@
         </Type>
         <Type Name="MedianCutMultiThreads" Kind="Class" Accessibility="Public" ExternallyVisible="True">
          <Messages>
-          <Message TypeName="TypesThatOwnDisposableFieldsShouldBeDisposable" Category="Microsoft.Design" CheckId="CA1001" Status="Active" Created="2017-07-10 18:03:48Z" FixCategory="DependsOnFix">
+          <Message TypeName="TypesThatOwnDisposableFieldsShouldBeDisposable" Category="Microsoft.Design" CheckId="CA1001" Status="Active" Created="2017-07-15 03:00:11Z" FixCategory="DependsOnFix">
            <Issue Name="DependsOnFix" Certainty="95" Level="CriticalError">Implement IDisposable on 'MedianCutMultiThreads' because it creates members of the following IDisposable types: 'Bitmap'. If 'MedianCutMultiThreads' has previously shipped, adding new members that implement IDisposable to this type is considered a breaking change to existing consumers.</Issue>
           </Message>
          </Messages>
@@ -30,8 +30,8 @@
          <Members>
           <Member Name="#System.IComparable.CompareTo(System.Object)" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="InterfaceMethodsShouldBeCallableByChildTypes" Category="Microsoft.Design" CheckId="CA1033" Status="Active" Created="2017-07-10 18:03:48Z" FixCategory="NonBreaking">
-             <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ColorSegmentation" File="MedianCutMultiThreads.cs" Line="321">Make 'MedianCutMultiThreads.ColorBox' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of 'IComparable.CompareTo(object)' and is visible to derived classes.</Issue>
+            <Message TypeName="InterfaceMethodsShouldBeCallableByChildTypes" Category="Microsoft.Design" CheckId="CA1033" Status="Active" Created="2017-07-15 03:00:11Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ColorSegmentation" File="MedianCutMultiThreads.cs" Line="326">Make 'MedianCutMultiThreads.ColorBox' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of 'IComparable.CompareTo(object)' and is visible to derived classes.</Issue>
             </Message>
            </Messages>
           </Member>
@@ -41,8 +41,8 @@
          <Members>
           <Member Name="#System.IComparable.CompareTo(System.Object)" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="InterfaceMethodsShouldBeCallableByChildTypes" Category="Microsoft.Design" CheckId="CA1033" Status="Active" Created="2017-07-10 18:03:48Z" FixCategory="NonBreaking">
-             <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ColorSegmentation" File="MedianCutMultiThreads.cs" Line="229">Make 'MedianCutMultiThreads.ColorNode' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of 'IComparable.CompareTo(object)' and is visible to derived classes.</Issue>
+            <Message TypeName="InterfaceMethodsShouldBeCallableByChildTypes" Category="Microsoft.Design" CheckId="CA1033" Status="Active" Created="2017-07-15 03:00:11Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ColorSegmentation" File="MedianCutMultiThreads.cs" Line="234">Make 'MedianCutMultiThreads.ColorNode' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of 'IComparable.CompareTo(object)' and is visible to derived classes.</Issue>
             </Message>
            </Messages>
           </Member>
@@ -56,7 +56,7 @@
          <Members>
           <Member Name="#Finalize()" Kind="Method" Static="False" Accessibility="Family" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="RemoveEmptyFinalizers" Category="Microsoft.Performance" CheckId="CA1821" Status="Active" Created="2017-07-10 18:03:48Z" FixCategory="NonBreaking">
+            <Message TypeName="RemoveEmptyFinalizers" Category="Microsoft.Performance" CheckId="CA1821" Status="Active" Created="2017-07-15 03:00:11Z" FixCategory="NonBreaking">
              <Issue Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ImageProcessing" File="ColorHistogram.cs" Line="118">'ColorHistogram' implements a finalizer that only calls conditionally emitted methods or the base type finalizer. Remove the finalizer or ensure that it is only conditionally compiled into the assembly. If this violation occurs against a finalizer that is entirely wrapped in a conditionally-emitted block of code, suppress this message.</Issue>
             </Message>
            </Messages>
@@ -67,7 +67,7 @@
          <Members>
           <Member Name="#Apply(System.Int32,System.Int32,System.Int32,System.String,System.String)" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="Do not dispose objects multiple times" Category="Microsoft.Usage" CheckId="CA2202" Status="Active" Created="2017-07-10 18:03:48Z" FixCategory="DependsOnFix">
+            <Message TypeName="Do not dispose objects multiple times" Category="Microsoft.Usage" CheckId="CA2202" Status="Active" Created="2017-07-15 03:00:11Z" FixCategory="DependsOnFix">
              <Issue Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ImageProcessing" File="ImageSlicer.cs" Line="84">Object 'srcimg' can be disposed more than once in method 'ImageSlicer.Apply(int, int, int, string, string)'. To avoid generating a System.ObjectDisposedException you should not call Dispose more than one time on an object.: Lines: 84</Issue>
              <Issue Certainty="75" Level="Warning" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\ImageProcessing" File="ImageSlicer.cs" Line="81">Object 'tile' can be disposed more than once in method 'ImageSlicer.Apply(int, int, int, string, string)'. To avoid generating a System.ObjectDisposedException you should not call Dispose more than one time on an object.: Lines: 81</Issue>
             </Message>
@@ -83,7 +83,7 @@
          <Members>
           <Member Name="#getDictionaryWord(Strabo.Core.TextRecognition.TessResult,System.Int32)" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2017-07-10 18:03:48Z" FixCategory="NonBreaking">
+            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2017-07-15 03:00:11Z" FixCategory="NonBreaking">
              <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\TextRecognition" File="CheckDictionary.cs" Line="242">'CheckDictionary.getDictionaryWord(TessResult, int)' rethrows a caught exception and specifies it explicitly as an argument. Use 'throw' without an argument instead, in order to preserve the stack location where the exception was initially raised.</Issue>
             </Message>
            </Messages>
@@ -94,7 +94,7 @@
          <Members>
           <Member Name="#findSimScore(System.String,System.String)" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="False">
            <Messages>
-            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2017-07-10 18:03:48Z" FixCategory="NonBreaking">
+            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2017-07-15 03:00:11Z" FixCategory="NonBreaking">
              <Issue Certainty="95" Level="Error" Path="C:\Users\yaoyi\Documents\strabo-text-recognition\Strabo.CommandLine\Strabo.Core\TextRecognition" File="NeedlemanWunsch.cs" Line="127">'NeedlemanWunsch.findSimScore(string, string)' rethrows a caught exception and specifies it explicitly as an argument. Use 'throw' without an argument instead, in order to preserve the stack location where the exception was initially raised.</Issue>
             </Message>
            </Messages>

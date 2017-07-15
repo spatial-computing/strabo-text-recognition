@@ -60,7 +60,6 @@
     <Compile Include="TextRecognition\NumberCorrection.cs" />
     <Compile Include="TextRecognition\RemoveNoiseText.cs" />
     <Compile Include="TextRecognition\TessResult.cs" />
-    <Compile Include="Worker\TextCleaningWorker.cs" />
     <Compile Include="Worker\ColorSegmentationWorker.cs" />
     <Compile Include="ImageProcessing\ConnectLinesWithOnePixelGap.cs" />
     <Compile Include="ImageProcessing\ImageSlicer.cs" />

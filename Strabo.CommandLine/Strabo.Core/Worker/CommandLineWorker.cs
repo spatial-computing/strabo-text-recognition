@@ -89,7 +89,6 @@ namespace Strabo.Core.Worker
         {
             var _colorSegmentationWorker = new ColorSegmentationWorker();
             var _textExtractionWorker = new TextExtractionWorker();
-            var _textCleaningWorker = new TextCleaningWorker();
             var _textDetectionWorker = new TextDetectionWorker();
             var _textRecognitionWorker = new TextRecognitionWorker();
 
@@ -126,7 +125,7 @@ namespace Strabo.Core.Worker
             Log.WriteLine("Initialization finished. Folders checked and cleaned.");
 
             var intermediate_result_pathfn = path;
-            if (StraboParameters.numberOfSegmentationColor > 0)
+            if (StraboParameters.NumberOfSegmentationColor > 0)
                 try
                 {
                     Log.WriteLine("ColorSegmentationWorker in progress...");

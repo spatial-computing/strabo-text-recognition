@@ -219,23 +219,28 @@ namespace Strabo.Core.Worker
                     Log.WriteLine("Noise cleaning finished " + s);
                 }
 
-                try
+                if (StraboParameters.CleanWithSVM != "")
                 {
-                    var _connectedComponentClassifyWorker = new ConnectedComponentClassifier();
-                    Log.WriteLine("ConnectedComponentClassifier in progress..." + s);
-                    //Copy "CDAInput.png" as "CDAInput_original.png"
-                    srcpathfn = intermediate_result_pathfn;
-                    intermediate_result_pathfn = Path.Combine(interDir,
-                        Path.GetFileNameWithoutExtension(intermediate_result_pathfn) + "_CCSVM.png");
-                    //Use "CDAInput_original.png" as input, classify the CCs and output as "CDAInput.png"
-                    _connectedComponentClassifyWorker.Apply(interDir, Path.GetFileName(srcpathfn),
-                        Path.GetFileName(intermediate_result_pathfn), false);
-                    Log.WriteLine("ApplyConnectedComponentClassifyWorker finished " + s);
-                }
-                catch (Exception e)
-                {
-                    Log.WriteLine("ApplyConnectedComponentClassifyWorker: " + e.Message);
-                    throw;
+                    try
+                    {
+
+                        Log.WriteLine("ConnectedComponentClassifier in progress..." + s);
+                        //Copy "CDAInput.png" as "CDAInput_original.png"
+                        srcpathfn = intermediate_result_pathfn;
+                        intermediate_result_pathfn = Path.Combine(interDir,
+                            Path.GetFileNameWithoutExtension(intermediate_result_pathfn) + "_CCSVM.png");
+
+                        ConnectedComponentClassifier _connectedComponentClassifyWorker =
+                            new ConnectedComponentClassifier();
+                        _connectedComponentClassifyWorker.Apply(interDir, Path.GetFileName(srcpathfn),
+                            Path.GetFileName(intermediate_result_pathfn), false);
+                        Log.WriteLine("ApplyConnectedComponentClassifyWorker finished " + s);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine("ApplyConnectedComponentClassifyWorker: " + e.Message);
+                        throw;
+                    }
                 }
                 Log.WriteLine("Noise cleaning finished");
 

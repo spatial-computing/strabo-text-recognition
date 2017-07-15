@@ -41,9 +41,7 @@ namespace Strabo.Core.Utility
     {
         private static RGBThreshold _rgbThreshold;
 
-        public static int numberOfSegmentationColor { get; set; }
-
-        public static string straboReleaseVersion { get; set; }
+       
 
         public static RGBThreshold rgbThreshold
         {
@@ -51,7 +49,9 @@ namespace Strabo.Core.Utility
             set => _rgbThreshold = value;
         }
 
-        public static string textLayerOutputFileName { get; private set; }
+        public static int NumberOfSegmentationColor { get; set; }
+
+        public static string straboReleaseVersion { get; set; }
 
         public static string sourceMapFileName { get; private set; }
 
@@ -59,31 +59,11 @@ namespace Strabo.Core.Utility
 
         public static int dictionaryExactMatchStringLength { get; private set; }
 
-        public static string oTDResultFolder { get; private set; }
-
-        public static int ConnectedComponentThreshold { get; private set; }
-
-        public static double AveragePixel { get; private set; }
-
-        public static double PixelToSizeRatio { get; private set; }
-
-        public static int HoleThreshold { get; private set; }
-
-        public static double UpperToLowerCaseWidthRatio { get; private set; }
-
-        public static double FirstToThirdGroupHeightRatio { get; private set; }
-
-        public static double FirstToSecondGroupHeightRatio { get; private set; }
-
-        public static string dictionaryWeightsPath { get; private set; }
-
         public static int char_size { get; private set; }
 
         public static string language { get; private set; }
 
         public static bool elasticsearch { get; private set; }
-
-        public static bool otd { get; private set; }
 
         public static int spatialDistance { get; private set; }
 
@@ -121,6 +101,8 @@ namespace Strabo.Core.Utility
 
         public static int bbxMultiplier { get; private set; }
 
+        public static string CleanWithSVM { get; private set; }
+
         public static void readConfigFile(string layer)
         {
             try
@@ -147,27 +129,14 @@ namespace Strabo.Core.Utility
                 else
                     _rgbThreshold.useAutomaticThresholding = false;
 
-                numberOfSegmentationColor = ReadInt(layer + "NumberOfSegmentationColor", 0);
+                NumberOfSegmentationColor = ReadInt(layer + "NumberOfSegmentationColor", 0);
                 char_size = ReadInt(layer + "CharSize", 12);
                 language = ReadString(layer + "Language", "en");
                 elasticsearch = ReadBool(layer + "Elasticsearch", false);
-                otd = ReadBool(layer + "OTD", false);
                 dictionaryFilePath = ReadString(layer + "DictionaryFilePath", "");
                 dictionaryExactMatchStringLength = ReadInt(layer + "DictionaryTwoLetterFilePath", 2);
-                dictionaryWeightsPath = ReadString(layer + "DictionaryWeightsPath", "");
-
-                oTDResultFolder = ReadString(layer + "OTDResultFolder", "");
                 sourceMapFileName = ReadString("SourceMapFileName", "SourceMapImage.png");
-                textLayerOutputFileName = ReadString("TextLayerOutputFileName", "BinaryOutput.png");
                 straboReleaseVersion = ReadString("Version", "");
-                ConnectedComponentThreshold = ReadInt(layer + "ConnectedComponentThreshold", 0);
-                HoleThreshold = ReadInt(layer + "HoleThreshold", 0);
-                AveragePixel = ReadDouble(layer + "AveragePixel", 0);
-                PixelToSizeRatio = ReadDouble(layer + "PixelToSizeRatio", 0);
-                UpperToLowerCaseWidthRatio = ReadDouble(layer + "UpperToLowerCaseWidthRatio", 0);
-                FirstToThirdGroupHeightRatio = ReadDouble(layer + "FirstToThirdGroupHeightRatio", 0);
-                FirstToSecondGroupHeightRatio = ReadDouble(layer + "FirstToSecondGroupHeightRatio", 0);
-
                 spatialDistance = ReadInt(layer + "SpatialDistance", 3);
                 colorDistance = ReadInt(layer + "ColorDistance", 3);
                 medianCutColors = ReadInt(layer + "MedianCutColors", 256);
@@ -192,6 +161,8 @@ namespace Strabo.Core.Utility
                 cdaIterationThreshold = ReadInt(layer + "cdaIterationThreshold", 15);
 
                 bbxMultiplier = ReadInt(layer + "bbxMultiplier", 3);
+
+                CleanWithSVM = ReadString(layer + "CleanWithSVM", "");
             }
             catch (Exception e)
             {
