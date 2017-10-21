@@ -30,6 +30,7 @@ using Emgu.CV;
 using Emgu.CV.ML;
 using Emgu.CV.ML.MlEnum;
 using Emgu.CV.Structure;
+using libsvm;
 using Strabo.Core.ImageProcessing;
 using Strabo.Core.Utility;
 
@@ -60,11 +61,14 @@ namespace Strabo.Core.MachineLearning
             {
                 closed_img = srcimg;
             }
+            //SVMTrainingPreprocessor(Path.Combine(svmDataPath, "usgs_training_data"));
             //3.Get each CC in CDAInput image with features
             var fetcher = new CCfetcher();
             var CCs = fetcher.GetConnectedComponents(closed_img);
+            //Train libsvm model
+            var model = SVMTrainer(1, false);
             //4.Classify each CC
-            var classification = ClassifyWorker(CCs, true);
+            var classification = ClassifyWorker(srcimg, CCs, model);
             //this sum is only for statistics, not really useful
             var sum = 0;
             foreach (var var in classification)
@@ -81,28 +85,20 @@ namespace Strabo.Core.MachineLearning
             dstimg.Save(intermediatePath + outputFileName);
         }
 
+
         /*
-         * Given the list of connected components(CC), classify each CC as number or noise.
+         * Given the list of connected components(CC), classify each CC as number or noise for SVM model of libsvm.
          * @param CCs: list of CC objects.
          * @param loadLocalModel: whether or not use existing trained SVM model. If not, train the model on the fly.
          * @return a boolean array, each entry indicates if the CC is number (True) or noise (False).
          */
-        public bool[] ClassifyWorker(List<CCforClassification> CCs, bool loadLocalModel)
+
+        public bool[] ClassifyWorker(Bitmap src, List<CCforClassification> CCs, C_SVC model)
         {
             //Initialization
             var result = new bool[CCs.Count + 1];
             result[0] = false;
-            SVM svm_classifier = null;
-            if (loadLocalModel)
-            {
-                svm_classifier = new SVM();
-                // svm_classifier.load(Path.Combine(svmDataPath, "SVM_model.xml")); emgucv 2.9
-                var fs = new FileStorage(Path.Combine(svmDataPath, StraboParameters.CleanWithSVM), FileStorage.Mode.Read);
-                svm_classifier.Read(fs.GetFirstTopLevelNode());
-                fs.ReleaseAndGetString();
-            }
-            //else svm_classifier = SVMTrainer(10, true);
-            //Classify each CC
+
             var counter = 0;
             for (var i = 0; i < CCs.Count; i++)
             {
@@ -111,26 +107,77 @@ namespace Strabo.Core.MachineLearning
                 feature.Data[0, 0] = CCs[i].rectangularity;
                 feature.Data[0, 1] = CCs[i].eccentricity;
                 //Predict the CC is number or not
-                var score = svm_classifier.Predict(feature);
+                List<CCforClassification> temp_CC = new List<CCforClassification>();
+                temp_CC.Add(CCs[i]);
+                List<double> ratio = BlackWhiteRatio(src, temp_CC);
+
+                List<svm_node> x = new List<svm_node>();
+                x.Add(new svm_node { index = 0, value = CCs[i].rectangularity });
+                x.Add(new svm_node { index = 1, value = CCs[i].eccentricity });
+                x.Add(new svm_node { index = 2, value = ratio[0] });
+                //x.Add(new svm_node { index = 2, value = ratio[0] });
+                //x.Add(new svm_node { index = 2, value = ratio[0][1] });
+                var score = model.Predict(x.ToArray());
                 //If the score is greater than 0.5, classify as true
-                result[i + 1] = score >= 0.5;
-                if (score >= 0.5) counter++;
+                result[i + 1] = score == 1;
+                if (score == 1) counter++;
             }
             return result;
         }
 
-        /*
-         * Legacy method. Currently not used. It classifies single CC.
-         * @param CC: the CC to be classified
-         * @param usingsvm: true if use SVM for classification, false if use naive threshold.
-         * @return true if the CC is number, otherwise false
+        /*Calculate white/black pixel ratio for connected components
          */
-        public bool Classifier(CCforClassification CC, bool usingsvm)
+        public List<double> BlackWhiteRatio(Bitmap src, List<CCforClassification> CCs)
+        {
+            List<double> ratio = new List<double>();
+            double blackColor = 0.0;
+            double whiteColor = 0.0;
+
+            for (int k = 0; k < CCs.Count; k++)
+            {
+                Bitmap img = src.Clone(CCs[k].maxBoundingRectangle, src.PixelFormat);
+
+                for (int i = 0; i < img.Width; ++i)
+                {
+                    for (int j = 0; j < img.Height; ++j)
+                    {
+                        Color color = img.GetPixel(i, j);
+
+                        if (color.ToArgb() == Color.White.ToArgb())
+                        {
+                            whiteColor++;
+                        }
+
+                        else
+                            if (color.ToArgb() == Color.Black.ToArgb())
+                        {
+                            blackColor++;
+                        }
+                    }
+                }
+
+                //if (blackColor == 0)
+                //    //ratio.Add(whiteColor / CCs[k].pixelCount);
+                //    ratio.Add(whiteColor / CCs[k].pixelCount);
+                //else
+                //    ratio.Add(blackColor / CCs[k].pixelCount);
+                ratio.Add(whiteColor / blackColor);
+            }
+            return ratio;
+        }
+
+            /*
+             * Legacy method. Currently not used. It classifies single CC.
+             * @param CC: the CC to be classified
+             * @param usingsvm: true if use SVM for classification, false if use naive threshold.
+             * @return true if the CC is number, otherwise false
+             */
+            public bool Classifier(CCforClassification CC, bool usingsvm)
         {
             if (usingsvm)
             {
                 //Load the SVM from disk
-                var predictor = new SVM();
+                var predictor = new Emgu.CV.ML.SVM();
                 //predictor.Load(Path.Combine(svmDataPath, "SVM_model.xml"));//path!
                 var fs = new FileStorage(Path.Combine(svmDataPath, "SVM_model.xml"), FileStorage.Mode.Read);
                 predictor.Read(fs.GetRoot());
@@ -154,20 +201,22 @@ namespace Strabo.Core.MachineLearning
             return true;
         }
 
-        /*
-         * Train the SVM on the fly, and save the trained model.
+
+        /* New SVM function from libsvm library
          * @param C: parameter C for SVM.
          * @param preprocess: true if the pre-processing is performed
          * @return the SVM object trained in this method
          */
-        public SVM SVMTrainer(float C, bool preprocess)
+
+        public C_SVC SVMTrainer(float C, bool preprocess)
         {
             var dataPath = svmDataPath;
+            //Console.Write(svmDataPath);
             //Do the preprocess
             if (preprocess) SVMTrainingPreprocessor(dataPath);
             //Read the training data in the txt file
             var feature_lines = new List<string>();
-            using (var feature_file = new StreamReader(Path.Combine(dataPath, "features.txt")))
+            using (var feature_file = new StreamReader(Path.Combine(dataPath, "features_ratio.txt")))
             {
                 string line;
                 while ((line = feature_file.ReadLine()) != null)
@@ -178,7 +227,11 @@ namespace Strabo.Core.MachineLearning
             var dimensions = feature_lines[0].Split().Length - 1;
             //Read the features in strings and save in matrices
             var trainData = new Matrix<float>(trainSampleCount, dimensions);
+
             var trainClasses = new Matrix<int>(trainSampleCount, 1);
+            var vy = new List<double>();
+            var vx = new List<svm_node[]>();
+
             for (var i = 0; i < trainSampleCount; i++)
             {
                 /*
@@ -186,35 +239,23 @@ namespace Strabo.Core.MachineLearning
                  * [feature #1] [feature #2] .. [feature #dimension] [sample class #(1 or 0)]
                  */
                 var features = feature_lines[i].Split();
+                List<svm_node> x = new List<svm_node>();
                 for (var j = 0; j < dimensions; j++)
-                    trainData.Data[i, j] = float.Parse(features[j]);
+                    x.Add(new svm_node { index = j, value = float.Parse(features[j]) });
+                vx.Add(x.ToArray());
+                //trainData.Data[i, j] = float.Parse(features[j]);
                 trainClasses.Data[i, 0] = int.Parse(features[dimensions]);
+
+                vy.Add(int.Parse(features[dimensions]));
+
             }
-            //Initialize the SVM
-            var model = new SVM();
-            //Set the training parameters
-            //SVMParams p = new SVMParams();
-            //p.KernelType = Emgu.CV.ML.MlEnum.SVM_KERNEL_TYPE.RBF;//No Gaussian???
-            //p.SVMType = Emgu.CV.ML.MlEnum.SVM_TYPE.C_SVC;
-            //p.C = C;
-            //p.Gamma = 10;
-            //p.TermCrit = new MCvTermCriteria(300, 0.001);
 
-            model.SetKernel(SVM.SvmKernelType.Rbf);
-            model.Type = SVM.SvmType.CSvc;
-            model.TermCriteria = new MCvTermCriteria(300, 0.001);
-            model.C = C;
-            model.Gamma = 10;
-            //Do the training
-            var td = new TrainData(trainData, DataLayoutType.RowSample, trainClasses);
-            var trained = model.TrainAuto(td, 5);
+            var dataset = new svm_problem();
+            dataset.l = trainSampleCount;
+            dataset.y = vy.ToArray();
+            dataset.x = vx.ToArray();
 
-            //bool trained = model.TrainAuto(trainData, trainClasses, null, null, model.MCvSVMParams, 5);
-            Console.WriteLine("SVM training finished!");
-            //Save the model on disk
-            model.Save(Path.Combine(dataPath, "SVM_model.xml"));
-            Console.WriteLine("SVM saved to disk file");
-
+            var model = new C_SVC(dataset, KernelHelper.RadialBasisFunctionKernel(0.1), 1);
             return model;
         }
 
@@ -232,7 +273,7 @@ namespace Strabo.Core.MachineLearning
             String[] pos_list = Directory.GetFiles(posDataPath, "*.png");
             String[] neg_list = Directory.GetFiles(negDataPath, "*.png");
 
-            string featureFilePath = Path.Combine(dataPath, "features.txt");
+            string featureFilePath = Path.Combine(dataPath, "features_ratio.txt");
             using (StreamWriter feature_file = new StreamWriter(featureFilePath))
             {
                 for (int i = 0; i<  pos_list.Length;i++)
@@ -242,8 +283,9 @@ namespace Strabo.Core.MachineLearning
                     srcimg = ImageUtils.InvertColors(srcimg);
                     CCfetcher fetcher = new CCfetcher();
                     var CCs = fetcher.GetConnectedComponents(srcimg);
+                    List<double> ratio = BlackWhiteRatio(srcimg, CCs);
                     for (var j = 0; j < CCs.Count; j++)
-                        feature_file.WriteLine(CCs[j] + " 1");
+                        feature_file.WriteLine(CCs[j] + " " + ratio[j] +  " 1");
                 }
                 for (int i = 0; i < neg_list.Length; i++)
                 {
@@ -252,8 +294,9 @@ namespace Strabo.Core.MachineLearning
                     srcimg = ImageUtils.InvertColors(srcimg);
                     var fetcher = new CCfetcher();
                     var CCs = fetcher.GetConnectedComponents(srcimg);
+                    List<double> ratio = BlackWhiteRatio(srcimg, CCs);
                     for (var j = 0; j < CCs.Count; j++)
-                        feature_file.WriteLine(CCs[j] + " 0");
+                        feature_file.WriteLine(CCs[j] + " " + ratio[j] + " 0");
                 }
             }
         }
