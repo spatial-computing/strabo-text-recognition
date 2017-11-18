@@ -20,7 +20,11 @@
  * please see: http://spatial-computing.github.io/
  ******************************************************************************/
 
+using Emgu.CV;
+using Emgu.CV.Structure;
 using System;
+using System.IO;
+using System.Linq;
 
 namespace Strabo.Core.Utility
 {
@@ -103,7 +107,35 @@ namespace Strabo.Core.Utility
 
         public static string CleanWithSVM { get; private set; }
 
-        public static void readConfigFile(string layer)
+
+        /*
+         * Generate the HSV histogram of the map to decide the threshold 
+         */
+        public static int findRGBThreshold(string inputPath)
+        {
+
+            Image<Bgr, Byte> image = new Image<Bgr, byte>(inputPath);
+
+            Image<Hsv, byte> hsvImage = image.Convert<Hsv, byte>();
+
+            Image<Gray, byte>[] channels = hsvImage.Copy().Split();
+            Image<Gray, byte> hue = channels[0];
+            Image<Gray, byte> sat = channels[1];
+
+            DenseHistogram dh = new DenseHistogram(20, new RangeF(0, 255));
+
+            dh.Calculate<byte>(new Image<Gray, byte>[] { sat }, true, null);
+
+            float[] array = dh.GetBinValues();
+
+            float max = array.Max();
+
+            int index = array.ToList().IndexOf(max);
+
+            return index;
+        }
+
+            public static void readConfigFile(string layer, string path)
         {
             try
             {
@@ -114,13 +146,31 @@ namespace Strabo.Core.Utility
                 else
                     layer = ""; //use the default setting
 
+                int index;
+                index = findRGBThreshold(path);
+
                 _rgbThreshold = new RGBThreshold();
-                _rgbThreshold.upperBlueColorThd = ReadInt(layer + "UpperBlueColorThreshold", 0);
-                _rgbThreshold.upperRedColorThd = ReadInt(layer + "UpperRedColorThreshold", 0);
-                _rgbThreshold.upperGreenColorThd = ReadInt(layer + "UpperGreenColorThreshold", 0);
-                _rgbThreshold.lowerBlueColorThd = ReadInt(layer + "LowerBlueColorThreshold", 0);
-                _rgbThreshold.lowerRedColorThd = ReadInt(layer + "LowerRedColorThreshold", 0);
-                _rgbThreshold.lowerGreenColorThd = ReadInt(layer + "LowerGreenColorThreshold", 0);
+
+                if (index <= 3)
+                {
+                    _rgbThreshold.upperBlueColorThd = ReadInt(layer + "UpperBlueColorThreshold", 0);
+                    _rgbThreshold.upperRedColorThd = ReadInt(layer + "UpperRedColorThreshold", 0);
+                    _rgbThreshold.upperGreenColorThd = ReadInt(layer + "UpperGreenColorThreshold", 0);
+                    _rgbThreshold.lowerBlueColorThd = ReadInt(layer + "LowerBlueColorThreshold", 0);
+                    _rgbThreshold.lowerRedColorThd = ReadInt(layer + "LowerRedColorThreshold", 0);
+                    _rgbThreshold.lowerGreenColorThd = ReadInt(layer + "LowerGreenColorThreshold", 0);
+                }
+                else
+                {
+                    _rgbThreshold.upperBlueColorThd = ReadInt(layer + "UpperBlueColorThreshold2", 0);
+                    _rgbThreshold.upperRedColorThd = ReadInt(layer + "UpperRedColorThreshold2", 0);
+                    _rgbThreshold.upperGreenColorThd = ReadInt(layer + "UpperGreenColorThreshold2", 0);
+                    _rgbThreshold.lowerBlueColorThd = ReadInt(layer + "LowerBlueColorThreshold", 0);
+                    _rgbThreshold.lowerRedColorThd = ReadInt(layer + "LowerRedColorThreshold", 0);
+                    _rgbThreshold.lowerGreenColorThd = ReadInt(layer + "LowerGreenColorThreshold", 0);
+                }
+
+                //Console.WriteLine(_rgbThreshold.upperRedColorThd);
 
                 if (_rgbThreshold.upperBlueColorThd == _rgbThreshold.lowerBlueColorThd
                     || _rgbThreshold.upperGreenColorThd == _rgbThreshold.lowerGreenColorThd

@@ -102,7 +102,7 @@ namespace Strabo.Core.Worker
             //read settings
             try
             {
-                StraboParameters.readConfigFile(inputArgs.mapLayerName);
+                StraboParameters.readConfigFile(inputArgs.mapLayerName, path);
             }
             catch (Exception e)
             {
